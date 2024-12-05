@@ -42,7 +42,7 @@ exports.authenticateUser = (req, res) => {
         } else {
             const response = {
                 status: 1,
-                message: 'Invalid Credential',
+                message: 'Invalid Credential given',
                 data: null // The data returned from the stored procedure
               };
               res.json(response);  
