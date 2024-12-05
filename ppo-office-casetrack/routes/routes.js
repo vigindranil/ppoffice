@@ -3,15 +3,26 @@
 const express = require('express');
 const router = express.Router();
 
-// Import the ShowController
-const ShowController = require('../controllers/showController');
 
-// Define the GET route for /show, using the ShowController
-router.get('/api/alldistrict', ShowController.show);
+// custom middleware
+const authMiddleware = require('../middlewares/authMiddleware'); 
+
+// show all district
+const districtController = require('../controllers/districtController');
+router.get('/api/alldistrict', authMiddleware.verifyToken, districtController.show);
+
+// show all policestation respect to District
+const policeController = require('../controllers/policeController');
+router.get('/api/allpolice', authMiddleware.verifyToken,policeController.show);
+
+//user login
+const authController = require('../controllers/authController');
+router.post('/api/authenticate', authController.authenticateUser);
 
 
 
-// Define other routes as needed
-// router.get('/otherRoute', ShowController.anotherMethod);
+
+
+
 
 module.exports = router;

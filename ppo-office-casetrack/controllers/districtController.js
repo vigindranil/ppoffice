@@ -1,7 +1,7 @@
 // controllers/showController.js
 const db = require('../config/db'); // Import the DB connection
 
-class ShowController {
+class DistrictController {
   // Handle the GET request for /show (Call stored procedure)
   static show(req, res) {
     const query = 'CALL showDistrict()';  // Replace with your stored procedure name
@@ -31,4 +31,4 @@ class ShowController {
   // Add other methods if needed
 }
 
-module.exports = ShowController;
+module.exports = DistrictController;
