@@ -28,6 +28,9 @@ router.get('/api/getppstaffById', authMiddleware.verifyToken,ppstaffController.p
 
 
 
+// password reset
+const passwordfController = require('../controllers/resetpassword');
+router.post('/api/changepassword', authMiddleware.verifyToken,passwordfController.resetPassword);
 
 
 module.exports = router;
