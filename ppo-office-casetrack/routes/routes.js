@@ -19,6 +19,10 @@ router.get('/api/allpolice', authMiddleware.verifyToken,policeController.show);
 const authController = require('../controllers/authController');
 router.post('/api/authenticate', authController.authenticateUser);
 
+//create ppstaff by ppadmin
+
+const ppstaffController = require('../controllers/PPstaffController');
+router.post('/api/addppstaff', authMiddleware.verifyToken,ppstaffController.createUser);
 
 
 
