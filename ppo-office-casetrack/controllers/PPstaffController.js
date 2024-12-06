@@ -79,6 +79,48 @@ class UserController {
       res.json(response);
     });
   }
+
+  static ppdetailsbyId(req, res) {
+    // Retrieve the district_id from the query parameters or request body
+    const ppstaffId = req.query.ppstaffId;  // Assuming the district_id is passed as a query parameter
+    
+   
+    if (!ppstaffId) {
+      return res.status(400).json({
+        status: 1,
+        message: 'ppstaff_id is required',
+        data: []
+      });
+    }
+
+    // SQL query to call the stored procedure with the district_id parameter
+    const query = 'CALL sp_getPPstaffDetailsbyId(?)';  // Using the parameterized query
+
+    // Pass the districtId as an argument to the stored procedure
+    db.query(query, [ppstaffId], (err, results) => {
+      if (err) {
+        console.error('Error executing stored procedure:', err);
+        return res.status(500).json({
+          status: 1,
+          message: 'Error retrieving data from the database',
+          data: []
+        });
+      }
+
+      // Assuming your stored procedure returns data in results[0]
+      const response = {
+        status: 0,
+        message: 'Data found',
+        data: results[0] // The data returned from the stored procedure
+      };
+
+      // Send the formatted JSON response
+      res.json(response);
+    });
+  }
+
 }
+
+
 
 module.exports = UserController;
