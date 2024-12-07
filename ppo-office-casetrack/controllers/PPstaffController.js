@@ -1,5 +1,5 @@
 const db = require('../config/db'); // Import the database connection
-
+const ResponseHelper = require('./ResponseHelper'); 
 class UserController {
   static createUser(req, res) {
     const { Username, UserPassword, FullName, ContactNo, Email, LicenseNumber } = req.body;
@@ -60,27 +60,26 @@ class UserController {
 
     db.query(query, (err, results) => {
       if (err) {
-        console.error('Error executing stored procedure:', err);
-        return res.status(500).json({
-          status: 1,
-          message: 'Error retrieving data from the database',
-          data: []
-        });
+          console.error('Error executing stored procedure:', err);
+          return ResponseHelper.error(res, "An error occurred while fetching the staff details.");
       }
-
+    
       // Assuming your stored procedure returns data in results[0]
-      const response = {
-        status: 0,
-        message: 'data found',
-        data: results[0] // The data returned from the stored procedure
-      };
+      if (results[0] && results[0].length > 0) {
 
-      // Send the formatted JSON response
-      res.json(response);
+        // Respond with success
+        return ResponseHelper.success_reponse(res, "Data found", results[0]);
+    }
+    else {
+      // Respond with error
+      return ResponseHelper.error(res, "No data found");
+  }
+
     });
   }
 
-  static ppdetailsbyId(req, res) {
+
+static ppdetailsbyId(req, res) {
     // Retrieve the district_id from the query parameters or request body
     const ppstaffId = req.query.ppstaffId;  // Assuming the district_id is passed as a query parameter
     
@@ -100,24 +99,25 @@ class UserController {
     db.query(query, [ppstaffId], (err, results) => {
       if (err) {
         console.error('Error executing stored procedure:', err);
-        return res.status(500).json({
-          status: 1,
-          message: 'Error retrieving data from the database',
-          data: []
-        });
-      }
+        return ResponseHelper.error(res, "An error occurred while fetching the staff details.");
+    }
+     // Assuming your stored procedure returns data in results[0]
+    if (results[0] && results[0].length > 0) {
 
-      // Assuming your stored procedure returns data in results[0]
-      const response = {
-        status: 0,
-        message: 'Data found',
-        data: results[0] // The data returned from the stored procedure
-      };
-
-      // Send the formatted JSON response
-      res.json(response);
-    });
+      // Respond with success
+      return ResponseHelper.success_reponse(res, "Data found", results[0]);
   }
+  else {
+    // Respond with error
+    return ResponseHelper.error(res, "No data found");
+}
+
+     
+      
+    });
+
+    
+ }
 
 }
 

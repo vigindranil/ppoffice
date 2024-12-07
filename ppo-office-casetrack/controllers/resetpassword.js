@@ -1,5 +1,5 @@
 const db = require('../config/db'); // Import your DB connection
-
+const ResponseHelper = require('./ResponseHelper'); 
 class PasswordResetController {
     static resetPassword(req, res) {
         const { userId, newPassword } = req.body;
@@ -18,25 +18,18 @@ class PasswordResetController {
 
         db.query(query, params, (err, results) => {
             if (err) {
-                console.error("Error executing stored procedure:", err);
-                return res.status(500).json({
-                    status: 1,
-                    message: "An error occurred while resetting the password",
-                });
+                console.error('Error executing stored procedure:', err);
+          return ResponseHelper.error(res, "An error occurred while fetching the staff details.");
             }
-
+           
             // Check if the password was updated successfully
             if (results.affectedRows > 0) {
-                return res.status(200).json({
-                    status: 0,
-                    message: "Password reset successfully",
-                });
-            } else {
-                return res.status(404).json({
-                    status: 1,
-                    message: "User ID not found",
-                });
+                return ResponseHelper.success_reponse(res, "password reset succesfully", results[0]);
             }
+            else {
+              // Respond with error
+              return ResponseHelper.error(res, "please enter proper user Id");
+          }
         });
     }
 }
