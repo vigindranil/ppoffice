@@ -1,59 +1,59 @@
 const db = require('../config/db'); // Import the database connection
 const ResponseHelper = require('./ResponseHelper'); 
 class UserController {
-  static createUser(req, res) {
-    const { Username, UserPassword, FullName, ContactNo, Email, LicenseNumber } = req.body;
-
-    // Validate required fields
-    if (!Username || !UserPassword || !FullName || !ContactNo || !Email || !LicenseNumber) {
-      return res.status(400).json({
-        status: 1,
-        message: "All fields (Username, UserPassword, FullName, ContactNo, Email, LicenseNumber) are required.",
-      });
+  static createPPStaff(req, res) {
+    const { Username, UserPassword, FullName, ContractNo, Email, LicenseNumber } = req.body;
+    
+    // Validate the required input fields
+    if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber) {
+        return res.status(400).json({
+            status: 1,
+            message: "All fields are required: Username, UserPassword, FullName, ContractNo, Email, and LicenseNumber.",
+        });
     }
 
-    // Define the query and parameters
-    const query = `CALL sp_saveCreatePPstaff(?, ?, ?, ?, ?, ?, @ppstaff_id)`;
-    const params = [Username, UserPassword, FullName, ContactNo, Email, LicenseNumber];
-
     // Call the stored procedure
-    db.query(query, params, (err) => {
-      if (err) {
-        console.error("Error executing stored procedure:", err);
-        return res.status(500).json({
-          status: 1,
-          message: "An error occurred while creating the user.",
-        });
-      }
+    const query = "CALL sp_saveCreatePPstaff(?, ?, ?, ?, ?, ?, @ppstaff_id, @ErrorCode)";
+    const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber];
 
-      // Retrieve the OUT parameter (ppstaff_id)
-      db.query(`SELECT @ppstaff_id AS id`, (err, results) => {
+    db.query(query, params, (err, results) => {
         if (err) {
-          console.error("Error retrieving user ID:", err);
-          return res.status(500).json({
-            status: 1,
-            message: "An error occurred while fetching the created user ID.",
-          });
+            console.error("Error executing stored procedure:", err);
+            return res.status(500).json({
+                status: 1,
+                message: "An error occurred while creating the PP staff.",
+            });
         }
 
-        const insertedId = results[0]?.id;
+        // Fetch output parameters from the procedure
+        db.query("SELECT @ppstaff_id AS ppstaff_id, @ErrorCode AS ErrorCode", (outputErr, outputResults) => {
+            if (outputErr) {
+                console.error("Error fetching output parameters:", outputErr);
+                return res.status(500).json({
+                    status: 1,
+                    message: "An error occurred while fetching procedure output.",
+                });
+            }
 
-        if (insertedId) {
-          return res.status(201).json({
-            status: 0,
-            message: "User detail registered successfully",
-            data: { id: insertedId },
-          });
-        } else {
-          return res.status(500).json({
-            status: 1,
-            message: "User creation failed.",
-            data: {},
-          });
-        }
-      });
+            const { ppstaff_id, ErrorCode } = outputResults[0];
+
+            if (ErrorCode === 0) {
+                return res.status(200).json({
+                    status: 0,
+                    message: "PP Staff created successfully.",
+                    data: {
+                        id: ppstaff_id,
+                    },
+                });
+            } else {
+                return res.status(400).json({
+                    status: 1,
+                    message: "Failed to create PP Staff. Please check your input.",
+                });
+            }
+        });
     });
-  }
+}
 
   static showppstaff(req, res) {
     const query = 'CALL sp_getPPstaff()';  // Replace with your stored procedure name
