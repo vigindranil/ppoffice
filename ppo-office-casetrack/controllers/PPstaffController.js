@@ -2,7 +2,7 @@ const db = require('../config/db'); // Import the database connection
 const ResponseHelper = require('./ResponseHelper'); 
 class UserController {
   static async createPPStaff(req, res) {
-    const { Username, UserPassword, FullName, ContractNo, Email, LicenseNumber } = req.body;
+    const { Username, UserPassword, EntryUserID,FullName, ContractNo, Email, LicenseNumber } = req.body;
 
     // Validate the required input fields
     if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber) {
@@ -14,8 +14,8 @@ class UserController {
 
     try {
         // Call the stored procedure
-        const query = "CALL sp_saveCreatePPstaff(?, ?, ?, ?, ?, ?, @ppstaff_id, @ErrorCode)";
-        const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber];
+        const query = "CALL sp_saveCreatePPstaff(?, ?, ?, ?, ?, ?, ?,@ppstaff_id, @ErrorCode)";
+        const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber,EntryUserID];
 
         // Execute the stored procedure
         await new Promise((resolve, reject) => {
