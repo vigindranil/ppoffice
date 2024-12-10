@@ -34,5 +34,8 @@ router.post('/api/assigncase', authMiddleware.verifyToken,ppstaffController.assi
 const passwordfController = require('../controllers/resetpassword');
 router.post('/api/changepassword', authMiddleware.verifyToken,passwordfController.resetPassword);
 
+const CaseController = require('../controllers/caseController');
+router.get('/api/getCaseAssign', authMiddleware.verifyToken,CaseController.getCaseAssign);
+
 
 module.exports = router;
