@@ -56,7 +56,7 @@ class UserController {
 }
 
   static showppstaff(req, res) {
-    const query = 'CALL sp_getPPstaff()';  // Replace with your stored procedure name
+    const query = 'CALL sp_getPPstaff()';  
 
     db.query(query, (err, results) => {
       if (err) {
@@ -117,7 +117,68 @@ static ppdetailsbyId(req, res) {
     });
 
     
- }
+ } 
+
+
+  /**
+   * Assign a case to a PP staff
+   */
+  static assignCase(req, res) {
+      const { PPstaffID, CaseNumber, CaseDate } = req.body;
+
+      // Validate required input fields
+      if (!PPstaffID || !CaseNumber || !CaseDate) {
+          return res.status(400).json({
+              status: 1,
+              message: "All fields are required: PPstaffID, CaseNumber, and CaseDate.",
+          });
+      }
+
+      // Define the stored procedure call
+      const query = "CALL sp_saveCaseAssign(?, ?, ?, @CaseAssignID, @ErrorCode)";
+      const params = [PPstaffID, CaseNumber, CaseDate];
+
+      db.query(query, params, (err) => {
+          if (err) {
+              console.error("Error executing stored procedure:", err);
+              return res.status(500).json({
+                  status: 1,
+                  message: "An error occurred while assigning the case.",
+              });
+          }
+
+          // Fetch the output parameters `CaseAssignID` and `ErrorCode`
+          db.query("SELECT @CaseAssignID AS CaseAssignID, @ErrorCode AS ErrorCode", (outputErr, outputResults) => {
+              if (outputErr) {
+                  console.error("Error fetching output parameters:", outputErr);
+                  return res.status(500).json({
+                      status: 1,
+                      message: "An error occurred while fetching procedure output.",
+                  });
+              }
+
+              const { CaseAssignID, ErrorCode } = outputResults[0];
+
+              // Check for errors from the stored procedure
+              if (ErrorCode === 1) {
+                  return res.status(500).json({
+                      status: 1,
+                      message: "An error occurred during case assignment. Please try again.",
+                  });
+              }
+
+              return res.status(200).json({
+                  status: 0,
+                  message: "Case assigned successfully.",
+                  data: {
+                    CaseAssignID: CaseAssignID,
+                  },
+              });
+          });
+      });
+  }
+
+
 
 }
 
