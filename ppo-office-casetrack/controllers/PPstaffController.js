@@ -36,13 +36,13 @@ class UserController {
             }
 
             const { ppstaff_id, ErrorCode } = outputResults[0];
-
+            console.log(outputResults[0]);
             if (ErrorCode === 0) {
                 return res.status(200).json({
                     status: 0,
                     message: "PP Staff created successfully.",
                     data: {
-                        id: ppstaff_id,
+                      ppstaff_id: ppstaff_id,
                     },
                 });
             } else {
