@@ -36,6 +36,11 @@ router.post('/api/changepassword', authMiddleware.verifyToken,passwordfControlle
 
 const CaseController = require('../controllers/caseController');
 router.get('/api/getCaseAssign', authMiddleware.verifyToken,CaseController.getCaseAssign);
-router.get('/api/getcasetype', authMiddleware.verifyToken,CaseController.getcasetype)
+router.get('/api/getcasetype', authMiddleware.verifyToken,CaseController.getcasetype);
+
+
+const EmailController = require("../controllers/emailController");
+
+router.post("/send-email", EmailController.sendEmail);
 
 module.exports = router;
