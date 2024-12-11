@@ -36,6 +36,6 @@ router.post('/api/changepassword', authMiddleware.verifyToken,passwordfControlle
 
 const CaseController = require('../controllers/caseController');
 router.get('/api/getCaseAssign', authMiddleware.verifyToken,CaseController.getCaseAssign);
-
+router.get('/api/getcasetype', authMiddleware.verifyToken,CaseController.getcasetype)
 
 module.exports = router;
