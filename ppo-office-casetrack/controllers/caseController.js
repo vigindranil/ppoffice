@@ -5,20 +5,20 @@ class CaseController {
      * Get case assignment details by case number.
      */
     static async getCaseAssign(req, res) {
-        const { CaseNumber } = req.query; // Get the CaseNumber from query parameters
+        const { ppStaffID } = req.query; // Get the CaseNumber from query parameters
 
         // Validate input
-        if (!CaseNumber) {
+        if (!ppStaffID) {
             return res.status(400).json({
                 status: 1,
-                message: "CaseNumber is required.",
+                message: "ppStaffID is required.",
             });
         }
 
         try {
             // Call the stored procedure
-            const query = "CALL sp_getCaseAssign(?)";
-            const params = [CaseNumber];
+            const query = "CALL sp_getCaseAssignByPPStaffId(?)";
+            const params = [ppStaffID];
 
             // Execute the query
             const results = await new Promise((resolve, reject) => {
