@@ -135,10 +135,10 @@ static ppdetailsbyId(req, res) {
    // Assign a case to a PP staff
    
   static assignCase(req, res) {
-      const { PPstaffID, EntryUserID,CaseNumber, CaseDate } = req.body;
+      const { PPstaffID, EntryUserID,CaseNumber, CaseDate,DistrictID,psID,caseTypeID } = req.body;
 
       // Validate required input fields
-      if (!PPstaffID || !CaseNumber || !CaseDate) {
+      if (!PPstaffID || !CaseNumber || !CaseDate|| !DistrictID || !psID || !caseTypeID) {
           return res.status(400).json({
               status: 1,
               message: "All fields are required: PPstaffID, CaseNumber, and CaseDate.",
@@ -146,8 +146,8 @@ static ppdetailsbyId(req, res) {
       }
 
       // Define the stored procedure call
-      const query = "CALL sp_saveCaseAssign(?, ?, ?,?, @CaseAssignID, @ErrorCode)";
-      const params = [PPstaffID, CaseNumber,EntryUserID, CaseDate];
+      const query = "CALL sp_saveCaseAssign(?, ?, ?,?,?,?,?, @CaseAssignID, @ErrorCode)";
+      const params = [PPstaffID, CaseNumber,EntryUserID, CaseDate,DistrictID,psID,caseTypeID];
 
       db.query(query, params, (err) => {
           if (err) {
