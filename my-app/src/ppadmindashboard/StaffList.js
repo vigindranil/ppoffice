@@ -11,7 +11,7 @@ const StaffList = ({ ppStaff, setSelectedStaff }) => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Staff List</h2>
+        <h2 className="text-xl font-bold text-gray-800">Staff List</h2>
         <div className="relative w-1/2">
           <input
             type="text"
@@ -24,18 +24,21 @@ const StaffList = ({ ppStaff, setSelectedStaff }) => {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-1">
         {filteredStaff.map(staff => (
-          <div key={staff.pp_id} className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center space-x-2">
-              <h3 className="text-lg font-medium text-gray-900">{staff.pp_name}</h3>
-              <span className="text-sm text-gray-600">{staff.pp_licensenumber}</span>
+          <div
+            key={staff.pp_id}
+            className="bg-white  border-gray-300 rounded-md p-3 flex items-center justify-between"
+          >
+            <div className="flex flex-col">
+              <h3 className="text-sm font-medium text-gray-900">{staff.pp_name}</h3>
+              <span className="text-xs text-gray-600">{staff.pp_licensenumber}</span>
             </div>
             <button
               onClick={() => setSelectedStaff(staff)}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
+              className="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
             >
-              <FaUsers className="mr-2" /> View
+              <FaUsers className="mr-1" /> View
             </button>
           </div>
         ))}
@@ -45,4 +48,3 @@ const StaffList = ({ ppStaff, setSelectedStaff }) => {
 };
 
 export default StaffList;
-

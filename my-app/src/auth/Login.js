@@ -19,14 +19,25 @@ export default function LoginPage() {
     setErrorMessage('');
 
     try {
+      // Send login request
       const response = await axios.post('http://localhost:8000/api/authenticate', {
         username: formData.username,
         password: formData.password,
       });
 
+      // Check response status
       if (response.data.status === 0 && response.data.message === "Data found") {
+        // Store auth token in localStorage
         localStorage.setItem('authToken', response.data.access_token);
 
+        // Store AuthorityUserID in sessionStorage
+        const authorityUserId = response.data.data[0].AuthorityUserID;
+        sessionStorage.setItem('AuthorityUserID', authorityUserId);
+
+        // Log the AuthorityUserID to verify
+        console.log("AuthorityUserID stored in sessionStorage:", authorityUserId);
+
+        // Handle redirection based on AuthorityTypeID
         const authorityTypeID = response.data.data[0].AuthorityTypeID;
         if (authorityTypeID === 10) {
           navigate('/ppoadmin');
@@ -144,4 +155,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

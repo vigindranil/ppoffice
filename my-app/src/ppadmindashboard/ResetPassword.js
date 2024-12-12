@@ -50,7 +50,7 @@ const ResetPassword = ({ ppStaff }) => {
     <div>
       <div className="flex justify-center items-center">
         <div className="mb-6 text-center bg-opacity-80 backdrop-blur-md rounded-xl inline-block px-6 py-2">
-          <h2 className="text-2xl text-gray-800 font-bold text-center">
+          <h2 className="text-xl text-gray-800 font-bold text-center">
             Reset Password
           </h2>
         </div>
