@@ -92,6 +92,62 @@ class CaseController {
           res.json(response);
         });
       }
+
+    static saveCase(req, res) {
+        const { caseID, ref,ipcAct, hearingDate,photocopycaseDiaryExist } = req.body;
+  
+        // Validate required input fields
+        if (!caseID || !ref || !ipcAct|| !hearingDate || !photocopycaseDiaryExist) {
+            return res.status(400).json({
+                status: 1,
+                message: "All fields are required: caseID, ref, and hearingDate.",
+            });
+        }
+  
+        // Define the stored procedure call
+        const query = "CALL sp_saveCase(?, ?, ?,?,?, @CaseAssignID, @ErrorCode)";
+        const params = [caseID, ref,ipcAct, hearingDate,photocopycaseDiaryExist];
+  
+        db.query(query, params, (err) => {
+            if (err) {
+                console.error("Error executing stored procedure:", err);
+                return res.status(500).json({
+                    status: 1,
+                    message: "An error occurred while assigning the case.",
+                });
+            }
+  
+            // Fetch the output parameters `CaseAssignID` and `ErrorCode`
+            db.query("SELECT @CaseAssignID AS CaseAssignID, @ErrorCode AS ErrorCode", (outputErr, outputResults) => {
+                if (outputErr) {
+                    console.error("Error fetching output parameters:", outputErr);
+                    return res.status(500).json({
+                        status: 1,
+                        message: "An error occurred while fetching procedure output.",
+                    });
+                }
+  
+                const { CaseAssignID, ErrorCode } = outputResults[0];
+  
+                // Check for errors from the stored procedure
+                if (ErrorCode === 1) {
+                    return res.status(500).json({
+                        status: 1,
+                        message: "An error occurred during case assignment. Please try again.",
+                    });
+                }
+  
+                return res.status(200).json({
+                    status: 0,
+                    message: "Case updated successfully.",
+                    data: {
+                      CaseAssignID: CaseAssignID,
+                    },
+                });
+            });
+        });
+    }
+  
 }
 
 module.exports = CaseController;

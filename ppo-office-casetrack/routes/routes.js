@@ -38,6 +38,8 @@ router.post('/api/changepassword', authMiddleware.verifyToken,passwordfControlle
 const CaseController = require('../controllers/caseController');
 router.get('/api/getCaseAssign', authMiddleware.verifyToken,CaseController.getCaseAssign);
 router.get('/api/getcasetype', authMiddleware.verifyToken,CaseController.getcasetype);
+router.post("/api/savecase",authMiddleware.verifyToken,CaseController.saveCase);
+
 
 // send email
 const EmailController = require("../controllers/emailController");
