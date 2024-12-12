@@ -46,5 +46,6 @@ router.post("/send-email", EmailController.sendEmail);
 // psStaff 
 const PsController = require("../controllers/psController");
 router.post("/api/addpsStaff",authMiddleware.verifyToken,PsController.createPsStaff);
+router.get("/api/getpsStaff",authMiddleware.verifyToken,PsController.showpsstaff);
 
 module.exports = router;
