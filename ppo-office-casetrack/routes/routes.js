@@ -39,6 +39,8 @@ const CaseController = require('../controllers/caseController');
 router.get('/api/getCaseAssign', authMiddleware.verifyToken,CaseController.getCaseAssign);
 router.get('/api/getcasetype', authMiddleware.verifyToken,CaseController.getcasetype);
 router.post("/api/savecase",authMiddleware.verifyToken,CaseController.saveCase);
+router.get("/api/caseDetailsById",authMiddleware.verifyToken,CaseController.getCaseById);
+
 
 
 // send email
