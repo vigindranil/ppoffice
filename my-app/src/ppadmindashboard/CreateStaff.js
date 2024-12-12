@@ -70,7 +70,7 @@ const CreateStaff = ({ fetchStaffList }) => {
   return (
     <div>
       <div className="mb-6 text-center">
-        <h2 className="text-2xl text-gray-800 font-bold bg-opacity-80 backdrop-blur-md rounded-xl px-6 py-2 inline-block text-center">
+        <h2 className="text-xl text-gray-800 font-bold bg-opacity-80 backdrop-blur-md rounded-xl px-6 py-2 inline-block text-center">
           Create PP Staff
         </h2>
       </div>

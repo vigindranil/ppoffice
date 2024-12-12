@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaUserLock, FaClipboardCheck, FaUsers } from 'react-icons/fa';
+import { FaPlus, FaUserLock, FaClipboardCheck, FaUsers, FaSignOutAlt } from 'react-icons/fa';
 import CreateStaff from './CreateStaff';
 import ResetPassword from './ResetPassword';
 import AllocateCase from './AllocateCase';
@@ -45,11 +45,16 @@ const ModernPPOfficeAdminDashboard = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    window.location.href = '/';  // Redirect to home page or login page
+  };
+
   return (
-    <div className="flex h-screen bg-cover bg-center" style={{backgroundImage: "url('images/court3.webp')"}}>
+    <div className="flex h-screen bg-cover bg-center" style={{ backgroundImage: "url('images/court3.webp')" }}>
       {/* Sidebar */}
-      <div className="w-64 bg-white bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg">
-        <div className="p-6">
+      <div className="w-64 bg-white bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg flex flex-col relative">
+        <div className="p-6 flex-grow overflow-y-auto">
           <h1 className="text-2xl font-bold text-gray-800 mb-6">PP Office Admin</h1>
           <nav>
             <button
@@ -77,6 +82,14 @@ const ModernPPOfficeAdminDashboard = () => {
               <FaUsers className="mr-3" /> Staff List
             </button>
           </nav>
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-4 py-2 rounded-md flex items-center justify-center bg-red-600 bg-opacity-80 hover:bg-opacity-100 text-white backdrop-blur-lg transition-all duration-300 ease-in-out"
+            >
+              <FaSignOutAlt className="mr-3" /> Logout
+            </button>
+          </div>
         </div>
       </div>
 
@@ -106,4 +119,3 @@ const ModernPPOfficeAdminDashboard = () => {
 };
 
 export default ModernPPOfficeAdminDashboard;
-
