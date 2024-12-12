@@ -34,13 +34,17 @@ router.post('/api/assigncase', authMiddleware.verifyToken,ppstaffController.assi
 const passwordfController = require('../controllers/resetpassword');
 router.post('/api/changepassword', authMiddleware.verifyToken,passwordfController.resetPassword);
 
+// case assisgn
 const CaseController = require('../controllers/caseController');
 router.get('/api/getCaseAssign', authMiddleware.verifyToken,CaseController.getCaseAssign);
 router.get('/api/getcasetype', authMiddleware.verifyToken,CaseController.getcasetype);
 
-
+// send email
 const EmailController = require("../controllers/emailController");
-
 router.post("/send-email", EmailController.sendEmail);
+
+// psStaff 
+const PsController = require("../controllers/psController");
+router.post("/api/addpsStaff",authMiddleware.verifyToken,PsController.createPsStaff);
 
 module.exports = router;
