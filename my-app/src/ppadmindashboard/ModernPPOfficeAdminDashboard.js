@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaUserLock, FaClipboardCheck, FaUsers, FaSignOutAlt } from 'react-icons/fa';
+import StaffList from './StaffList';
 import CreateStaff from './CreateStaff';
 import ResetPassword from './ResetPassword';
 import AllocateCase from './AllocateCase';
-import StaffList from './StaffList';
 import StaffDetailsPopup from './StaffDetailsPopup';
 
 const ModernPPOfficeAdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('createStaff');
+  const [activeTab, setActiveTab] = useState('staffList');
   const [ppStaff, setPPStaff] = useState([]);
   const [error, setError] = useState(null);
   const [selectedStaff, setSelectedStaff] = useState(null);
@@ -57,6 +57,12 @@ const ModernPPOfficeAdminDashboard = () => {
         <div className="p-6 flex-grow overflow-y-auto">
           <h1 className="text-2xl font-bold text-gray-800 mb-6">PP Office Admin</h1>
           <nav>
+          <button
+              className={`w-full text-left px-4 py-2 rounded-md mb-2 flex items-center ${activeTab === 'staffList' ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
+              onClick={() => setActiveTab('staffList')}
+            >
+              <FaUsers className="mr-3" /> Staff List
+            </button>
             <button
               className={`w-full text-left px-4 py-2 rounded-md mb-2 flex items-center ${activeTab === 'createStaff' ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
               onClick={() => setActiveTab('createStaff')}
@@ -75,12 +81,7 @@ const ModernPPOfficeAdminDashboard = () => {
             >
               <FaClipboardCheck className="mr-3" /> Allocate Case
             </button>
-            <button
-              className={`w-full text-left px-4 py-2 rounded-md mb-2 flex items-center ${activeTab === 'staffList' ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
-              onClick={() => setActiveTab('staffList')}
-            >
-              <FaUsers className="mr-3" /> Staff List
-            </button>
+          
           </nav>
           <div className="absolute bottom-0 left-0 right-0 p-4">
             <button
@@ -102,10 +103,10 @@ const ModernPPOfficeAdminDashboard = () => {
               <span className="block sm:inline"> {error}</span>
             </div>
           )}
+          {activeTab === 'staffList' && <StaffList ppStaff={ppStaff} setSelectedStaff={setSelectedStaff} />}
           {activeTab === 'createStaff' && <CreateStaff fetchStaffList={fetchStaffList} />}
           {activeTab === 'resetPassword' && <ResetPassword ppStaff={ppStaff} />}
           {activeTab === 'allocateCase' && <AllocateCase ppStaff={ppStaff} />}
-          {activeTab === 'staffList' && <StaffList ppStaff={ppStaff} setSelectedStaff={setSelectedStaff} />}
         </div>
       </div>
       {selectedStaff && (
