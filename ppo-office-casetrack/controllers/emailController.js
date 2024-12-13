@@ -1,37 +1,32 @@
 const nodemailer = require("nodemailer");
-const db = require('../config/db'); // Import the DB connection
+const db = require("../config/db"); // Import the DB connection
+const generateEmailTemplate = require("./emailTemplate"); // Import the email template generator
 
 class EmailController {
-    /**
-     * Send an email.
-     */
     static async sendEmail(req, res) {
-        const { CaseID, subject, message } = req.body;
+        const { CaseID } = req.body;
 
         // Validate required fields
-        if (!CaseID || !subject || !message) {
+        if (!CaseID ) {
             return res.status(400).json({
                 status: 1,
-                message: "Fields 'CaseID', 'subject', and 'message' are required.",
+                message: "Fields 'CaseID' and 'hearingDate' are required.",
             });
         }
 
         try {
-            const query = 'CALL sp_sendEmail(?)'; // Using the parameterized query
+            const query = "CALL sp_sendEmail(?)";
 
-            // Pass the CaseID as an argument to the stored procedure
             db.query(query, [CaseID], async (err, results) => {
                 if (err) {
-                    console.error('Error executing stored procedure:', err);
+                    console.error("Error executing stored procedure:", err);
                     return res.status(500).json({
                         status: 1,
-                        message: 'Error retrieving data from the database',
-                        data: []
+                        message: "Error retrieving data from the database",
                     });
                 }
 
-                // Assuming your stored procedure returns data in results[0]
-                const rows = results[0]; // Extract the array of rows
+                const rows = results[0];
                 const emailDetails = rows[0];
 
                 if (!emailDetails) {
@@ -41,30 +36,36 @@ class EmailController {
                     });
                 }
 
-                const { receiveEmail, ccEmail } = emailDetails;
-               
+                const { receiveEmail, ccEmail, psCaseNo, dated, hearingDate, ipcSection, crm } = emailDetails;
 
-                // Configure the transporter
+                // Generate the email content
+                const emailContent = generateEmailTemplate({
+                    crm,
+                    psCaseNo,
+                    dated,
+                    ipcSection,
+                    hearingDate,
+                    //additionalInstructions,
+                });
+
                 const transporter = nodemailer.createTransport({
-                    host: "smtp.gmail.com", // Replace with your email provider's SMTP server
-                    port: 587, // Use 465 for secure or 587 for TLS
-                    secure: false, // true for 465, false for 587
+                    host: "smtp.gmail.com",
+                    port: 587,
+                    secure: false,
                     auth: {
-                        user: process.env.EMAIL_USER, 
-                        pass: process.env.EMAIL_PASSWORD 
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_PASSWORD,
                     },
                 });
 
-                // Define email options
                 const mailOptions = {
-                    from: process.env.EMAIL_USER, // Sender address
-                    to: receiveEmail, // Recipient email address
-                    cc: ccEmail, // CC email address
-                    subject: subject, // Subject of the email
-                    html: message, // HTML body content
+                    from: process.env.EMAIL_USER,
+                    to: receiveEmail,
+                    cc: ccEmail,
+                    subject: `Case Update: ${psCaseNo}`,
+                    html: `<pre>${emailContent}</pre>`, // Use <pre> to retain formatting
                 };
 
-                // Send email
                 const info = await transporter.sendMail(mailOptions);
 
                 return res.status(200).json({
@@ -79,7 +80,6 @@ class EmailController {
         } catch (error) {
             console.error("Error sending email:", error);
 
-            // Return error response
             return res.status(500).json({
                 status: 1,
                 message: "Failed to send the email.",
