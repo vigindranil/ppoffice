@@ -34,8 +34,10 @@ class PsController {
 
         return res.status(200).json({
             status: 0,
-            message: "PS Staff created successfully.",
-            PsStaffId
+            message: "Ps Staff created successfully.",
+            data: {
+                PsStaffId: PsStaffId,
+            },
         });
     } catch (error) {
         console.error("Error creating PS Staff:", error);
@@ -51,13 +53,22 @@ class PsController {
 
 
 
-  static showpsstaff(req, res) {
-    const query = 'CALL sp_getPPstaff()';  
+static showpsstaff(req, res) {
 
-    db.query(query, (err, results) => {
+    const PsID = req.query.PsID;
+    if (!PsID) {
+        return res.status(400).json({
+          status: 1,
+          message: 'district_id is required',
+          data: []
+        });
+      }
+    const query = 'CALL sp_getPsStaffByPsID(?)';  
+
+    db.query(query,[PsID],(err, results) => {
       if (err) {
           console.error('Error executing stored procedure:', err);
-          return ResponseHelper.error(res, "An error occurred while fetching the staff details.");
+          return ResponseHelper.error(res, "An error occurred while fetching the police details.");
       }
     
       // Assuming your stored procedure returns data in results[0]
@@ -73,6 +84,7 @@ class PsController {
 
     });
   }
+
 
 
 

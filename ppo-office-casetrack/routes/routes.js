@@ -38,6 +38,10 @@ router.post('/api/changepassword', authMiddleware.verifyToken,passwordfControlle
 const CaseController = require('../controllers/caseController');
 router.get('/api/getCaseAssign', authMiddleware.verifyToken,CaseController.getCaseAssign);
 router.get('/api/getcasetype', authMiddleware.verifyToken,CaseController.getcasetype);
+router.post("/api/savecase",authMiddleware.verifyToken,CaseController.saveCase);
+router.get("/api/caseDetailsById",authMiddleware.verifyToken,CaseController.getCaseById);
+
+
 
 // send email
 const EmailController = require("../controllers/emailController");
@@ -46,5 +50,6 @@ router.post("/send-email", EmailController.sendEmail);
 // psStaff 
 const PsController = require("../controllers/psController");
 router.post("/api/addpsStaff",authMiddleware.verifyToken,PsController.createPsStaff);
+router.get("/api/getpsStaff",authMiddleware.verifyToken,PsController.showpsstaff);
 
 module.exports = router;
