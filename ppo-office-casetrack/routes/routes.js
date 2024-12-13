@@ -40,6 +40,7 @@ router.get('/api/getCaseAssign', authMiddleware.verifyToken,CaseController.getCa
 router.get('/api/getcasetype', authMiddleware.verifyToken,CaseController.getcasetype);
 router.post("/api/savecase",authMiddleware.verifyToken,CaseController.saveCase);
 router.get("/api/caseDetailsById",authMiddleware.verifyToken,CaseController.getCaseById);
+router.get("/api/showRefferenceDetails",authMiddleware.verifyToken,CaseController.showRefference);
 
 
 
