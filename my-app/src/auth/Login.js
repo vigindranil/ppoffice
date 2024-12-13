@@ -7,7 +7,7 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
-    rememberMe: false
+    rememberMe: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -34,13 +34,21 @@ export default function LoginPage() {
         const authorityUserId = response.data.data[0].AuthorityUserID;
         sessionStorage.setItem('AuthorityUserID', authorityUserId);
 
-        // Log the AuthorityUserID to verify
+        // Store PPstaffName in sessionStorage (updated)
+        const AuthorityName = response.data.data[0].AuthorityName || response.data.data[0].StaffName || 'Unknown';
+        sessionStorage.setItem('AuthorityName', AuthorityName);
+
+        // Log the AuthorityUserID and PPstaffName to verify
         console.log("AuthorityUserID stored in sessionStorage:", authorityUserId);
+        console.log("AuthorityName stored in sessionStorage:", AuthorityName);
+        console.log("Full response data:", JSON.stringify(response.data, null, 2));
 
         // Handle redirection based on AuthorityTypeID
         const authorityTypeID = response.data.data[0].AuthorityTypeID;
         if (authorityTypeID === 10) {
           navigate('/ppoadmin');
+        } else if (authorityTypeID === 20) {
+          navigate('/ppostaff');
         } else {
           navigate('/login');
         }
@@ -59,7 +67,7 @@ export default function LoginPage() {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -155,3 +163,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
