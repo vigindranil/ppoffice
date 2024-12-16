@@ -66,28 +66,31 @@ class UserController {
 }
 
 
-  static showppstaff(req, res) {
-    const query = 'CALL sp_getPPstaff()';  
+static async showppstaff(req, res) {
+    try {
+        const query = 'CALL sp_getPPstaff()';
 
-    db.query(query, (err, results) => {
-      if (err) {
-          console.error('Error executing stored procedure:', err);
-          return ResponseHelper.error(res, "An error occurred while fetching the staff details.");
-      }
-    
-      // Assuming your stored procedure returns data in results[0]
-      if (results[0] && results[0].length > 0) {
+        db.query(query, (err, results) => {
+            if (err) {
+                console.error('Error executing stored procedure:', err);
+                return ResponseHelper.error(res, "An error occurred while fetching the staff details.");
+            }
 
-        // Respond with success
-        return ResponseHelper.success_reponse(res, "Data found", results[0]);
+            // Assuming your stored procedure returns data in results[0]
+            if (results[0] && results[0].length > 0) {
+                // Respond with success
+                return ResponseHelper.success_reponse(res, "Data found", results[0]);
+            } else {
+                // Respond with error
+                return ResponseHelper.error(res, "No data found");
+            }
+        });
+    } catch (error) {
+        console.error('Unexpected error:', error);
+        return ResponseHelper.error(res, "An unexpected error occurred while fetching the staff details.");
     }
-    else {
-      // Respond with error
-      return ResponseHelper.error(res, "No data found");
-  }
+}
 
-    });
-  }
 
 
 static ppdetailsbyId(req, res) {

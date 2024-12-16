@@ -8,10 +8,8 @@ class PsController {
      const { Username, UserPassword, FullName,ContractNo, Email, LicenseNumber, EntryUserID, PsID } = req.body;
 
     if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber || !EntryUserID || !PsID) {
-        return res.status(400).json({
-            status: 1,
-            message: "All fields are required."
-        });
+        console.error('Error executing stored procedure:', err);
+        return ResponseHelper.error(res, "Username, UserPassword, FullName,ContractNo, Email, LicenseNumber, EntryUserID, PsID");
     }
 
     try {
@@ -26,11 +24,10 @@ class PsController {
         const { PsStaffId, ErrorCode } = output[0];
 
         if (ErrorCode === 1) {
-            return res.status(500).json({
-                status: 1,
-                message: "An error occurred while executing the procedure."
-            });
+          
+            return  ResponseHelper.error(res,"An error occurred while executing the procedure");
         }
+        
 
         return res.status(200).json({
             status: 0,
@@ -41,11 +38,7 @@ class PsController {
         });
     } catch (error) {
         console.error("Error creating PS Staff:", error);
-        return res.status(500).json({
-            status: 1,
-            message: "Failed to create PS Staff.",
-            error: error.message
-        });
+        return  ResponseHelper.error(res,"Failed to create PS Staff");
     }
 };
 
@@ -84,11 +77,6 @@ static showpsstaff(req, res) {
 
     });
   }
-
-
-
-
-
 
 }
 
