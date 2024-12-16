@@ -42,7 +42,11 @@ const Task = () => {
   }, []);
 
   const handleViewCase = (caseId) => {
-    setSelectedCase(assignedCases.find(c => c.caseId === caseId));
+    const selectedCase = assignedCases.find(c => c.caseId === caseId);
+    setSelectedCase({
+      ...selectedCase,
+      CaseAssignID: caseId // Ensure CaseAssignID is passed to NewCaseEntry
+    });
   };
 
   const handleBack = () => {
@@ -54,16 +58,16 @@ const Task = () => {
   }
 
   return (
-    <div>
+    <div className="container mx-auto px-4 py-8">
       <h2 className="text-2xl font-semibold mb-6">Assigned Cases</h2>
       {loading ? (
-        <p>Loading cases...</p>
+        <p className="text-gray-600">Loading cases...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {assignedCases.length === 0 ? (
-            <p>No cases are assigned.</p>  
+            <p className="text-gray-600 col-span-full">No cases are assigned.</p>  
           ) : (
             assignedCases.map((caseItem) => (
               <div key={caseItem.caseId} className="bg-white p-6 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg">
@@ -88,3 +92,4 @@ const Task = () => {
 };
 
 export default Task;
+

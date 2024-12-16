@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
+import axios from 'axios';
 
 const CaseEntryPage = ({ initialData, onBack }) => {
   const [caseData, setCaseData] = useState({
@@ -13,48 +14,134 @@ const CaseEntryPage = ({ initialData, onBack }) => {
     section: '',
     hearingDate: '',
     hasPhotocopy: '',
-    description: ''
+    description: '',
+    caseType: ''
   });
 
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [referenceOptions, setReferenceOptions] = useState([]);
 
   useEffect(() => {
     if (initialData) {
-      setCaseData(prevState => ({
-        ...prevState,
-        caseNumber: initialData.caseNumber,
-        description: initialData.description
-      }));
+      setCaseData({
+        sendTo: initialData.SpName || '',
+        copyTo: initialData.PsName || '',
+        beginsRef: initialData.beginsRef || '',
+        policeDistrict: initialData.SpName || '',
+        policeStation: initialData.PsName || '',
+        caseNumber: initialData.CaseNumber || '',
+        dated: initialData.CaseDate ? initialData.CaseDate.split('T')[0] : '',
+        section: initialData.section || '',
+        hearingDate: initialData.hearingDate || '',
+        hasPhotocopy: initialData.hasPhotocopy || '',
+        description: initialData.description || '',
+        caseType: initialData.CaseType || ''
+      });
+    } else {
+      fetchCaseAssignmentDetails();
     }
+    fetchReferenceDetails();
   }, [initialData]);
+
+  const fetchCaseAssignmentDetails = async () => {
+    try {
+      const ppStaffID = sessionStorage.getItem('AuthorityUserID');
+      const authToken = localStorage.getItem('authToken');
+
+      if (!authToken || !ppStaffID) {
+        throw new Error('Authentication information is missing');
+      }
+
+      const response = await axios.get(`http://localhost:8000/api/getCaseAssign?ppStaffID=${ppStaffID}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (response.data.status === 0 && response.data.data && response.data.data.length > 0) {
+        const caseAssignment = response.data.data[0];
+        setCaseData((prevState) => ({
+          ...prevState,
+          caseNumber: caseAssignment.CaseNumber,
+          sendTo: caseAssignment.SpName,
+          copyTo: caseAssignment.PsName,
+          policeDistrict: caseAssignment.SpName,
+          policeStation: caseAssignment.PsName,
+          dated: caseAssignment.CaseDate.split('T')[0],
+          caseType: caseAssignment.CaseType
+        }));
+      } else {
+        console.log('No case assignment data found');
+      }
+    } catch (error) {
+      console.error('Error fetching case assignment details:', error);
+    }
+  };
+
+  const fetchReferenceDetails = async () => {
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        throw new Error('Authentication token is missing');
+      }
+
+      const response = await axios.get('http://localhost:8000/api/showRefferenceDetails', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+
+      if (response.data.status === 0 && response.data.data) {
+        setReferenceOptions(response.data.data);
+      } else {
+        console.log('No reference details found');
+      }
+    } catch (error) {
+      console.error('Error fetching reference details:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setCaseData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
+      ...(name === 'sendTo' ? { policeDistrict: value } : {}),
+      ...(name === 'copyTo' ? { policeStation: value } : {})
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/api/cases', {
-        method: 'POST',
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        throw new Error('Authentication token is missing');
+      }
+
+      const saveCaseData = {
+        caseID: initialData.CaseAssignID,
+        ref: parseInt(caseData.beginsRef),
+        ipcAct: caseData.section,
+        hearingDate: caseData.hearingDate,
+        photocopycaseDiaryExist: caseData.hasPhotocopy === 'Yes' ? 1 : 0
+      };
+
+      const response = await axios.post('http://localhost:8000/api/savecase', saveCaseData, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        },
-        body: JSON.stringify(caseData)
+          'Authorization': `Bearer ${authToken}`
+        }
       });
 
-      if (response.ok) {
-        // Open modal after successful submission
+      if (response.data.status === 0) {
         setIsModalOpen(true);
-        console.log('Case added successfully');
+        console.log('Case updated successfully');
+      } else {
+        throw new Error(response.data.message || 'Failed to update case');
       }
     } catch (error) {
-      console.error('Error adding case:', error);
+      console.error('Error updating case:', error);
     }
   };
 
@@ -63,13 +150,12 @@ const CaseEntryPage = ({ initialData, onBack }) => {
   };
 
   const handleSendEmail = () => {
-    // Simulate sending email notification or any other action after pressing 'Send'
     console.log("Email sent to SP, PS, and people involved");
-    setIsModalOpen(false); // Close modal after sending
+    setIsModalOpen(false);
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-4 bg-white shadow-lg rounded-lg">
+    <div className="mx-auto p-4 bg-white shadow-lg rounded-lg">
       <div className="flex items-center mb-6">
         <button
           onClick={onBack}
@@ -77,43 +163,35 @@ const CaseEntryPage = ({ initialData, onBack }) => {
         >
           <FaArrowLeft size={24} />
         </button>
-        <h2 className="text-2xl font-semibold">New Case Entry</h2>
+        <h2 className="text-2xl font-semibold">Case Entry</h2>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* First Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="flex flex-col">
             <label htmlFor="sendTo" className="text-sm font-medium text-gray-700">Send To (SP/CP)</label>
-            <select
+            <input
+              type="text"
               id="sendTo"
               name="sendTo"
               value={caseData.sendTo}
               onChange={handleInputChange}
               className="mt-2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-            >
-              <option value="">Select SP/CP</option>
-              <option value="sp1">SP 1</option>
-              <option value="sp2">SP 2</option>
-              <option value="cp1">CP 1</option>
-            </select>
+            />
           </div>
 
           <div className="flex flex-col">
             <label htmlFor="copyTo" className="text-sm font-medium text-gray-700">Copy To (PS)</label>
-            <select
+            <input
+              type="text"
               id="copyTo"
               name="copyTo"
               value={caseData.copyTo}
               onChange={handleInputChange}
               className="mt-2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-            >
-              <option value="">Select PS</option>
-              <option value="ps1">PS 1</option>
-              <option value="ps2">PS 2</option>
-              <option value="ps3">PS 3</option>
-            </select>
+            />
           </div>
 
           <div className="flex flex-col">
@@ -126,16 +204,12 @@ const CaseEntryPage = ({ initialData, onBack }) => {
               className="mt-2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              <option value="">Select Begins Ref</option>
-              <option value="CRA (DB)">CRA (DB): Criminal appeal arising out of sentence for a period exceeding 7 years</option>
-              <option value="CRA (SB)">CRA (SB): Criminal appeals in respect of sentence of any criminal court up to 7 years</option>
-              <option value="CRM (A)">CRM (A): Anticipatory bail applications under Section 438 Cr. P.C.</option>
-              <option value="CRM (DB)">CRM (DB): Bail applications where sentence may exceed imprisonment for seven years</option>
-              <option value="CRM (NDPS)">CRM (NDPS): All bail applications pertaining to NDPS Act</option>
-              <option value="CRM (SB)">CRM (SB): Bail applications where sentence does not exceed imprisonment for seven years</option>
-              <option value="CRR">CRR: Criminal Revision</option>
-              <option value="DR">DR: Death Reference</option>
-              <option value="GE">GE: Govt. Appeal</option>
+              <option value="">Select a reference</option>
+              {referenceOptions.map((option) => (
+                <option key={option.refferenceId} value={option.refferenceId}>
+                  {option.refferenceName}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -151,39 +225,31 @@ const CaseEntryPage = ({ initialData, onBack }) => {
         </div>
 
         {/* Second Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           <div className="flex flex-col">
             <label htmlFor="policeDistrict" className="text-sm font-medium text-gray-700">Police District / Police Commissionerate</label>
-            <select
+            <input
+              type="text"
               id="policeDistrict"
               name="policeDistrict"
               value={caseData.policeDistrict}
               onChange={handleInputChange}
               className="mt-2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-            >
-              <option value="">Select Police District</option>
-              <option value="district1">District 1</option>
-              <option value="district2">District 2</option>
-              <option value="commissionerate1">Commissionerate 1</option>
-            </select>
+            />
           </div>
 
           <div className="flex flex-col">
             <label htmlFor="policeStation" className="text-sm font-medium text-gray-700">P.S.</label>
-            <select
+            <input
+              type="text"
               id="policeStation"
               name="policeStation"
               value={caseData.policeStation}
               onChange={handleInputChange}
               className="mt-2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-            >
-              <option value="">Select Police Station</option>
-              <option value="ps1">Police Station 1</option>
-              <option value="ps2">Police Station 2</option>
-              <option value="ps3">Police Station 3</option>
-            </select>
+            />
           </div>
 
           <div className="flex flex-col">
@@ -206,6 +272,19 @@ const CaseEntryPage = ({ initialData, onBack }) => {
               id="dated"
               name="dated"
               value={caseData.dated}
+              onChange={handleInputChange}
+              className="mt-2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="caseType" className="text-sm font-medium text-gray-700">Case Type</label>
+            <input
+              type="text"
+              id="caseType"
+              name="caseType"
+              value={caseData.caseType}
               onChange={handleInputChange}
               className="mt-2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
@@ -251,9 +330,9 @@ const CaseEntryPage = ({ initialData, onBack }) => {
               className="mt-2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              <option value="">Select Photocopy Status</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
+              <option value="">Select</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
             </select>
           </div>
 
@@ -277,7 +356,7 @@ const CaseEntryPage = ({ initialData, onBack }) => {
             type="submit"
             className="mt-4 bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Add Case
+            Update Case
           </button>
         </div>
       </form>
@@ -312,3 +391,4 @@ const CaseEntryPage = ({ initialData, onBack }) => {
 };
 
 export default CaseEntryPage;
+

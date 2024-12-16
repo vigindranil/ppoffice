@@ -76,7 +76,7 @@ const Ppstaffdashboard = () => {
 
         {/* Content Area */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="">
             <Task />
           </div>
         </main>

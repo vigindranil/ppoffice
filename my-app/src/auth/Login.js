@@ -19,38 +19,39 @@ export default function LoginPage() {
     setErrorMessage('');
 
     try {
-      // Send login request
       const response = await axios.post('http://localhost:8000/api/authenticate', {
         username: formData.username,
         password: formData.password,
       });
 
-      // Check response status
       if (response.data.status === 0 && response.data.message === "Data found") {
-        // Store auth token in localStorage
         localStorage.setItem('authToken', response.data.access_token);
 
-        // Store AuthorityUserID in sessionStorage
-        const authorityUserId = response.data.data[0].AuthorityUserID;
-        sessionStorage.setItem('AuthorityUserID', authorityUserId);
+        const userData = response.data.data[0];
+        sessionStorage.setItem('AuthorityUserID', userData.AuthorityUserID);
+        sessionStorage.setItem('AuthorityTypeID', userData.AuthorityTypeID);
+        sessionStorage.setItem('AuthorityName', userData.AuthorityName || userData.StaffName || 'Unknown');
+        sessionStorage.setItem('BoundaryID', userData.BoundaryID || 'Unknown');
 
-        // Store PPstaffName in sessionStorage (updated)
-        const AuthorityName = response.data.data[0].AuthorityName || response.data.data[0].StaffName || 'Unknown';
-        sessionStorage.setItem('AuthorityName', AuthorityName);
-
-        // Log the AuthorityUserID and PPstaffName to verify
-        console.log("AuthorityUserID stored in sessionStorage:", authorityUserId);
-        console.log("AuthorityName stored in sessionStorage:", AuthorityName);
+        console.log("AuthorityUserID stored in sessionStorage:", userData.AuthorityUserID);
+        console.log("AuthorityName stored in sessionStorage:", userData.AuthorityName || userData.StaffName || 'Unknown');
+        console.log("BoundaryID stored in sessionStorage:", userData.BoundaryID || 'Unknown');
         console.log("Full response data:", JSON.stringify(response.data, null, 2));
+        console.log("Navigating with AuthorityTypeID:", userData.AuthorityTypeID);
 
-        // Handle redirection based on AuthorityTypeID
-        const authorityTypeID = response.data.data[0].AuthorityTypeID;
-        if (authorityTypeID === 10) {
-          navigate('/ppoadmin');
-        } else if (authorityTypeID === 20) {
-          navigate('/ppostaff');
-        } else {
-          navigate('/login');
+        switch (parseInt(userData.AuthorityTypeID)) {
+          case 10:
+            navigate('/ppoadmin');
+            break;
+          case 20:
+            navigate('/ppostaff');
+            break;
+          case 30:
+            navigate('/SPCPDashboard');
+            break;
+          default:
+            console.log("Unknown AuthorityTypeID:", userData.AuthorityTypeID);
+            navigate('/login');
         }
       } else {
         setErrorMessage('Invalid credentials. Please try again.');
