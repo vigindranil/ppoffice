@@ -13,7 +13,7 @@ router.get('/api/alldistrict', authMiddleware.verifyToken, districtController.sh
 
 // show all policestation respect to District
 const policeController = require('../controllers/policeController');
-router.get('/api/allpolice', authMiddleware.verifyToken,policeController.show);
+router.get('/api/showpoliceBydistrict', authMiddleware.verifyToken,policeController.showallpsBydistrict);
 
 //user login
 const authController = require('../controllers/authController');

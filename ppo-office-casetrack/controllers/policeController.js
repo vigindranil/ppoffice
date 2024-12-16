@@ -3,7 +3,7 @@ const db = require('../config/db'); // Import the DB connection
 
 class PoliceController {
   // Handle the GET request for /show (Call stored procedure with district_id)
-  static show(req, res) {
+  static showallpsBydistrict(req, res) {
     // Retrieve the district_id from the query parameters or request body
     const districtId = req.query.districtId;  // Assuming the district_id is passed as a query parameter
     
