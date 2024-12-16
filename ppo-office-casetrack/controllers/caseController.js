@@ -264,6 +264,30 @@ class CaseController {
            
         }
     }
+
+    static async showallCase(req, res) {
+        try {
+         
+    
+          // SQL query to call the stored procedure 
+          const query = 'CALL sp_ShowallCase()'; 
+    
+          // Pass the districtId as an argument to the stored procedure
+          db.query(query,(err, results) => {
+            if (err) {
+              console.error('Error executing stored procedure:', err);
+              return ResponseHelper.error(res, "An error occurred while fetching data");
+            }
+    
+            // Assuming your stored procedure returns data in results[0]
+            return ResponseHelper.success_reponse(res, "Data found", results[0]);
+          });
+        } catch (error) {
+          console.error('Unexpected error:', error);
+          return ResponseHelper.error(res, "An unexpected error occurred");
+        }
+      }
+    
 }
 
 
