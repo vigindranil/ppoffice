@@ -22,7 +22,7 @@ router.post('/api/authenticate', authController.authenticateUser);
 
 
 const ppstaffController = require('../controllers/PPstaffController');
-router.post('/api/addppstaff', authMiddleware.verifyToken,ppstaffController.createPPStaff); //create ppstaff by ppadmin
+router.post('/api/addppUser', authMiddleware.verifyToken,ppstaffController.createPPUser); //create ppstaff by ppadmin
 router.get('/api/getppstaff', authMiddleware.verifyToken,ppstaffController.showppstaff); // show ppstaff
 router.get('/api/getppstaffById', authMiddleware.verifyToken,ppstaffController.ppdetailsbyId); // show ppstaffdetails by Id
 router.post('/api/assigncase', authMiddleware.verifyToken,ppstaffController.assignCase); // show ppstaffdetails by Id

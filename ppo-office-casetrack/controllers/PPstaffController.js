@@ -1,20 +1,18 @@
 const db = require('../config/db'); // Import the database connection
 const ResponseHelper = require('./ResponseHelper'); 
 class UserController {
-  static async createPPStaff(req, res) {
+  static async createPPUser(req, res) {
     const { Username, UserPassword, EntryUserID,FullName, ContractNo, Email, LicenseNumber } = req.body;
 
     // Validate the required input fields
     if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber) {
-        return res.status(400).json({
-            status: 1,
-            message: "All fields are required: Username, UserPassword, FullName, ContractNo, Email, and LicenseNumber.",
-        });
+        
+        return ResponseHelper.error(res, "Username, UserPassword, EntryUserID,FullName, ContractNo, Email, LicenseNumber are required");
     }
 
     try {
         // Call the stored procedure
-        const query = "CALL sp_saveCreatePPstaff(?, ?, ?, ?, ?, ?, ?,@ppstaff_id, @ErrorCode)";
+        const query = "CALL sp_saveCreatePPstaff(?, ?, ?, ?, ?, ?, ?,@PPUserID, @ErrorCode)";
         const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber,EntryUserID];
 
         // Execute the stored procedure
@@ -22,7 +20,7 @@ class UserController {
             db.query(query, params, (err, results) => {
                 if (err) {
                     console.error("Error executing stored procedure:", err);
-                    return reject(err);
+                    return ResponseHelper.error(res, "An error occurred while fetching data");
                 }
                 resolve(results);
             });
@@ -30,24 +28,26 @@ class UserController {
 
         // Fetch the output parameters from the procedure
         const output = await new Promise((resolve, reject) => {
-            db.query("SELECT @ppstaff_id AS ppstaff_id, @ErrorCode AS ErrorCode", (err, results) => {
+            db.query("SELECT @PPUserID AS PPUserID , @ErrorCode AS ErrorCode", (err, results) => {
                 if (err) {
                     console.error("Error fetching output parameters:", err);
-                    return reject(err);
+                    return ResponseHelper.error(res, "An error occurred while fetching data");
                 }
                 resolve(results[0]);
             });
         });
 
-        const { ppstaff_id, ErrorCode } = output;
+        const { PPUserID, ErrorCode } = output;
+       
 
         // Check the output error code from the stored procedure
-        if (ErrorCode === 0) {
+        if (ErrorCode === 0) { 
+            
             return res.status(200).json({
                 status: 0,
-                message: "PP Staff created successfully.",
+                message: "PPUser created successfully.",
                 data: {
-                    id: ppstaff_id,
+                    id: PPUserID,
                 },
             });
         } else {
