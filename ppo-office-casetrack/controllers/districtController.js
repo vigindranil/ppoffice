@@ -1,5 +1,6 @@
 // controllers/showController.js
 const db = require('../config/db'); // Import the DB connection
+const ResponseHelper = require('./ResponseHelper'); // Import the helper
 
 class DistrictController {
   // Handle the GET request for /show (Call stored procedure)
@@ -9,27 +10,16 @@ class DistrictController {
     db.query(query, (err, results) => {
       if (err) {
         console.error('Error executing stored procedure:', err);
-        return res.status(500).json({
-          status: 1,
-          message: 'Error retrieving data from the database',
-          data: []
-        });
+        return  ResponseHelper.error(res,"An error occurred while executing the procedure");
       }
 
       
       // Assuming your stored procedure returns data in results[0]
-      const response = {
-        status: 0,
-        message: 'data found',
-        data: results[0] // The data returned from the stored procedure
-      };
-
-      // Send the formatted JSON response
-      res.json(response);
+      return  ResponseHelper.success_reponse(res,"Data found",results[0]);
     });
   }
 
-  // Add other methods if needed
+  
 }
 
 module.exports = DistrictController;
