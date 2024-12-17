@@ -135,22 +135,20 @@ static ppdetailsbyId(req, res) {
 
 
   
-   // Assign a case to a PP staff
+   // Assign a case to a PPUser
    
-  static assignCase(req, res) {
-      const { PPstaffID, EntryUserID,CaseNumber, CaseDate,DistrictID,psID,caseTypeID } = req.body;
+  static assignCasetoppuser(req, res) {
+    const { PPUserID, EntryUserID, CaseID } = req.body;
 
       // Validate required input fields
-      if (!PPstaffID || !CaseNumber || !CaseDate|| !DistrictID || !psID || !caseTypeID) {
-          return res.status(400).json({
-              status: 1,
-              message: "All fields are required: PPstaffID, CaseNumber, and CaseDate.",
-          });
+      if (!PPUserID || !EntryUserID || !CaseID) {
+         return ResponseHelper.error(res, "All fields are required: PPUserID, EntryUserID, CaseID.");
       }
+      
 
       // Define the stored procedure call
-      const query = "CALL sp_saveCaseAssign(?, ?, ?,?,?,?,?, @CaseAssignID, @ErrorCode)";
-      const params = [PPstaffID, CaseNumber,EntryUserID, CaseDate,DistrictID,psID,caseTypeID];
+      const query = "CALL sp_saveCaseAssign(?, ?, ?, @CaseAssignID, @ErrorCode)";
+      const params = [PPUserID, EntryUserID, CaseID];
 
       db.query(query, params, (err) => {
           if (err) {
@@ -165,20 +163,16 @@ static ppdetailsbyId(req, res) {
           db.query("SELECT @CaseAssignID AS CaseAssignID, @ErrorCode AS ErrorCode", (outputErr, outputResults) => {
               if (outputErr) {
                   console.error("Error fetching output parameters:", outputErr);
-                  return res.status(500).json({
-                      status: 1,
-                      message: "An error occurred while fetching procedure output.",
-                  });
+                  return ResponseHelper.error(res,"Error fetching output parameters:");
               }
 
               const { CaseAssignID, ErrorCode } = outputResults[0];
 
               // Check for errors from the stored procedure
               if (ErrorCode === 1) {
-                  return res.status(500).json({
-                      status: 1,
-                      message: "An error occurred during case assignment. Please try again.",
-                  });
+
+                return ResponseHelper.error(res,"An error occurred during case assignment. Please try again.");
+                 
               }
 
               return res.status(200).json({
