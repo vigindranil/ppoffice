@@ -3,6 +3,7 @@ import { FaBell, FaEye, FaTimes, FaSignOutAlt, FaMapMarkedAlt } from 'react-icon
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+
 const SPCPDashboard = () => {
   const [thanas, setThanas] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -105,6 +106,7 @@ const SPCPDashboard = () => {
             >
               <FaMapMarkedAlt className="inline mr-2" /> Thanas Under Jurisdiction
             </button>
+            
           </div>
         </div>
 

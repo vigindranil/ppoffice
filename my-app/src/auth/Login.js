@@ -49,6 +49,9 @@ export default function LoginPage() {
           case 30:
             navigate('/SPCPDashboard');
             break;
+            case 50:
+              navigate('/psdash');
+              break;
           default:
             console.log("Unknown AuthorityTypeID:", userData.AuthorityTypeID);
             navigate('/login');
