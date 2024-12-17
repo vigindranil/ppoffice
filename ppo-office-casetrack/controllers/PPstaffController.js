@@ -93,27 +93,23 @@ static async showppstaff(req, res) {
 
 
 
-static ppdetailsbyId(req, res) {
-    // Retrieve the district_id from the query parameters or request body
-    const ppstaffId = req.query.ppstaffId;  // Assuming the district_id is passed as a query parameter
+static caseDetailsByPPuserId(req, res) {
+    // Retrieve the ppuserID from the query parameters or request body
+    const ppuserID = req.query.ppuserID;  // Assuming the ppuserID is passed as a query parameter
     
    
-    if (!ppstaffId) {
-      return res.status(400).json({
-        status: 1,
-        message: 'ppstaff_id is required',
-        data: []
-      });
+    if (!ppuserID) {
+        return ResponseHelper.error(res, "ppuserID is required");
     }
 
-    // SQL query to call the stored procedure with the district_id parameter
-    const query = 'CALL sp_getPPstaffDetailsbyId(?)';  // Using the parameterized query
+    
+    const query = 'CALL sp_getCaseDetailsByPPUserId(?)';  // Using the parameterized query
 
     // Pass the districtId as an argument to the stored procedure
-    db.query(query, [ppstaffId], (err, results) => {
+    db.query(query, [ppuserID], (err, results) => {
       if (err) {
         console.error('Error executing stored procedure:', err);
-        return ResponseHelper.error(res, "An error occurred while fetching the staff details.");
+        return ResponseHelper.error(res, "An error occurred while fetching the case details.");
     }
      // Assuming your stored procedure returns data in results[0]
     if (results[0] && results[0].length > 0) {

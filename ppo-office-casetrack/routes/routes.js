@@ -24,7 +24,7 @@ router.post('/api/authenticate', authController.authenticateUser);
 const ppstaffController = require('../controllers/PPstaffController');
 router.post('/api/addppUser', authMiddleware.verifyToken,ppstaffController.createPPUser); //create ppstaff by ppadmin
 router.get('/api/getppstaff', authMiddleware.verifyToken,ppstaffController.showppstaff); // show ppstaff
-router.get('/api/getppstaffById', authMiddleware.verifyToken,ppstaffController.ppdetailsbyId); // show ppstaffdetails by Id
+router.get('/api/caseDetailsByPPuserId', authMiddleware.verifyToken,ppstaffController.caseDetailsByPPuserId); // show ppstaffdetails by Id
 router.post('/api/assigncase', authMiddleware.verifyToken,ppstaffController.assignCasetoppuser); // show ppstaffdetails by Id
 
 
@@ -36,7 +36,7 @@ router.post('/api/changepassword', authMiddleware.verifyToken,passwordfControlle
 
 // case assisgn
 const CaseController = require('../controllers/caseController');
-router.get('/api/getCaseAssign', authMiddleware.verifyToken,CaseController.getCaseAssign);
+
 router.get('/api/getcasetype', authMiddleware.verifyToken,CaseController.getcasetype);
 router.get("/api/caseDetailsById",authMiddleware.verifyToken,CaseController.getCaseById);
 router.get("/api/showRefferenceDetails",authMiddleware.verifyToken,CaseController.showRefference);

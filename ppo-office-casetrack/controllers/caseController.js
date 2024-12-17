@@ -5,59 +5,62 @@ class CaseController {
     /**
      * Get case assignment details by ppStaffID.
      */
-    static async getCaseAssign(req, res) {
-        const { ppStaffID } = req.query; // Get the CaseNumber from query parameters
+    // not used
+    // static async getCaseAssign(req, res) {
+    //     const { ppStaffID } = req.query; // Get the CaseNumber from query parameters
 
-        // Validate input
-        if (!ppStaffID) {
-            return ResponseHelper.error(res, "ppStaffID is  required");
-        }
+    //     // Validate input
+    //     if (!ppStaffID) {
+    //         return ResponseHelper.error(res, "ppStaffID is  required");
+    //     }
 
-        try {
-            // Call the stored procedure
-            const query = "CALL sp_getCaseAssignByPPStaffId(?)";
-            const params = [ppStaffID];
+    //     try {
+    //         // Call the stored procedure
+    //         const query = "CALL sp_getCaseAssignByPPStaffId(?)";
+    //         const params = [ppStaffID];
 
-            // Execute the query
-            const results = await new Promise((resolve, reject) => {
-                db.query(query, params, (err, results) => {
-                    if (err) {
-                        console.error('Error executing stored procedure:', err);
-                        return ResponseHelper.error(res, "An error occurred while validating the PPStaff.");
-                    }
-                    resolve(results[0]); // The first result set contains the data
-                });
-            });
+    //         // Execute the query
+    //         const results = await new Promise((resolve, reject) => {
+    //             db.query(query, params, (err, results) => {
+    //                 if (err) {
+    //                     console.error('Error executing stored procedure:', err);
+    //                     return ResponseHelper.error(res, "An error occurred while validating the PPStaff.");
+    //                 }
+    //                 resolve(results[0]); // The first result set contains the data
+    //             });
+    //         });
 
-            // Check if any record was found
-            if (results.length === 0) {
-                return ResponseHelper.error(res, "No case assignment found for this PPStaff.");
+    //         // Check if any record was found
+    //         if (results.length === 0) {
+    //             return ResponseHelper.error(res, "No case assignment found for this PPStaff.");
 
-            }
+    //         }
   
-            // Respond with the case assignment details
-            return ResponseHelper.success_reponse(res, "Case assignment details retrieved successfully", results[0]);
+    //         // Respond with the case assignment details
+    //         return ResponseHelper.success_reponse(res, "Case assignment details retrieved successfully", results[0]);
            
-        } catch (error) {
-            if (error.sqlError) {
-                // SQL-specific error handling
-                return res.status(500).json({
-                    status: 1,
-                    message: "A database error occurred while processing your request.",
-                    error: {
-                        sqlState: error.error.sqlState || null,
-                        code: error.error.code || null,
-                        message: error.error.message || "Unknown SQL error",
-                    },
-                });
-            } else {
-                // General error handling
-                return ResponseHelper.error(res, "An unexpected error occurred while retrieving the case assignment");
+    //     } catch (error) {
+    //         if (error.sqlError) {
+    //             // SQL-specific error handling
+    //             return res.status(500).json({
+    //                 status: 1,
+    //                 message: "A database error occurred while processing your request.",
+    //                 error: {
+    //                     sqlState: error.error.sqlState || null,
+    //                     code: error.error.code || null,
+    //                     message: error.error.message || "Unknown SQL error",
+    //                 },
+    //             });
+    //         } else {
+    //             // General error handling
+    //             return ResponseHelper.error(res, "An unexpected error occurred while retrieving the case assignment");
 
-            }
+    //         }
             
-        }
-    }
+    //     }
+    // }
+
+    // Show all CaseType
     static async getcasetype(req, res) {
         const query = 'CALL sp_CasetypeDropdown()'; // Replace with your stored procedure name
     
@@ -146,7 +149,8 @@ class CaseController {
             }
         }
     }
-
+ 
+    // show Refference Details
     static showRefference(req, res) {
         const query = 'CALL sp_showRefference()';  // Replace with your stored procedure name
     
@@ -175,7 +179,7 @@ class CaseController {
 
    
 
-
+    // create case by PPoffice
     static async createCase(req, res) {
         const {
             CaseNumber,
@@ -268,7 +272,7 @@ class CaseController {
            
         }
     }
-
+    // show all case
     static async showallCase(req, res) {
         try {
          
@@ -276,7 +280,7 @@ class CaseController {
           // SQL query to call the stored procedure 
           const query = 'CALL sp_ShowallCase()'; 
     
-          // Pass the districtId as an argument to the stored procedure
+          
           db.query(query,(err, results) => {
             if (err) {
               console.error('Error executing stored procedure:', err);
