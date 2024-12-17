@@ -249,6 +249,10 @@ class CaseController {
                
                 return  ResponseHelper.error(res,"An error occurred while executing the procedure");
             }
+            if (ErrorCode === 2) {
+               
+                return  ResponseHelper.error(res,"Case Already Created ");
+            }
 
             // Success response
             return res.status(201).json({
