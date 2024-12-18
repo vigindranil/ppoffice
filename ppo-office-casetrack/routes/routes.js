@@ -27,7 +27,7 @@ router.post('/api/addppUser', authMiddleware.verifyToken,ppstaffController.creat
 router.get('/api/getppuser', authMiddleware.verifyToken,ppstaffController.showppuser); // show ppstaff
 router.get('/api/caseDetailsByPPuserId', authMiddleware.verifyToken,ppstaffController.caseDetailsByPPuserId); // show ppstaffdetails by Id
 router.post('/api/assigncase', authMiddleware.verifyToken,ppstaffController.assignCasetoppuser); // show ppstaffdetails by Id
-
+router.get('/api/getppuserDetailsById', authMiddleware.verifyToken,ppstaffController.getppuserDetailsById);
 
 
 
