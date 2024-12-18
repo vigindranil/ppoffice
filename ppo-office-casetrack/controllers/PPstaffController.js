@@ -12,7 +12,7 @@ class UserController {
 
     try {
         // Call the stored procedure
-        const query = "CALL sp_saveCreatePPstaff(?, ?, ?, ?, ?, ?, ?,@PPUserID, @ErrorCode)";
+        const query = "CALL sp_saveCreatePPuser(?, ?, ?, ?, ?, ?, ?,@PPUserID, @ErrorCode)";
         const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber,EntryUserID];
 
         // Execute the stored procedure
