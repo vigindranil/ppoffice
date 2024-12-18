@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import axios from 'axios';
 
 export default function LoginPage() {
@@ -41,18 +40,18 @@ export default function LoginPage() {
         console.log("Navigating with AuthorityTypeID:", userData.AuthorityTypeID);
 
         switch (parseInt(userData.AuthorityTypeID)) {
-          case 10:
+          case 20:
             navigate('/ppoadmin');
             break;
-          case 20:
+          case 10:
             navigate('/ppostaff');
             break;
           case 30:
             navigate('/SPCPDashboard');
             break;
-            case 50:
-              navigate('/psdash');
-              break;
+          case 50:
+            navigate('/psdash');
+            break;
           default:
             console.log("Unknown AuthorityTypeID:", userData.AuthorityTypeID);
             navigate('/login');
@@ -78,23 +77,15 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden flex items-center justify-center">
-      <motion.div
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: 'url("/images/ppoimage.webp")',
           filter: 'brightness(0.4)',
         }}
-        initial={{ scale: 1 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 0 }}
       />
 
-      <motion.div
-        className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-sm p-8 shadow-xl z-10"
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="w-full max-w-md rounded-2xl bg-white/90 backdrop-blur-sm p-8 shadow-xl z-10">
         <h1 className="mb-6 text-2xl font-bold text-gray-900">Login to your account</h1>
 
         {errorMessage && (
@@ -102,11 +93,7 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div>
             <input
               type="text"
               name="username"
@@ -116,13 +103,9 @@ export default function LoginPage() {
               className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
               required
             />
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div>
             <input
               type="password"
               name="password"
@@ -132,14 +115,9 @@ export default function LoginPage() {
               className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
               required
             />
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center"
-          >
+          <div className="flex items-center">
             <input
               type="checkbox"
               name="rememberMe"
@@ -151,21 +129,17 @@ export default function LoginPage() {
             <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
               Remember Me
             </label>
-          </motion.div>
+          </div>
 
-          <motion.button
+          <button
             type="submit"
             disabled={isLoading}
             className="w-full rounded-lg bg-purple-600 px-4 py-3 text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:bg-purple-400"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
           >
             {isLoading ? 'Logging in...' : 'Login'}
-          </motion.button>
+          </button>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 }
-
