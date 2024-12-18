@@ -276,12 +276,17 @@ class CaseController {
     static async showallCase(req, res) {
         try {
          
-    
+          const is_Assigned = req.query.is_Assigned;
+
+          if (!is_Assigned) {
+            return ResponseHelper.error(res, "Assign Id is required");
+          }
+
           // SQL query to call the stored procedure 
-          const query = 'CALL sp_ShowallCase()'; 
+          const query = 'CALL sp_ShowallCase(?)'; 
     
           
-          db.query(query,(err, results) => {
+          db.query(query,[is_Assigned],(err, results) => {
             if (err) {
               console.error('Error executing stored procedure:', err);
               return ResponseHelper.error(res, "An error occurred while fetching data");

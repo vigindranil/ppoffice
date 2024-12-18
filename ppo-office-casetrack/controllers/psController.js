@@ -40,7 +40,7 @@ class PsController {
         console.error("Error creating PS Staff:", error);
         return  ResponseHelper.error(res,"Failed to create PS Staff");
     }
-};
+}
 
 
 
@@ -76,6 +76,35 @@ static showpsstaff(req, res) {
   }
 
     });
+  }
+  
+  // Show all Case By policeID
+  static async showallcasesBypoliceID(req, res) {
+    try {
+      // Retrieve the psId from the query parameters or request body
+      const psId = req.query.psId; 
+
+      
+      if (!psId) {
+        return ResponseHelper.error(res, "psId is required");
+      }
+
+      // SQL query to call the stored procedure with the district_id parameter
+      const query = 'CALL sp_ShowallCaseBypoliceID(?)';
+      // Pass the districtId as an argument to the stored procedure
+      db.query(query, [psId], (err, results) => {
+        if (err) {
+          console.error('Error executing stored procedure:', err);
+          return ResponseHelper.error(res, "An error occurred while fetching data");
+        }
+
+        // Assuming your stored procedure returns data in results[0]
+        return ResponseHelper.success_reponse(res, "Data found", results[0]);
+      });
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      return ResponseHelper.error(res, "An unexpected error occurred");
+    }
   }
 
 }
