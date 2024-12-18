@@ -6,6 +6,8 @@ import Ppoadmindashboard from './ppadmindashboard/ModernPPOfficeAdminDashboard';
 import Ppstaffdashboard from './Ppstaffdashboard/Ppstaffdashboard';
 import SPCPDashboard from './Spdashboard/SPCPDashboard';
 import PrivateRoute from './PrivateRoute';
+import PSDashboard from './ps/PSDashboard';
+import PPOfficeDashboard from './Ppoffice/ppodash'; 
 
 function App() {
   return (
@@ -29,6 +31,15 @@ function App() {
             path="/SPCPDashboard"
             element={<PrivateRoute element={<SPCPDashboard />} />}
           />
+          <Route
+            path="/psdash"
+            element={<PrivateRoute element={<PSDashboard />} />}
+          />
+          <Route
+            path="/ppodash"
+            element={<PrivateRoute element={<PPOfficeDashboard />} />}
+          />
+          
         </Routes>
       </div>
     </Router>
