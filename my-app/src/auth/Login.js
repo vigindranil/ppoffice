@@ -32,6 +32,7 @@ export default function LoginPage() {
         sessionStorage.setItem('AuthorityTypeID', userData.AuthorityTypeID);
         sessionStorage.setItem('AuthorityName', userData.AuthorityName || userData.StaffName || 'Unknown');
         sessionStorage.setItem('BoundaryID', userData.BoundaryID || 'Unknown');
+        
 
         console.log("AuthorityUserID stored in sessionStorage:", userData.AuthorityUserID);
         console.log("AuthorityName stored in sessionStorage:", userData.AuthorityName || userData.StaffName || 'Unknown');

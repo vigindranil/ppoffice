@@ -64,7 +64,8 @@ const CaseList = ({ ppStaff }) => {
 
       const result = await response.json();
       if (result.status === 0 && result.data && result.data.length > 0) {
-        return result.data[0];
+        // Store the CaseId in the result
+        return { ...result.data[0], CaseId: caseId };
       } else {
         setError(result.message || 'Failed to fetch case details');
         return null;
@@ -93,7 +94,7 @@ const CaseList = ({ ppStaff }) => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const entryUserID = localStorage.getItem('userId'); // Assuming userId is in localStorage
+      const entryUserID = sessionStorage.getItem('AuthorityUserID'); // Change this to use AuthorityUserID
 
       if (!token) {
         setError('Authorization token missing. Please login again.');
@@ -105,6 +106,11 @@ const CaseList = ({ ppStaff }) => {
         return;
       }
 
+      // Log the values
+      console.log('PPUserID:', assignedStaff);
+      console.log('EntryUserID:', entryUserID);
+      console.log('CaseID:', selectedCase.CaseId);
+
       const response = await fetch('http://localhost:8000/api/assigncase', {
         method: 'POST',
         headers: {
@@ -113,7 +119,7 @@ const CaseList = ({ ppStaff }) => {
         },
         body: JSON.stringify({
           PPUserID: parseInt(assignedStaff), // Staff member ID
-          EntryUserID: parseInt(entryUserID), // Logged-in user ID
+          EntryUserID: parseInt(entryUserID), // Logged-in user ID (AuthorityUserID)
           CaseID: selectedCase.CaseId // Selected case ID
         })
       });
@@ -230,3 +236,4 @@ const CaseList = ({ ppStaff }) => {
 };
 
 export default CaseList;
+
