@@ -12,7 +12,7 @@ class UserController {
 
     try {
         // Call the stored procedure
-        const query = "CALL sp_saveCreatePPstaff(?, ?, ?, ?, ?, ?, ?,@PPUserID, @ErrorCode)";
+        const query = "CALL sp_saveCreatePPuser(?, ?, ?, ?, ?, ?, ?,@PPUserID, @ErrorCode)";
         const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber,EntryUserID];
 
         // Execute the stored procedure
@@ -182,7 +182,34 @@ static caseDetailsByPPuserId(req, res) {
       });
   }
 
+  static async getppuserDetailsById(req, res) {
+    try {
+      // Retrieve the district_id from the query parameters or request body
+      const PPUserId = req.query.PPUserId; // Assuming the district_id is passed as a query parameter
 
+      //console.log('Received districtId:', districtId);
+      if (!PPUserId) {
+        return ResponseHelper.error(res, "PPUserId is required");
+      }
+
+      // SQL query to call the stored procedure with the district_id parameter
+      const query = 'CALL sp_getPPUserDetailsbyId(?)'; // Using the parameterized query
+
+      // Pass the districtId as an argument to the stored procedure
+      db.query(query, [PPUserId], (err, results) => {
+        if (err) {
+          console.error('Error executing stored procedure:', err);
+          return ResponseHelper.error(res, "An error occurred while fetching data");
+        }
+
+        // Assuming your stored procedure returns data in results[0]
+        return ResponseHelper.success_reponse(res, "Data found", results[0]);
+      });
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      return ResponseHelper.error(res, "An unexpected error occurred");
+    }
+  } 
 
 }
 
