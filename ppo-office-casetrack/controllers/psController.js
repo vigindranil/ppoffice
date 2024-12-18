@@ -2,7 +2,7 @@ const db = require('../config/db'); // Import the database connection
 const ResponseHelper = require('./ResponseHelper'); 
 class PsController {
 
-
+    // create ps staff by Sp
     static async createPsStaff (req, res) 
     {
      const { Username, UserPassword, FullName,ContractNo, Email, LicenseNumber, EntryUserID, PsID } = req.body;

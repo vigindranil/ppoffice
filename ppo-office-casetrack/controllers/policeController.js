@@ -31,7 +31,9 @@ class PoliceController {
       console.error('Unexpected error:', error);
       return ResponseHelper.error(res, "An unexpected error occurred");
     }
-  }
+  } 
+  
+  
 
   
 }

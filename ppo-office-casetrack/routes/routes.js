@@ -10,6 +10,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 // show all district
 const districtController = require('../controllers/districtController');
 router.get('/api/alldistrict', authMiddleware.verifyToken, districtController.show);
+router.get('/api/showallCasesBydistrictId',authMiddleware.verifyToken,districtController.showallcasesBydistrict);
 
 // show all policestation respect to District
 const policeController = require('../controllers/policeController');
