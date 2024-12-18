@@ -24,7 +24,7 @@ router.post('/api/authenticate', authController.authenticateUser);
 
 const ppstaffController = require('../controllers/PPstaffController');
 router.post('/api/addppUser', authMiddleware.verifyToken,ppstaffController.createPPUser); //create ppstaff by ppadmin
-router.get('/api/getppstaff', authMiddleware.verifyToken,ppstaffController.showppstaff); // show ppstaff
+router.get('/api/getppuser', authMiddleware.verifyToken,ppstaffController.showppuser); // show ppstaff
 router.get('/api/caseDetailsByPPuserId', authMiddleware.verifyToken,ppstaffController.caseDetailsByPPuserId); // show ppstaffdetails by Id
 router.post('/api/assigncase', authMiddleware.verifyToken,ppstaffController.assignCasetoppuser); // show ppstaffdetails by Id
 

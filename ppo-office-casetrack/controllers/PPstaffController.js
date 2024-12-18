@@ -66,9 +66,9 @@ class UserController {
 }
 
 
-static async showppstaff(req, res) {
+static async showppuser(req, res) {
     try {
-        const query = 'CALL sp_getPPstaff()';
+        const query = 'CALL sp_getPPuser()';
 
         db.query(query, (err, results) => {
             if (err) {
