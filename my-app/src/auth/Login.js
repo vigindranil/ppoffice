@@ -10,6 +10,7 @@ export default function LoginPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);  // New state for toggling password visibility
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -31,7 +32,6 @@ export default function LoginPage() {
         sessionStorage.setItem('AuthorityTypeID', userData.AuthorityTypeID);
         sessionStorage.setItem('AuthorityName', userData.AuthorityName || userData.StaffName || 'Unknown');
         sessionStorage.setItem('BoundaryID', userData.BoundaryID || 'Unknown');
-        
 
         console.log("AuthorityUserID stored in sessionStorage:", userData.AuthorityUserID);
         console.log("AuthorityName stored in sessionStorage:", userData.AuthorityName || userData.StaffName || 'Unknown');
@@ -75,6 +75,11 @@ export default function LoginPage() {
     }));
   };
 
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(prevState => !prevState);
+  };
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden flex items-center justify-center">
       <div
@@ -105,9 +110,9 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
+          <div className="relative">
             <input
-              type="password"
+              type={passwordVisible ? 'text' : 'password'}  // Conditionally toggle between 'text' and 'password'
               name="password"
               value={formData.password}
               onChange={handleChange}
@@ -115,6 +120,13 @@ export default function LoginPage() {
               className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
               required
             />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute right-3 top-3 text-gray-600"
+            >
+              {passwordVisible ? 'Hide' : 'Show'}
+            </button>
           </div>
 
           <div className="flex items-center">

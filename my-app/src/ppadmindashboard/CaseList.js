@@ -7,6 +7,7 @@ const CaseListDashboard = ({ ppStaff }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedCase, setSelectedCase] = useState(null);
   const [assignedStaff, setAssignedStaff] = useState('');
+  const [remarks, setRemarks] = useState('');
   const [assignmentSuccess, setAssignmentSuccess] = useState(null);
   const [error, setError] = useState(null);
 
@@ -61,6 +62,7 @@ const CaseListDashboard = ({ ppStaff }) => {
   const handleCaseClick = (caseItem) => {
     setSelectedCase(caseItem);
     setAssignedStaff('');
+    setRemarks('');
     setAssignmentSuccess(null);
   };
 
@@ -93,7 +95,8 @@ const CaseListDashboard = ({ ppStaff }) => {
         body: JSON.stringify({
           PPUserID: parseInt(assignedStaff),
           EntryUserID: parseInt(entryUserID),
-          CaseID: selectedCase.CaseId
+          CaseID: selectedCase.CaseId,
+          Remarks: remarks // sending remarks along with other data
         })
       });
 
@@ -158,6 +161,12 @@ const CaseListDashboard = ({ ppStaff }) => {
                 </option>
               ))}
             </select>
+            <textarea
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              placeholder="Enter remarks"
+              className="mt-2 w-full p-2 border border-gray-300 rounded-md"
+            />
             <button
               className="mt-2  px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
               onClick={handleAssignCase}
@@ -248,4 +257,3 @@ const CaseListDashboard = ({ ppStaff }) => {
 };
 
 export default CaseListDashboard;
-
