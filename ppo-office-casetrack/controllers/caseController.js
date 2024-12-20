@@ -186,7 +186,11 @@ class CaseController {
                
                 return  ResponseHelper.error(res,"Case Already Created ");
             }
-
+            
+            if (ErrorCode === 3) {
+               
+                return  ResponseHelper.error(res,"Loggedin user no permission to create case ");
+            }
             // Success response
             return res.status(201).json({
                 status: 0,
