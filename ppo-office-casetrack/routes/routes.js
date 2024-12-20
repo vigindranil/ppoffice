@@ -22,12 +22,12 @@ router.post('/api/authenticate', authController.authenticateUser);
 
 
 
-const ppstaffController = require('../controllers/PPstaffController');
-router.post('/api/addppUser', authMiddleware.verifyToken,ppstaffController.createPPUser); //create ppstaff by ppadmin
-router.get('/api/getppuser', authMiddleware.verifyToken,ppstaffController.showppuser); // show ppstaff
-router.get('/api/caseDetailsByPPuserId', authMiddleware.verifyToken,ppstaffController.caseDetailsByPPuserId); // show ppstaffdetails by Id
-router.post('/api/assigncase', authMiddleware.verifyToken,ppstaffController.assignCasetoppuser); // show ppstaffdetails by Id
-router.get('/api/getppuserDetailsById', authMiddleware.verifyToken,ppstaffController.getppuserDetailsById);
+const ppuserController = require('../controllers/PPuserController');
+router.post('/api/addppUser', authMiddleware.verifyToken,ppuserController.createPPUser); //create ppstaff by ppadmin
+router.get('/api/getppuser', authMiddleware.verifyToken,ppuserController.showppuser); // show ppuser
+router.get('/api/caseDetailsByPPuserId', authMiddleware.verifyToken,ppuserController.caseDetailsByPPuserId); // show ppstaffdetails by Id
+router.post('/api/assigncase', authMiddleware.verifyToken,ppuserController.assignCasetoppuser); // show ppstaffdetails by Id
+router.get('/api/getppuserDetailsById', authMiddleware.verifyToken,ppuserController.getppuserDetailsById);
 
 
 

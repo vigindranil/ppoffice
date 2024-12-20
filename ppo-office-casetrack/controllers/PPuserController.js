@@ -1,6 +1,6 @@
 const db = require('../config/db'); // Import the database connection
 const ResponseHelper = require('./ResponseHelper'); 
-class UserController {
+class PPuserController {
   static async createPPUser(req, res) {
     const { Username, UserPassword, EntryUserID,FullName, ContractNo, Email, LicenseNumber } = req.body;
 
@@ -236,4 +236,4 @@ static caseDetailsByPPuserId(req, res) {
 
 
 
-module.exports = UserController;
+module.exports = PPuserController;
