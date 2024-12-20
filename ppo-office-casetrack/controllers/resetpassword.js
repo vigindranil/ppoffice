@@ -7,10 +7,7 @@ class PasswordResetController {
 
             // Validate input
             if (!userId || !newPassword) {
-                return res.status(400).json({
-                    status: 1,
-                    message: "User ID and new password are required",
-                });
+                return ResponseHelper.error(res, "userId and password are required");
             }
 
             // Call the stored procedure

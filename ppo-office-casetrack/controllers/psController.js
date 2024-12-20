@@ -50,12 +50,8 @@ static showpsstaff(req, res) {
 
     const PsID = req.query.PsID;
     if (!PsID) {
-        return res.status(400).json({
-          status: 1,
-          message: 'district_id is required',
-          data: []
-        });
-      }
+      return ResponseHelper.error(res, "PsID required");
+    }
     const query = 'CALL sp_getPsStaffByPsID(?)';  
 
     db.query(query,[PsID],(err, results) => {
