@@ -133,10 +133,8 @@ class CaseController {
             !caseTypeID || !ref || !ipcAct || !hearingDate || sendTo === undefined ||
             copyTo === undefined || photocopycaseDiaryExist === undefined )
             {
-            return res.status(400).json({
-                status: 1,
-                message: "All fields are required.",
-            });
+                return ResponseHelper.error(res, "please  entry all required feild ");
+           
         }
 
         try {
