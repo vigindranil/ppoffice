@@ -71,7 +71,7 @@ const CreateStaff = ({ fetchStaffList }) => {
     <div>
       <div className="mb-6 text-center">
         <h2 className="text-xl text-gray-800 font-bold bg-opacity-80 backdrop-blur-md rounded-xl px-6 py-2 inline-block text-center">
-          Create PP Staff
+          Create PP User
         </h2>
       </div>
       <div className="bg-white rounded-lg shadow-xl p-8">
@@ -154,7 +154,7 @@ const CreateStaff = ({ fetchStaffList }) => {
             disabled={loading}  // Disable button when loading
             className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center"
           >
-            {loading ? 'Creating...' : <><FaPlus className="mr-2" /> Create Staff</>}
+            {loading ? 'Creating...' : <><FaPlus className="mr-2" /> Create User</>}
           </button>
         </form>
       </div>

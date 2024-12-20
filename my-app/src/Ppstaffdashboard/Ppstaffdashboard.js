@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FaBars, FaPlus, FaSignOutAlt } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import NewCaseEntry from './NewCaseEntry';
 
 const Ppstaffdashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [ppStaffName, setPpStaffName] = useState('');
   const [showNewCaseEntry, setShowNewCaseEntry] = useState(false);
+  const navigate = useNavigate(); // Initialize navigate for redirection
 
   // Toggle sidebar visibility
   const toggleSidebar = () => {
@@ -27,7 +29,9 @@ const Ppstaffdashboard = () => {
     sessionStorage.removeItem('AuthorityName');
     sessionStorage.removeItem('AuthorityUserID');
     localStorage.removeItem('authToken');
-    // Redirect to login page or handle logout as needed
+    
+    // Redirect to the login page
+    navigate('/login'); // Replace '/login' with your actual login route
   };
 
   // Toggle New Case Entry
@@ -40,7 +44,7 @@ const Ppstaffdashboard = () => {
       {/* Sidebar */}
       <div className={`bg-gradient-to-r from-blue-800 via-blue-700 to-blue-600 text-white transition-all duration-300 ease-in-out ${sidebarOpen ? 'w-48' : 'w-16'} flex flex-col`}>
         <div className="p-4 flex-grow">
-          <h1 className={`text-2xl font-bold mb-6 ${sidebarOpen ? '' : 'hidden'}`}>PP Dashboard</h1>
+          <h1 className={`text-2xl font-bold mb-6 ${sidebarOpen ? '' : 'hidden'}`}>PP Office Dashboard</h1>
           <nav className="space-y-2">
             <button 
               onClick={toggleNewCaseEntry}
@@ -72,7 +76,7 @@ const Ppstaffdashboard = () => {
               <FaBars size={24} />
             </button>
             <h2 className="text-gray-800">
-              {ppStaffName ? `Welcome PPStaff, ${ppStaffName}` : 'Welcome PPOffice'}
+              {ppStaffName ? `Welcome, ${ppStaffName}` : 'Welcome PPOffice'}
             </h2>
           </div>
         </header>
