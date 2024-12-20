@@ -97,7 +97,7 @@ class CaseController {
     
           
           // Assuming your stored procedure returns data in results[0]
-          return ResponseHelper.success_reponse(res," case assignment found for CaseNumber",results);
+          return ResponseHelper.success_reponse(res," case assignment found for CaseNumber",results[0]);
     
           
         });
