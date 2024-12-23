@@ -55,6 +55,8 @@ const PsController = require("../controllers/psController");
 router.post("/api/addpsStaff",authMiddleware.verifyToken,PsController.createPsStaff);
 router.get("/api/getpsStaff",authMiddleware.verifyToken,PsController.showpsstaff);
 router.get("/api/showallCasesBypsId",authMiddleware.verifyToken,PsController.showallcasesBypoliceID);
+router.post("/api/showpsUserById",authMiddleware.verifyToken,PsController.showpsuserById);
+
 
 
 module.exports = router;

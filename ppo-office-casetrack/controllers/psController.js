@@ -101,8 +101,34 @@ static showpsstaff(req, res) {
       console.error('Unexpected error:', error);
       return ResponseHelper.error(res, "An unexpected error occurred");
     }
-  }
+  } 
 
+  static async showpsuserById(req, res) {
+    try {
+      // Retrieve the PSUserId from the query parameters
+      const {PSUserId} =  req.body;
+
+      if (!PSUserId) {
+        return ResponseHelper.error(res, "PSUserId is required");
+      }
+
+      // SQL query to call the stored procedure with the EntryuserID parameter
+      const query = 'CALL sp_getPSUserDetailsbyId(?)';
+      db.query(query, [PSUserId], (err, results) => {
+        if (err) {
+          return ResponseHelper.error(res, "An error occurred while fetching data");
+        }
+        if (results[0] && results[0].length > 0) 
+        {
+            return ResponseHelper.success_reponse(res, "Data found", results[0]);
+        }
+       
+      });
+    } catch (error) {
+      return ResponseHelper.error(res, "An unexpected error occurred");
+    }
+  }
+  
 }
 
 
