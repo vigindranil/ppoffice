@@ -39,23 +39,17 @@ class SuperAdminController {
 
       // Check the output error code from the stored procedure
       if (ErrorCode === 0) {
-        return res.status(200).json({
-          status: 0,
-          message: "PPUser created successfully.",
-          data: { id: PPofficeAdminID },
-        });
+
+        return ResponseHelper.success_reponse(res,"PPHead user created successfully",{ id: PPofficeAdminID });
+       
       } else {
-        return res.status(400).json({
-          status: 1,
-          message: "Failed to create PP Staff. Please check your input.",
-        });
+         return ResponseHelper.error(res,"Failed to create PPHead. Please check your input.",err);
+        
       }
     } catch (error) {
-      console.error("Unexpected error:", error);
-      return res.status(500).json({
-        status: 1,
-        message: "An unexpected error occurred while creating the PP staff.",
-      });
+     
+      return ResponseHelper.error(res,"An unexpected error occurred while creating the PPHead.",error);
+
     }
   }
 
