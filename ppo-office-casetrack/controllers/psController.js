@@ -8,7 +8,7 @@ class PsController {
      const { Username, UserPassword, FullName,ContractNo, Email, LicenseNumber, EntryUserID, PsID } = req.body;
 
     if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber || !EntryUserID || !PsID) {
-        console.error('Error executing stored procedure:', err);
+      
         return ResponseHelper.error(res, "Username, UserPassword, FullName,ContractNo, Email, LicenseNumber, EntryUserID, PsID");
     }
 
@@ -37,7 +37,7 @@ class PsController {
             },
         });
     } catch (error) {
-        console.error("Error creating PS Staff:", error);
+       
         return  ResponseHelper.error(res,"Failed to create PS Staff");
     }
 }

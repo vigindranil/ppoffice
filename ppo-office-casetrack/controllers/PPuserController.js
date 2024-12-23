@@ -19,7 +19,7 @@ class PPuserController {
         await new Promise((resolve, reject) => {
             db.query(query, params, (err, results) => {
                 if (err) {
-                    console.error("Error executing stored procedure:", err);
+                   
                     return ResponseHelper.error(res, "An error occurred while fetching data");
                 }
                 resolve(results);
@@ -30,7 +30,7 @@ class PPuserController {
         const output = await new Promise((resolve, reject) => {
             db.query("SELECT @PPUserID AS PPUserID , @ErrorCode AS ErrorCode", (err, results) => {
                 if (err) {
-                    console.error("Error fetching output parameters:", err);
+                   
                     return ResponseHelper.error(res, "An error occurred while fetching data");
                 }
                 resolve(results[0]);
@@ -72,7 +72,7 @@ static async showppuser(req, res) {
 
         db.query(query, (err, results) => {
             if (err) {
-                console.error('Error executing stored procedure:', err);
+              
                 return ResponseHelper.error(res, "An error occurred while fetching the staff details.");
             }
 
@@ -108,7 +108,7 @@ static caseDetailsByPPuserId(req, res) {
     // Pass the districtId as an argument to the stored procedure
     db.query(query, [ppuserID], (err, results) => {
       if (err) {
-        console.error('Error executing stored procedure:', err);
+      
         return ResponseHelper.error(res, "An error occurred while fetching the case details.");
     }
      // Assuming your stored procedure returns data in results[0]

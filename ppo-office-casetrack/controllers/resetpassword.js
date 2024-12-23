@@ -16,7 +16,7 @@ class PasswordResetController {
 
             db.query(query, params, (err, results) => {
                 if (err) {
-                    console.error('Error executing stored procedure:', err);
+                   
                     return ResponseHelper.error(res, "An error occurred while resetting the password.",err);
                 }
 
@@ -29,7 +29,7 @@ class PasswordResetController {
                 }
             });
         } catch (error) {
-            console.error('Unexpected error:', error);
+           
             return ResponseHelper.error(res, "An unexpected error occurred while resetting the password.",err);
         }
     }

@@ -41,7 +41,7 @@ class AuthController {
             });
         } catch (error) {
             // Catch and handle any unexpected errors
-            console.error("Unexpected error:", error);
+            
             return ResponseHelper.error(res, "An unexpected error occurred during authentication.");
         }
     }
