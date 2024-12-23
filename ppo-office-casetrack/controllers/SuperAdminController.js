@@ -94,6 +94,8 @@ class SuperAdminController {
       });
 
       const { PPofficeHeadID, ErrorCode } = output;
+      console.log("PPofficeHeadID:", PPofficeHeadID);
+      console.log(ErrorCode);
 
       // Check the output error code from the stored procedure
       if (ErrorCode === 4) {
@@ -116,6 +118,37 @@ class SuperAdminController {
      
       return ResponseHelper.error(res,"An unexpected error occurred while creating the PPHead.",error);
 
+    }
+  }
+
+
+
+  static async showppofficeAdminUser(req, res) {
+    try {
+      // Retrieve the EntryUserID from the query parameters
+      const {EntryuserID} =  req.body;
+
+      if (!EntryuserID) {
+        return ResponseHelper.error(res, "EntryuserID is required");
+      }
+
+      // SQL query to call the stored procedure with the EntryuserID parameter
+      const query = 'CALL sp_getPPOfficeAdminuser(?)';
+      db.query(query, [EntryuserID], (err, results) => {
+        if (err) {
+          return ResponseHelper.error(res, "An error occurred while fetching data");
+        }
+        if (results[0] && results[0].length > 0) 
+        {
+            return ResponseHelper.success_reponse(res, "Data found", results[0]);
+        }
+        else
+        {
+            return ResponseHelper.error(res, "logged in user no acess to see ppuser list");
+        }
+      });
+    } catch (error) {
+      return ResponseHelper.error(res, "An unexpected error occurred");
     }
   }
 
