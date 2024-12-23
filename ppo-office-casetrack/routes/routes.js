@@ -12,9 +12,7 @@ const districtController = require('../controllers/districtController');
 router.get('/api/alldistrict', authMiddleware.verifyToken, districtController.show);
 router.get('/api/showallCasesBydistrictId',authMiddleware.verifyToken,districtController.showallcasesBydistrict);
 
-// show all policestation respect to District
-const policeController = require('../controllers/policeController');
-router.get('/api/showpoliceBydistrict', authMiddleware.verifyToken,policeController.showallpsBydistrict);
+
 
 //user login
 const authController = require('../controllers/authController');
@@ -55,6 +53,9 @@ const PsController = require("../controllers/psController");
 router.post("/api/addpsStaff",authMiddleware.verifyToken,PsController.createPsStaff);
 router.get("/api/getpsStaff",authMiddleware.verifyToken,PsController.showpsstaff);
 router.get("/api/showallCasesBypsId",authMiddleware.verifyToken,PsController.showallcasesBypoliceID);
+router.post("/api/showpsUserById",authMiddleware.verifyToken,PsController.showpsuserById);
+router.get('/api/showpoliceBydistrict', authMiddleware.verifyToken,PsController.showallpsBydistrict);
+
 
 
 module.exports = router;
