@@ -57,7 +57,8 @@ router.post("/api/showpsUserById",authMiddleware.verifyToken,PsController.showps
 router.get('/api/showpoliceBydistrict', authMiddleware.verifyToken,PsController.showallpsBydistrict);
 
 const superAdmin = require("../controllers/SuperAdminController");
-router.post("/api/addppHead",authMiddleware.verifyToken,superAdmin.createPPOfficeAdminUser);
+router.post("/api/addppofficeAdmin",authMiddleware.verifyToken,superAdmin.createPPOfficeAdminUser);
+router.post("/api/addppHead",authMiddleware.verifyToken,superAdmin.createPPHeadUser);
 
 
 
