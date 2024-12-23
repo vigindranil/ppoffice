@@ -3,12 +3,11 @@ import { FaBell, FaEye, FaTimes, FaSignOutAlt, FaMapMarkedAlt } from 'react-icon
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-
 const SPCPDashboard = () => {
   const [thanas, setThanas] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeSection, setActiveSection] = useState('notifications');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -87,6 +86,10 @@ const SPCPDashboard = () => {
     navigate(`/thana/${thanaId}`);
   };
 
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
@@ -95,18 +98,11 @@ const SPCPDashboard = () => {
           <h2 className="text-2xl font-bold mb-8">Dashboard</h2>
           <div className="space-y-4">
             <button
-              onClick={() => setActiveSection('notifications')}
-              className={`w-full text-left p-2 rounded-md hover:bg-gray-700 ${activeSection === 'notifications' ? 'bg-gray-700' : ''}`}
-            >
-              <FaBell className="inline mr-2" /> Recent Notifications
-            </button>
-            <button
-              onClick={() => setActiveSection('thanas')}
-              className={`w-full text-left p-2 rounded-md hover:bg-gray-700 ${activeSection === 'thanas' ? 'bg-gray-700' : ''}`}
+              onClick={() => setShowNotifications(false)}
+              className="w-full text-left p-2 rounded-md hover:bg-gray-700"
             >
               <FaMapMarkedAlt className="inline mr-2" /> Thanas Under Jurisdiction
             </button>
-            
           </div>
         </div>
 
@@ -119,20 +115,28 @@ const SPCPDashboard = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 relative">
+        {/* Notification Bell */}
+        <div className="absolute top-4 right-4">
+          <button
+            onClick={toggleNotifications}
+            className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors duration-200"
+          >
+            <FaBell />
+          </button>
+        </div>
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">SP/CP Dashboard</h1>
           <p className="text-gray-600 mt-2">Manage and monitor thana activities</p>
         </div>
 
-        {activeSection === 'notifications' && (
-          <div>
-            <div className="mb-8">
-              <div className="flex items-center mb-4">
-                <FaBell className="text-blue-500 mr-2" />
-                <h2 className="text-xl font-semibold text-gray-800">Recent Notifications</h2>
-              </div>
-              <div className="space-y-4">
+        {/* Notifications Dropdown */}
+        {showNotifications && (
+          <div className="absolute top-16 right-4 w-80 bg-white rounded-lg shadow-xl z-10">
+            <div className="p-4">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Notifications</h2>
+              <div className="space-y-4 max-h-96 overflow-y-auto">
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
@@ -142,11 +146,11 @@ const SPCPDashboard = () => {
                   >
                     <button
                       onClick={() => dismissNotification(notification.id)}
-                      className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
                     >
                       <FaTimes />
                     </button>
-                    <div className="pr-8">
+                    <div className="pr-6">
                       <p className="text-gray-800">{notification.message}</p>
                       <p className="text-sm text-gray-500 mt-1">{notification.timestamp}</p>
                     </div>
@@ -157,46 +161,45 @@ const SPCPDashboard = () => {
           </div>
         )}
 
-        {activeSection === 'thanas' && (
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Thanas Under Jurisdiction</h2>
-            {loading ? (
-              <div className="text-center py-8">Loading thanas...</div>
-            ) : error ? (
-              <div className="text-center py-8 text-red-500">{error}</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {thanas.map((thana) => (
-                  <div
-                    key={thana.id}
-                    className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-200 hover:transform hover:scale-105"
-                  >
-                    <div className="p-6">
-                      <h3 className="text-xl font-semibold text-gray-800 mb-4">{thana.ps_name}</h3>
-                      <div className="flex justify-between mb-4">
-                        <div className="text-blue-600">
-                          <p className="font-semibold">Active Cases</p>
-                          <p className="text-2xl">{thana.activeCases || 0}</p>
-                        </div>
-                        <div className="text-orange-600">
-                          <p className="font-semibold">Pending Cases</p>
-                          <p className="text-2xl">{thana.pendingCases || 0}</p>
-                        </div>
+        {/* Thanas Section */}
+        <div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Thanas Under Jurisdiction</h2>
+          {loading ? (
+            <div className="text-center py-8">Loading thanas...</div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">{error}</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {thanas.map((thana) => (
+                <div
+                  key={thana.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-200 hover:transform hover:scale-105"
+                >
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4">{thana.ps_name}</h3>
+                    <div className="flex justify-between mb-4">
+                      <div className="text-blue-600">
+                        <p className="font-semibold">Active Cases</p>
+                        <p className="text-2xl">{thana.activeCases || 0}</p>
                       </div>
-                      <button
-                        onClick={() => handleViewThana(thana.id)}
-                        className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
-                      >
-                        <FaEye className="mr-2" />
-                        View Details
-                      </button>
+                      <div className="text-orange-600">
+                        <p className="font-semibold">Pending Cases</p>
+                        <p className="text-2xl">{thana.pendingCases || 0}</p>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => handleViewThana(thana.id)}
+                      className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
+                    >
+                      <FaEye className="mr-2" />
+                      View Details
+                    </button>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
