@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaUser, FaBell, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
 
 const Navbar = ({ onLogout, onViewProfile, onViewNotifications }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -28,6 +39,9 @@ const Navbar = ({ onLogout, onViewProfile, onViewNotifications }) => {
       <div className="mx-auto flex justify-between items-center">
         <div className="text-gray-600 text-xl font-bold">Case tracking system</div>
         <div className="flex items-center">
+          <div className="text-gray-600 mr-4">
+            {currentTime.toLocaleTimeString()}
+          </div>
           <button
             onClick={handleViewNotifications}
             className="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-300 mr-2"
@@ -71,3 +85,4 @@ const Navbar = ({ onLogout, onViewProfile, onViewNotifications }) => {
 };
 
 export default Navbar;
+
