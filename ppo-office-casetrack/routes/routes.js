@@ -61,6 +61,10 @@ router.post("/api/addppofficeAdmin",authMiddleware.verifyToken,superAdmin.create
 router.post("/api/addppHead",authMiddleware.verifyToken,superAdmin.createPPHeadUser);
 router.post("/api/showppOfficeAdminUserList",authMiddleware.verifyToken,superAdmin.showppofficeAdminUser);
 router.post("/api/showppOfficeHeadUserList",authMiddleware.verifyToken,superAdmin.showppofficeHeadnUser);
+router.post("/api/addSP",authMiddleware.verifyToken,superAdmin.createSPUser);
+router.post("/api/showspUser",authMiddleware.verifyToken,superAdmin.showspUser);
+
+
 
 
 

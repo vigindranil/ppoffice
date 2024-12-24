@@ -132,7 +132,71 @@ class SuperAdminController {
     }
   }
 
+  
+  static async createSPUser(req, res) {
+    const { Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber,DistrictID } = req.body;
 
+    // Validate the required input fields
+    if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber || !DistrictID) {
+      return ResponseHelper.error(res, "Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber, DistrictID  are required");
+    }
+
+    try {
+      // Call the stored procedure
+      const query = "CALL sp_saveCreatSpuser(?, ?, ?, ?, ?, ?, ?, ?, @SPID, @ErrorCode)";
+      const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber, EntryUserID,DistrictID];
+
+      // Execute the stored procedure
+      await new Promise((resolve, reject) => {
+        db.query(query, params, (err, results) => {
+          if (err) {
+            return ResponseHelper.error(res, "An error occurred while fetching data");
+          }
+          resolve(results);
+        });
+      });
+
+      // Fetch the output parameters from the procedure
+      const output = await new Promise((resolve, reject) => {
+        db.query("SELECT @SPID AS SPID, @ErrorCode AS ErrorCode", (err, results) => {
+          if (err) {
+            return ResponseHelper.error(res, "An error occurred while fetching data");
+          }
+          resolve(results[0]);
+        });
+      });
+
+      const { SPID, ErrorCode } = output;
+     
+      // Check the output error code from the stored procedure
+      if (ErrorCode === 4) {
+
+        return ResponseHelper.success_reponse(res,"Login user is invalid");
+       
+      }
+
+      if (ErrorCode === 5) {
+
+        return ResponseHelper.success_reponse(res,"log in user has no permission to add user");
+       
+      }
+      
+      else if (ErrorCode === 0) {
+
+        return ResponseHelper.success_reponse(res,"SP user created successfully",{ id: SPID });
+       
+      }
+      
+      else {
+         return ResponseHelper.error(res,"Failed to create PPHead. Please check your input.",err);
+        
+      }
+    } catch (error) {
+     
+      return ResponseHelper.error(res,"An unexpected error occurred while creating the PPHead.",error);
+
+    }
+  }
 
   static async showppofficeAdminUser(req, res) {
     try {
@@ -192,6 +256,37 @@ class SuperAdminController {
     }
   }
   
+
+  static async showspUser(req, res) {
+    try {
+      // Retrieve the EntryUserID from the query parameters
+      const {EntryuserID,DistrictID} =  req.body;
+
+      if (!EntryuserID || !DistrictID) {
+        return ResponseHelper.error(res, "EntryuserID is required");
+      }
+
+      // SQL query to call the stored procedure with the EntryuserID parameter
+      const query = 'CALL sp_getSPuser(?,?)';
+      const params = [EntryuserID,DistrictID];
+      db.query(query, params, (err, results) => {
+        if (err) {
+          return ResponseHelper.error(res, "An error occurred while fetching data");
+        }
+        
+        if (results[0] && results[0].length > 0) 
+        {
+            return ResponseHelper.success_reponse(res, "Data found", results[0]);
+        }
+        else
+        {
+            return ResponseHelper.error(res, "logged in user no acess to see sp list");
+        }
+      });
+    } catch (error) {
+      return ResponseHelper.error(res, "An unexpected error occurred");
+    }
+  }
 }
 
 module.exports = SuperAdminController;
