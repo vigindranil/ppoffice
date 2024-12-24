@@ -116,7 +116,7 @@ export const renderCaseDetails = (caseItem, ppStaff, assignedStaff, setAssignedS
           <select
             value={assignedStaff}
             onChange={(e) => setAssignedStaff(e.target.value)}
-            className="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className=" px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
           >
             <option value="">Select PP User member</option>
             {ppStaff.map((staff) => (
@@ -133,7 +133,7 @@ export const renderCaseDetails = (caseItem, ppStaff, assignedStaff, setAssignedS
             rows="3"
           />
           <button
-            className="mt-4 w-full px-4 py-2 bg-emerald-600 text-white text-base font-medium rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors"
+            className="mt-4  px-4 py-2 bg-emerald-600 text-white text-base font-medium rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors"
             onClick={handleAssignCase}
           >
             Assign Case
