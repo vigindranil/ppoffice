@@ -98,8 +98,8 @@ export const renderCaseList = (cases, currentPage, casesPerPage, handleCaseClick
 
 export const renderCaseDetails = (caseItem, ppStaff, assignedStaff, setAssignedStaff, remarks, setRemarks, handleAssignCase) => {
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="p-6 border-b border-gray-100">
+    <div className="bg-white rounded-xl  overflow-hidden">
+      <div className="p-6 ">
         <h3 className="font-bold text-2xl mb-4 text-gray-800">{caseItem.CaseNumber}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <p className="text-gray-700"><span className="font-semibold">Type:</span> {caseItem.CaseType}</p>
@@ -112,11 +112,12 @@ export const renderCaseDetails = (caseItem, ppStaff, assignedStaff, setAssignedS
         </div>
       </div>
       {!caseItem.IsAssigned && (
-        <div className="p-6 bg-gray-50">
+        <div className="flex items-center ">
+        <div className="grid grid-cols-1 gap-4 p-6 bg-white rounded-lg w-full sm:w-96">
           <select
             value={assignedStaff}
             onChange={(e) => setAssignedStaff(e.target.value)}
-            className=" px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-2 py-1 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
           >
             <option value="">Select PP User member</option>
             {ppStaff.map((staff) => (
@@ -125,20 +126,25 @@ export const renderCaseDetails = (caseItem, ppStaff, assignedStaff, setAssignedS
               </option>
             ))}
           </select>
+        
           <textarea
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
             placeholder="Enter remarks"
-            className="mt-4 w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="mt-4 w-full h-20 px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
             rows="3"
           />
+        
           <button
-            className="mt-4  px-4 py-2 bg-emerald-600 text-white text-base font-medium rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors"
+            className="mt-4 w-full px-3 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors"
             onClick={handleAssignCase}
           >
             Assign Case
           </button>
         </div>
+      </div>
+      
+      
       )}
     </div>
   );
