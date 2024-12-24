@@ -60,6 +60,7 @@ const superAdmin = require("../controllers/SuperAdminController");
 router.post("/api/addppofficeAdmin",authMiddleware.verifyToken,superAdmin.createPPOfficeAdminUser);
 router.post("/api/addppHead",authMiddleware.verifyToken,superAdmin.createPPHeadUser);
 router.post("/api/showppOfficeAdminUserList",authMiddleware.verifyToken,superAdmin.showppofficeAdminUser);
+router.post("/api/showppOfficeHeadUserList",authMiddleware.verifyToken,superAdmin.showppofficeHeadnUser);
 
 
 
