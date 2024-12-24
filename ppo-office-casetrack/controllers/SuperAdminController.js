@@ -2,6 +2,8 @@ const db = require('../config/db'); // Import the database connection
 const ResponseHelper = require('./ResponseHelper');
 
 class SuperAdminController {
+
+  // super Admin add PPAdmin user
   static async createPPOfficeAdminUser(req, res) {
     const { Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber } = req.body;
 
@@ -45,7 +47,12 @@ class SuperAdminController {
       } 
       if (ErrorCode === 4) {
 
-        return ResponseHelper.success_reponse(res,"PPOfficeAdmin user created already created");
+        return ResponseHelper.success_reponse(res,"Login user is invalid");
+       
+      }
+      if (ErrorCode === 5) {
+
+        return ResponseHelper.success_reponse(res,"log in user has no permission to add user");
        
       }
       else {
@@ -94,13 +101,17 @@ class SuperAdminController {
       });
 
       const { PPofficeHeadID, ErrorCode } = output;
-      console.log("PPofficeHeadID:", PPofficeHeadID);
-      console.log(ErrorCode);
-
+     
       // Check the output error code from the stored procedure
       if (ErrorCode === 4) {
 
-        return ResponseHelper.success_reponse(res,"logged in user has no permission to add PPofficeHead");
+        return ResponseHelper.success_reponse(res,"Login user is invalid");
+       
+      }
+
+      if (ErrorCode === 5) {
+
+        return ResponseHelper.success_reponse(res,"log in user has no permission to add user");
        
       }
       
@@ -144,7 +155,7 @@ class SuperAdminController {
         }
         else
         {
-            return ResponseHelper.error(res, "logged in user no acess to see ppuser list");
+            return ResponseHelper.error(res, "logged in user no acess to see ppAdminuser list");
         }
       });
     } catch (error) {
@@ -173,7 +184,7 @@ class SuperAdminController {
         }
         else
         {
-            return ResponseHelper.error(res, "logged in user no acess to see ppuser list");
+            return ResponseHelper.error(res, "logged in user no acess to see ppHeaduser list");
         }
       });
     } catch (error) {
