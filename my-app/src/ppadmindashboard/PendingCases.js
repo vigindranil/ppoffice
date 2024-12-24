@@ -82,7 +82,7 @@ const PendingCases = ({ ppStaff }) => {
     const currentCases = cases.slice(indexOfFirstCase, indexOfLastCase);
 
     return (
-        <table className="min-w-full divide-y divide-gray-200 table-auto rounded-lg overflow-hidden shadow-lg">
+      <table className="min-w-full divide-y divide-gray-200 table-auto rounded-lg overflow-hidden shadow-lg">
         <thead className="bg-emerald-600 text-white">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium uppercase">Case ID</th>
@@ -101,7 +101,7 @@ const PendingCases = ({ ppStaff }) => {
               <td className="px-6 py-4 text-sm font-medium text-gray-900">{caseItem.CaseId}</td>
               <td className="px-6 py-4 text-sm text-gray-500">{caseItem.CaseType}</td>
               <td className="px-6 py-4 text-sm text-gray-500">{caseItem.CaseDate}</td>
-              <td className="px-6 py-4 text-sm text-green-500">{/* Display Pending Status */}
+              <td className="px-6 py-4 text-sm text-green-500">
                 Pending
               </td>
               <td className="px-6 py-4 text-sm text-emerald-600">
@@ -116,14 +116,14 @@ const PendingCases = ({ ppStaff }) => {
           ))}
         </tbody>
       </table>
-      
-      
-      
     );
   };
 
   return (
     <div className="container mx-auto p-6 space-y-8">
+      {/* Heading for Pending Cases */}
+      <h1 className="text-3xl text-center font-bold text-gray-800">Pending Cases</h1>
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           <strong className="font-bold">Error:</strong>

@@ -21,7 +21,9 @@ const AssignedCases = ({ ppStaff }) => {
 
   return (
     <div className="container mx-auto p-6 space-y-8">
-      {/* <h1 className="text-3xl text-center font-bold text-gray-800">Assigned Cases</h1> */}
+      {/* Heading Section */}
+      <h1 className="text-3xl text-center font-bold text-gray-800">Assigned Cases</h1>
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
           <strong className="font-bold">Error:</strong>
@@ -77,4 +79,3 @@ const AssignedCases = ({ ppStaff }) => {
 };
 
 export default AssignedCases;
-

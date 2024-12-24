@@ -147,7 +147,6 @@ const ModernPPOfficeAdminDashboard = () => {
             <nav className="flex-grow">
               <SidebarButton icon={FaHome} label="Home Dashboard" onClick={() => setActiveTab('home')} isActive={activeTab === 'home'} />
               <SidebarButton icon={FaUsers} label="PP User" onClick={() => setActiveTab('staffList')} isActive={activeTab === 'staffList'} />
-              {/* <SidebarButton icon={FaClipboardList} label="Assigned Cases" onClick={() => setActiveTab('assignedCases')} isActive={activeTab === 'assignedCases'} /> */}
               <SidebarButton icon={FaClipboardList} label="Pending Cases" onClick={() => setActiveTab('pendingCases')} isActive={activeTab === 'pendingCases'} />
             </nav>
           </div>
@@ -157,10 +156,10 @@ const ModernPPOfficeAdminDashboard = () => {
         <div className="flex-1 ml-64">
           <main className="p-2">
             <div className="container mx-auto">
-              <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-                {activeTab === 'home' ? 'Home Dashboard' : 
-                 activeTab === 'assignedCases' ? 'Assigned Cases' :
-                 activeTab === 'pendingCases' ? 'Pending Cases' : ''}
+              {/* Updated Heading for Home Dashboard */}
+              <h1 >
+                {activeTab === 'home' ? 'Home Dashboard' : ''
+                 }
               </h1>
               {error && (
                 <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 md:p-4 mb-4 rounded-md text-sm md:text-base" role="alert">
@@ -169,6 +168,10 @@ const ModernPPOfficeAdminDashboard = () => {
                 </div>
               )}
               <div className="">
+              <h1 className="text-4xl font-bold text-center pb-4 bg-gradient-to-r from-green-700 to-gray-600 text-transparent bg-clip-text">
+  Home Dashboard
+</h1>
+
                 {renderContent()}
               </div>
             </div>
@@ -237,4 +240,3 @@ const ClickableInfoCard = ({ title, value, icon: Icon, gradient, description, on
 );
 
 export default ModernPPOfficeAdminDashboard;
-
