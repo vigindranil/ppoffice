@@ -71,6 +71,14 @@ function PSDashboard() {
             <li>
               <a href="#" className="text-gray-600 hover:text-blue-600">Settings</a>
             </li>
+            <li>
+            {/* <button
+                              onClick={handleLogout}
+                              className="w-full flex items-center justify-center px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                            >
+                              <FaSignOutAlt className="mr-2" /> Logout
+                            </button> */}
+            </li>
           </ul>
         </nav>
       </aside>
@@ -114,9 +122,12 @@ function PSDashboard() {
                   <a href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
                   <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
                   <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Log out</a>
+
                 </div>
+
               )}
             </div>
+            
           </div>
         </header>
 
