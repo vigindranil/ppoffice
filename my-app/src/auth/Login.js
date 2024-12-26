@@ -52,6 +52,9 @@ export default function LoginPage() {
           case 50:
             navigate('/psdash');
             break;
+          case 60:
+            navigate('/ppuser');
+            break;
           default:
             console.log("Unknown AuthorityTypeID:", userData.AuthorityTypeID);
             navigate('/login');

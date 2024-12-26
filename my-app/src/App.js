@@ -1,3 +1,4 @@
+// App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
@@ -8,6 +9,7 @@ import SPCPDashboard from './Spdashboard/SPCPDashboard';
 import PrivateRoute from './PrivateRoute';
 import PSDashboard from './ps/PSDashboard';
 import PPOfficeDashboard from './Ppoffice/ppodash'; 
+import PPUserDashboard from './ppuser/ppuserdashboard'; // Import the new component
 
 function App() {
   return (
@@ -39,7 +41,11 @@ function App() {
             path="/ppodash"
             element={<PrivateRoute element={<PPOfficeDashboard />} />}
           />
-          
+          {/* New route for PP User Dashboard */}
+          <Route
+            path="/ppuser"
+            element={<PrivateRoute element={<PPUserDashboard />} />}
+          />
         </Routes>
       </div>
     </Router>
@@ -47,4 +53,3 @@ function App() {
 }
 
 export default App;
-
