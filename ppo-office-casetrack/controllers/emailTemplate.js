@@ -36,4 +36,33 @@ function generateEmailTemplate(details) {
     `;
 }
 
+
+
+function generateEmailSample(details) {
+    const {
+        crm,
+        psCaseNo,
+        dated,
+        ipcSection,
+        hearingDate,
+       // additionalInstructions,
+    } = details;
+
+    return `
+        To: Public Prosecutor  
+        Advocate  
+        From: The Public Prosecutor, High Court, Calcutta.  
+
+        Begins Ref. (${crm}/24)  
+        P.S. Case No: ${psCaseNo}  
+        Dated: ${dated}  
+        U/S IPC ${ipcSection} 
+        M/S VS: State  
+
+        Direct Investigating Officer of the above case to meet the Learned Advocate for the State (High Court, Calcutta) on ${hearingDate} with the Photocopy of the case diary with M.O.E.  
+
+        [Message ends]  
+    `;
+}
+
 module.exports = generateEmailTemplate;
