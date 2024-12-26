@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+// import { useNavigate } from 'react-router-dom';
 // Mock data for demonstration
 const mockCases = [
   {
@@ -51,7 +51,14 @@ function PSDashboard() {
       day: 'numeric'
     });
   };
+  const handleLogout = () => {
+    sessionStorage.removeItem('AuthorityName');
+    sessionStorage.removeItem('AuthorityUserID');
+    localStorage.removeItem('authToken');
 
+    // Redirect to the login page
+    navigate('/login'); // Replace '/login' with your actual login route
+  };
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -62,9 +69,13 @@ function PSDashboard() {
             <li>
               <a href="#" className="text-blue-600 hover:underline">Home</a>
             </li>
-            <li>
-              <a href="#" className="text-gray-600 hover:text-blue-600">All Cases</a>
-            </li>
+           <li>
+           <a
+    href="/cases/:boundaryId"className="text-gray-600 hover:text-blue-600"
+  >
+    All Cases
+  </a>
+           </li>
             <li>
               <a href="#" className="text-gray-600 hover:text-blue-600">Notifications</a>
             </li>
@@ -80,6 +91,15 @@ function PSDashboard() {
                             </button> */}
             </li>
           </ul>
+          {/* Logout Button */}
+                  {/* <div className="mt-auto p-4">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center justify-center px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                    >
+                      <FaSignOutAlt className="mr-2" /> Logout
+                    </button>
+                  </div> */}
         </nav>
       </aside>
 
@@ -127,7 +147,7 @@ function PSDashboard() {
 
               )}
             </div>
-            
+
           </div>
         </header>
 

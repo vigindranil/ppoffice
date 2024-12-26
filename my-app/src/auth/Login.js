@@ -39,6 +39,10 @@ export default function LoginPage() {
         console.log("Full response data:", JSON.stringify(response.data, null, 2));
         console.log("Navigating with AuthorityTypeID:", userData.AuthorityTypeID);
 
+        // Retrieve BoundaryID from sessionStorage
+        const boundaryID = sessionStorage.getItem('BoundaryID');
+        console.log("BoundaryID retrieved from sessionStorage:", boundaryID);
+
         switch (parseInt(userData.AuthorityTypeID)) {
           case 20:
             navigate('/ppoadmin');
