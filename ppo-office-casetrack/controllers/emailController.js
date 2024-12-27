@@ -126,7 +126,7 @@ class EmailController {
                     });
                 }
 
-                const { receiveEmail, ccEmail, psCaseNo, dated, hearingDate, ipcSection, crm, ppEmail, ppname, SPName, PSName } = emailDetails;
+                const { receiveEmail, ccEmail, psCaseNo, dated, hearingDate, ipcSection, crm, ppEmail, PPName, SPName, PSName } = emailDetails;
 
                 // Create instances of EmailTemplate with the case details
                 const emailTemplate1 = new EmailTemplate({
@@ -134,7 +134,7 @@ class EmailController {
                     psCaseNo,
                     dated,
                     ipcSection,
-                    ppname,
+                    PPName,
                     hearingDate,
                 });
 
