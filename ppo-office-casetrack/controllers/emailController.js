@@ -1,4 +1,6 @@
 const nodemailer = require("nodemailer");
+const ResponseHelper = require('./ResponseHelper'); 
+
 const db = require("../config/db"); // Import the DB connection
 //const generateEmailTemplate = require("./emailTemplate"); // Import the email template generator
 
@@ -10,10 +12,7 @@ class EmailController {
 
         // Validate required fields
         if (!CaseID) {
-            return res.status(400).json({
-                status: 1,
-                message: "Fields 'CaseID' and 'hearingDate' are required.",
-            });
+            return ResponseHelper.error(res, "CaseID is requried");
         }
 
         try {
