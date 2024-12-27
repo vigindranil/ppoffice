@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 const db = require("../config/db"); // Import the DB connection
-const generateEmailTemplate = require("./emailTemplate"); // Import the email template generator
+//const generateEmailTemplate = require("./emailTemplate"); // Import the email template generator
 
 const EmailTemplate = require('./emailTemplate'); // Import the EmailTemplate class
 
@@ -41,7 +41,7 @@ class EmailController {
                 const { receiveEmail, ccEmail, psCaseNo, dated, hearingDate, ipcSection, crm } = emailDetails;
 
                 // Generate the email content
-                const emailContent = new generateEmailTemplate({
+                const emailTemplate = new EmailTemplate({
                     crm,
                     psCaseNo,
                     dated,
@@ -59,6 +59,7 @@ class EmailController {
                         pass: process.env.EMAIL_PASSWORD,
                     },
                 });
+                const emailContent = emailTemplate.generateEmailContent();
 
                 const mailOptions = {
                     from: process.env.EMAIL_USER,
