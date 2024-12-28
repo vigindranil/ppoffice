@@ -236,6 +236,31 @@ class CaseController {
           return ResponseHelper.error(res, "An unexpected error occurred",error);
         }
       }
+
+      static async showallCaseBetweenRange(req, res) {
+        try {
+            const { startDate, endDate } = req.body;
+    
+            
+    
+            // SQL query to call the stored procedure
+            const query = 'CALL sp_ShowallCaseBetweenRange(?, ?)';
+    
+            db.query(query, [startDate, endDate], (err, results) => {
+                if (err) {
+                    console.error("Error executing stored procedure:", err);
+                    return ResponseHelper.error(res, "An error occurred while fetching data");
+                }
+    
+                // Assuming your stored procedure returns data in results[0]
+                return ResponseHelper.success_reponse(res, "Data found", results[0]);
+            });
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred", error);
+        }
+    }
+    
     
 }
 

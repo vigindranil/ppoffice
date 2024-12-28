@@ -41,7 +41,7 @@ router.get("/api/caseDetailsById",authMiddleware.verifyToken,CaseController.getC
 router.get("/api/showRefferenceDetails",authMiddleware.verifyToken,CaseController.showRefference);
 router.post("/api/addCase",authMiddleware.verifyToken,CaseController.createCase); // firsttime create case by ppOffice
 router.get("/api/showallCase",authMiddleware.verifyToken,CaseController.showallCase); // firsttime create case by ppOffice
-
+router.post("/api/showallCaseBetweenRange",authMiddleware.verifyToken,CaseController.showallCaseBetweenRange);
 
 
 // send email
