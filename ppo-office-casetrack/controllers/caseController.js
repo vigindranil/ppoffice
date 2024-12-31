@@ -214,9 +214,7 @@ class CaseController {
          
           const is_Assigned = req.query.is_Assigned;
 
-          if (!is_Assigned) {
-            return ResponseHelper.error(res, "Assign Id is required");
-          }
+       
 
           // SQL query to call the stored procedure 
           const query = 'CALL sp_ShowallCase(?)'; 
