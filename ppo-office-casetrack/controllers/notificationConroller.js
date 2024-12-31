@@ -33,6 +33,36 @@ class notificationController {
       return ResponseHelper.error(res, "An unexpected error occurred");
     }
   }
+
+  static async checkMailRead(req, res) {
+    try {
+      // Retrieve the necessary parameters from the request body
+      const { mailId, caseId, authorityTypeId, boundaryId } = req.body;
+
+      // Validate input parameters
+      if (!mailId || !caseId || !authorityTypeId || !boundaryId) {
+        return ResponseHelper.error(res, 'mailId, caseId, authorityTypeId, and boundaryId are required');
+      }
+
+      // SQL query to call the stored procedure
+      const query = 'CALL sp_checkmail_Read(?, ?, ?, ?)';
+      const params = [mailId, caseId, authorityTypeId, boundaryId];
+
+      // Execute the query
+      db.query(query, params, (err, results) => {
+        if (err) {
+          // Return an error response if the query fails
+          return ResponseHelper.error(res, 'An error occurred while checking the mail',err);
+        }
+
+        // If the stored procedure executes successfully, return the result
+        return ResponseHelper.success_reponse(res, 'Mail checked and updated successfully', results);
+      });
+    } catch (error) {
+      // Catch any unexpected errors
+      return ResponseHelper.error(res, 'An unexpected error occurred');
+    }
+  }
   
 
   

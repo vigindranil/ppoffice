@@ -68,6 +68,7 @@ router.post("/api/showspUser",authMiddleware.verifyToken,superAdmin.showspUser);
 
 const notifications = require("../controllers/notificationConroller");
 router.post("/api/emailDetails",authMiddleware.verifyToken,notifications.showMailDetailsById);
+router.post("/api/emailRead",authMiddleware.verifyToken,notifications.checkMailRead);
 
 
 
