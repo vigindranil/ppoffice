@@ -238,7 +238,7 @@ class EmailController {
                             message: "Emails sent, but logging failed.",
                         });
                     }
-
+                    const logQuery2 = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
                     const logParams2 = [
                         info2.messageId, // Message ID from nodemailer
                         CaseID,         // Case ID
@@ -254,7 +254,7 @@ class EmailController {
                         PPId
                     ];
 
-                    db.query(logQuery, logParams2, (logErr2) => {
+                    db.query(logQuery2, logParams2, (logErr2) => {
                         if (logErr2) {
                             console.error("Error logging email details:", logErr2);
                             return res.status(500).json({
