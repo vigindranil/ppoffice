@@ -25,7 +25,8 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-
+import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 // Sample data
 const data = {
   user: {
@@ -56,6 +57,7 @@ const data = {
       url: "#",
       icon: SquareTerminal,
       isActive: true,
+      type: 100,
       items: [
         {
           title: "Public Prosecutor Head",
@@ -63,11 +65,11 @@ const data = {
         },
         {
           title: "Office Admin",
-          url: "/pending",
+          url: "/add-pp-office-admin",
         },
         {
           title: "Superintendent of Police",
-          url: "/pending",
+          url: "/add-sp",
         },
       ],
     },
@@ -76,6 +78,7 @@ const data = {
       url: "#",
       icon: SquareTerminal,
       isActive: true,
+      type: 100,
       items: [
         {
           title: "History",
@@ -91,26 +94,23 @@ const data = {
         },
       ],
     },
-    // {
-    //   title: "Playground",
-    //   url: "#",
-    //   icon: SquareTerminal,
-    //   isActive: true,
-    //   items: [
-    //     {
-    //       title: "History",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Starred",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Settings",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
+    {
+      title: "PP office admin",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Dashboard",
+          url: "#",
+        },
+        {
+          title: "Add cases",
+          url: "#",
+        },
+      ],
+    },
     // {
     //   title: "Models",
     //   url: "#",
@@ -197,15 +197,24 @@ const data = {
 };
 
 export const AdminAppSidebar = (props) => {
+  const [authToken, setAuthToken] = useState("");
+  const [user, setUser] = useState("");
+  const token = useSelector((state) => state.auth.token);
+  const userDetails = useSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    setAuthToken(token);
+    setUser(userDetails);
+  }, [token, userDetails]);
+  console.log(user);
+
   return (
     <Sidebar
       collapsible="icon"
       {...props}
       className="mt-[64px] flex flex-col h-[calc(100vh-64px)] z-20"
     >
-      <SidebarHeader>
-        {/* <TeamSwitcher teams={data.teams} /> */}
-      </SidebarHeader>
+      <SidebarHeader>{/* <TeamSwitcher teams={data.teams} /> */}</SidebarHeader>
       <SidebarContent className="flex-grow">
         <NavMain items={data.navMain} />
         {/* <NavProjects projects={data.projects} /> */}
@@ -216,5 +225,4 @@ export const AdminAppSidebar = (props) => {
       <SidebarRail />
     </Sidebar>
   );
-
 };

@@ -7,6 +7,10 @@ export const encrypt = (data) => {
 };
 
 export const decrypt = (data) => {
-  const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
-  return bytes.toString(CryptoJS.enc.Utf8);
+  if(data){
+    const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  }else {
+    return null
+  }
 };
