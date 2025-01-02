@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import { decrypt } from "@/utils/crypto";
 // Sample data
 const data = {
   user: {
@@ -107,7 +108,7 @@ const data = {
         },
         {
           title: "Add cases",
-          url: "#",
+          url: "new-case-entry",
         },
       ],
     },
@@ -204,9 +205,11 @@ export const AdminAppSidebar = (props) => {
 
   useEffect(() => {
     setAuthToken(token);
-    setUser(userDetails);
-  }, [token, userDetails]);
-  console.log(user);
+    const user_data = JSON.parse(decrypt(userDetails));
+    setUser(user_data);
+  }, [token]);
+  console.log(authToken);
+  
 
   return (
     <Sidebar

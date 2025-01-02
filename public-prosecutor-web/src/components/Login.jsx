@@ -42,7 +42,7 @@ export default function LoginPage() {
         const userData = response.data;
         dispatch(setToken(userData?.access_token));
         dispatch(setUser(JSON.stringify(userData?.data[0])));
-        console.log(userData?.data[0].AuthorityTypeID);
+        console.log(userData?.access_token);
 
         switch (parseInt(userData?.data[0].AuthorityTypeID)) {
           case 20:
