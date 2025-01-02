@@ -33,7 +33,7 @@ const Layout = ({children}) => {
   // ];
 
   const breadcrumb = [
-    { href: "/superadmin", name: "Dashboard" },{ name: "Add Public Prosecutor Head" },
+    { href: "/super-admin-dashboard", name: "Dashboard" },{ name: "Add Public Prosecutor Head" },
   ];
 
   return (
@@ -42,7 +42,7 @@ const Layout = ({children}) => {
       <Header />
 
       {/* Main Content */}
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
           <div className="flex flex-1">
             <Suspense fallback={<Loading />}>

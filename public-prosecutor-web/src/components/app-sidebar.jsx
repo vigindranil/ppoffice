@@ -15,9 +15,7 @@ import {
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
-// import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -25,37 +23,22 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useSelector } from "react-redux";
+import {  useEffect, useState } from "react";
 
-// Sample data
 const data = {
   user: {
     name: "Super Admin",
     email: "admin@example.com",
     avatar: "/img/user.jpg",
   },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Add User",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
+      type: 100,
       items: [
         {
           title: "Public Prosecutor Head",
@@ -63,11 +46,11 @@ const data = {
         },
         {
           title: "Office Admin",
-          url: "/pending",
+          url: "/add-pp-office-admin",
         },
         {
           title: "Superintendent of Police",
-          url: "/pending",
+          url: "/add-sp",
         },
       ],
     },
@@ -76,127 +59,36 @@ const data = {
       url: "#",
       icon: SquareTerminal,
       isActive: true,
+      type: 100,
       items: [
         {
-          title: "History",
-          url: "/pending",
+          title: "Public Prosecutor Head",
+          url: "/pp-head-list",
         },
         {
-          title: "Future",
-          url: "/pending",
+          title: "Office Admin",
+          url: "/pp-office-admin-list",
         },
         {
-          title: "Custom",
-          url: "/pending",
+          title: "Superintendent of Police",
+          url: "/sp-list",
         },
       ],
-    },
-    // {
-    //   title: "Playground",
-    //   url: "#",
-    //   icon: SquareTerminal,
-    //   isActive: true,
-    //   items: [
-    //     {
-    //       title: "History",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Starred",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Settings",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Models",
-    //   url: "#",
-    //   icon: Bot,
-    //   items: [
-    //     {
-    //       title: "Genesis",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Explorer",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Quantum",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Documentation",
-    //   url: "#",
-    //   icon: BookOpen,
-    //   items: [
-    //     {
-    //       title: "Introduction",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Get Started",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Tutorials",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Changelog",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Settings",
-    //   url: "#",
-    //   icon: Settings2,
-    //   items: [
-    //     {
-    //       title: "General",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Team",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Billing",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Limits",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
     },
   ],
 };
 
 export const AdminAppSidebar = (props) => {
+  const [authToken, setAuthToken] = useState("");
+  const [user, setUser] = useState("");
+  const token = useSelector((state) => state.auth.token);
+  const userDetails = useSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    setAuthToken(token);
+    setUser(userDetails);
+  }, [token, userDetails]);
+  console.log(user);
   return (
     <Sidebar
       collapsible="icon"
@@ -204,11 +96,9 @@ export const AdminAppSidebar = (props) => {
       className="mt-[64px] flex flex-col h-[calc(100vh-64px)] z-20"
     >
       <SidebarHeader>
-        {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
       <SidebarContent className="flex-grow">
         <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
