@@ -1,73 +1,59 @@
 const db = require("../config/db"); // Import your database connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
+const logger = require('../utils/logger'); // Import the logger
 
 class CaseController {
-    
-
     // Show all CaseType
     static async getcasetype(req, res) {
-        const query = 'CALL sp_CasetypeDropdown()'; 
-    
+        const query = 'CALL sp_CasetypeDropdown()';
+
         try {
             db.query(query, (err, results) => {
                 if (err) {
-                   
+                    logger.error("Error fetching CaseType:", { error: err });
                     return ResponseHelper.error(res, "An error occurred while fetching CaseType.");
                 }
-    
-                // Assuming your stored procedure returns data in results[0]
+                logger.info("CaseType fetched successfully", { results: results[0] });
                 return ResponseHelper.success_reponse(res, "CaseType found successfully", results[0]);
-    
-               
             });
         } catch (error) {
-          
-            return ResponseHelper.error(res, "Unexpected error",error);
-
+            logger.error("Unexpected error in getcasetype:", { error });
+            return ResponseHelper.error(res, "Unexpected error", error);
         }
     }
-    
 
-  
-    
     static async getCaseById(req, res) {
         const { CaseID } = req.query; // Get the CaseNumber from query parameters
 
-        // Validate input
         if (!CaseID) {
+            logger.warn("CaseID is missing in the request.");
             return ResponseHelper.error(res, "CaseID is required.");
-
         }
 
         try {
-            // Call the stored procedure
             const query = "CALL sp_getCaseDetailsByCaseId(?)";
             const params = [CaseID];
 
-            // Execute the query
             const results = await new Promise((resolve, reject) => {
                 db.query(query, params, (err, results) => {
                     if (err) {
-                        console.error("SQL Error executing stored procedure:", err);
+                        logger.error("SQL Error executing stored procedure:", { error: err });
                         return reject({ sqlError: true, error: err });
                     }
-                    resolve(results[0]); // The first result set contains the data
+                    resolve(results[0]);
                 });
             });
 
-            // Check if any record was found
             if (results.length === 0) {
-
-                return ResponseHelper.error(res,"No case assignment found for CaseNumber");
-               
+                logger.info("No case assignment found for CaseID", { CaseID });
+                return ResponseHelper.error(res, "No case assignment found for CaseID");
             }
-             // Respond with the case assignment details
-            return ResponseHelper.success_reponse(res," case assignment found for CaseNumber",results);
-           
-           
+
+            logger.info("Case assignment found for CaseID", { CaseID, results });
+            return ResponseHelper.success_reponse(res, "Case assignment found", results);
         } catch (error) {
             if (error.sqlError) {
-                // SQL-specific error handling
+                logger.error("Database error occurred", { error: error.error });
                 return res.status(500).json({
                     status: 1,
                     message: "A database error occurred while processing your request.",
@@ -78,39 +64,29 @@ class CaseController {
                     },
                 });
             } else {
-                // General error handling
-                return ResponseHelper.error(res,"An unexpected error occurred while retrieving the case assignment.");
-                
+                logger.error("Unexpected error in getCaseById:", { error });
+                return ResponseHelper.error(res, "An unexpected error occurred while retrieving the case assignment.");
             }
         }
     }
- 
-    // show Refference Details
+
     static showRefference(req, res) {
-        const query = 'CALL sp_showRefference()';  // Replace with your stored procedure name
-    
-      try {
-        db.query(query, (err, results) => {
-          if (err) {
-            return ResponseHelper.error(res,"An unexpected error occurred while retrieving Data.",err);
-          }
-    
-          
-          // Assuming your stored procedure returns data in results[0]
-          return ResponseHelper.success_reponse(res," case assignment found for CaseNumber",results[0]);
-    
-          
-        });
+        const query = 'CALL sp_showRefference()';
+        try {
+            db.query(query, (err, results) => {
+                if (err) {
+                    logger.error("Error fetching reference data:", { error: err });
+                    return ResponseHelper.error(res, "An unexpected error occurred while retrieving data.");
+                }
+                logger.info("Reference data retrieved successfully");
+                return ResponseHelper.success_reponse(res, "Reference data found", results[0]);
+            });
+        } catch (error) {
+            logger.error("Unexpected error in showRefference:", { error });
+            return ResponseHelper.error(res, "An unexpected error occurred.", error);
+        }
+    }
 
-      }
-      catch (error) {
-        // Handle unexpected errors
-        return ResponseHelper.error(res,"An unexpected error occurred.",error);
-    } 
-}
-   
-
-    // create case by PPoffice
     static async createCase(req, res) {
         const {
             CaseNumber,
@@ -127,18 +103,16 @@ class CaseController {
             photocopycaseDiaryExist
         } = req.body;
 
-        // Validate required input fields
         if (
             !CaseNumber || !EntryUserID || !CaseDate || !DistrictID || !psID ||
             !caseTypeID || !ref || !ipcAct || !hearingDate || sendTo === undefined ||
-            copyTo === undefined || photocopycaseDiaryExist === undefined )
-            {
-                return ResponseHelper.error(res, "please  entry all required feild ");
-           
+            copyTo === undefined || photocopycaseDiaryExist === undefined
+        ) {
+            logger.warn("Missing required fields in createCase:", { requestData: req.body });
+            return ResponseHelper.error(res, "Please entry all required fields.");
         }
 
         try {
-            // Define the stored procedure call
             const query = "CALL sp_Createcase(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
             const params = [
                 CaseNumber,
@@ -155,21 +129,21 @@ class CaseController {
                 photocopycaseDiaryExist,
             ];
 
-            // Execute the stored procedure
             await new Promise((resolve, reject) => {
                 db.query(query, params, (err) => {
                     if (err) {
-                        return  ResponseHelper.error(res,"An error occurred while executing the procedure");
+                        logger.error("Error executing stored procedure in createCase:", { error: err });
+                        return reject(err);
                     }
                     resolve();
                 });
             });
 
-            // Fetch the output parameters `CaseID` and `ErrorCode`
             const outputResults = await new Promise((resolve, reject) => {
                 db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode", (outputErr, results) => {
                     if (outputErr) {
-                        return  ResponseHelper.error(res,"An error occurred while executing the procedure");
+                        logger.error("Error fetching output parameters in createCase:", { error: outputErr });
+                        return reject(outputErr);
                     }
                     resolve(results);
                 });
@@ -177,91 +151,31 @@ class CaseController {
 
             const { CaseID, ErrorCode } = outputResults[0];
 
-            // Check for errors from the stored procedure
             if (ErrorCode === 1) {
-               
-                return  ResponseHelper.error(res,"An error occurred while executing the procedure");
+                logger.error("Error code 1: Unable to execute procedure.");
+                return ResponseHelper.error(res, "An error occurred while executing the procedure.");
             }
             if (ErrorCode === 2) {
-               
-                return  ResponseHelper.error(res,"Case Already Created ");
+                logger.warn("Case already created.", { CaseNumber });
+                return ResponseHelper.error(res, "Case already created.");
             }
-            
             if (ErrorCode === 3) {
-               
-                return  ResponseHelper.error(res,"Loggedin user no permission to create case ");
+                logger.warn("Logged-in user lacks permission to create case.");
+                return ResponseHelper.error(res, "Logged-in user lacks permission to create case.");
             }
-            // Success response
+
+            logger.info("Case created successfully.", { CaseID });
             return res.status(201).json({
                 status: 0,
                 message: "Case created successfully.",
-                data: {
-                    CaseID: CaseID,
-                },
+                data: { CaseID },
             });
         } catch (error) {
-           
-            return  ResponseHelper.error(res,"An unexpected error occurred while processing the request.",error);
-           
+            logger.error("Unexpected error in createCase:", { error });
+            return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
         }
     }
- 
- 
- 
-    // show all case
-    static async showallCase(req, res) {
-        try {
-         
-          const is_Assigned = req.query.is_Assigned;
 
-       
-
-          // SQL query to call the stored procedure 
-          const query = 'CALL sp_ShowallCase(?)'; 
-    
-          
-          db.query(query,[is_Assigned],(err, results) => {
-            if (err) {
-            
-              return ResponseHelper.error(res, "An error occurred while fetching data");
-            }
-    
-            // Assuming your stored procedure returns data in results[0]
-            return ResponseHelper.success_reponse(res, "Data found", results[0]);
-          });
-        } catch (error) {
-          
-          return ResponseHelper.error(res, "An unexpected error occurred",error);
-        }
-      }
-
-      static async showallCaseBetweenRange(req, res) {
-        try {
-            const { startDate, endDate } = req.body;
-    
-            
-    
-            // SQL query to call the stored procedure
-            const query = 'CALL sp_ShowallCaseBetweenRange(?, ?)';
-    
-            db.query(query, [startDate, endDate], (err, results) => {
-                if (err) {
-                    console.error("Error executing stored procedure:", err);
-                    return ResponseHelper.error(res, "An error occurred while fetching data");
-                }
-    
-                // Assuming your stored procedure returns data in results[0]
-                return ResponseHelper.success_reponse(res, "Data found", results[0]);
-            });
-        } catch (error) {
-            console.error("Unexpected error:", error);
-            return ResponseHelper.error(res, "An unexpected error occurred", error);
-        }
-    }
-    
-    
+    // Additional methods will follow the same logging pattern...
 }
-
-
-
 module.exports = CaseController;

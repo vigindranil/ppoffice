@@ -75,7 +75,7 @@ class PPuserController {
         if (err) {
           return ResponseHelper.error(res, "An error occurred while fetching data");
         }
-        if (results[0] && results[0].length > 0) 
+        if (results[0] && results[0].length > 0)
         {
             return ResponseHelper.success_reponse(res, "Data found", results[0]);
         }

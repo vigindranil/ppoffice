@@ -1,23 +1,24 @@
+// EmailController.js
 const nodemailer = require("nodemailer");
 const ResponseHelper = require('./ResponseHelper');
-const db = require("../config/db"); // Import the DB connection
-const EmailTemplate = require('./emailTemplate'); // Import the EmailTemplate class
+const db = require("../config/db");
+const EmailTemplate = require('./emailTemplate');
+const logger = require('../utils/logger'); // Import logger
 
 class EmailController {
     static async sendEmail(req, res) {
         const { CaseID } = req.body;
 
-        // Validate required fields
         if (!CaseID) {
+            logger.error("CaseID is required");
             return ResponseHelper.error(res, "CaseID is required");
         }
 
         try {
             const query = "CALL sp_sendEmail(?)";
-
             db.query(query, [CaseID], async (err, results) => {
                 if (err) {
-                    console.error("Error executing stored procedure:", err);
+                    logger.error(`Error executing stored procedure: ${err}`);
                     return res.status(500).json({
                         status: 1,
                         message: "Error retrieving data from the database",
@@ -28,22 +29,16 @@ class EmailController {
                 const emailDetails = rows[0];
 
                 if (!emailDetails) {
+                    logger.warn(`No email details found for CaseID: ${CaseID}`);
                     return res.status(404).json({
                         status: 1,
                         message: "No email details found for the given CaseID.",
                     });
                 }
 
-                const { receiveEmail, ccEmail, psCaseNo, dated, hearingDate, ipcSection, crm, sp_id, ps_id,ppEmail,PPId } = emailDetails;
+                const { receiveEmail, ccEmail, psCaseNo, dated, hearingDate, ipcSection, crm, sp_id, ps_id, ppEmail, PPId } = emailDetails;
 
-                // Generate the email content
-                const emailTemplate = new EmailTemplate({
-                    crm,
-                    psCaseNo,
-                    dated,
-                    ipcSection,
-                    hearingDate,
-                });
+                const emailTemplate = new EmailTemplate({ crm, psCaseNo, dated, ipcSection, hearingDate });
 
                 const transporter = nodemailer.createTransport({
                     host: "smtp.gmail.com",
@@ -68,15 +63,16 @@ class EmailController {
                 try {
                     const info = await transporter.sendMail(mailOptions);
 
-                    // Email sent successfully, now log the details
+                    logger.info(`Email sent successfully for CaseID: ${CaseID} to ${receiveEmail}`);
+
                     const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
                     const logParams = [
-                        info.messageId, // Message ID from nodemailer
-                        CaseID,         // Case ID
-                        psCaseNo,       // Case number
-                        dated,          // Case Date
+                        info.messageId,
+                        CaseID,
+                        psCaseNo,
+                        dated,
                         ipcSection,
-                        hearingDate,    // Case Hearing Date
+                        hearingDate,
                         receiveEmail,
                         ccEmail,
                         sp_id,
@@ -87,14 +83,14 @@ class EmailController {
 
                     db.query(logQuery, logParams, (logErr) => {
                         if (logErr) {
-                            console.error("Error logging email details:", logErr);
+                            logger.error(`Error logging email details for CaseID: ${CaseID}: ${logErr}`);
                             return res.status(500).json({
                                 status: 1,
                                 message: "Email sent, but logging failed.",
                             });
                         }
 
-                        // Respond with success
+                        logger.info(`Email details logged successfully for CaseID: ${CaseID}`);
                         return res.status(200).json({
                             status: 0,
                             message: "Email sent and logged successfully.",
@@ -105,7 +101,7 @@ class EmailController {
                         });
                     });
                 } catch (emailError) {
-                    console.error("Error sending email:", emailError);
+                    logger.error(`Error sending email for CaseID: ${CaseID}: ${emailError}`);
                     return res.status(500).json({
                         status: 1,
                         message: "Failed to send the email.",
@@ -114,7 +110,7 @@ class EmailController {
                 }
             });
         } catch (error) {
-            console.error("Error in sendEmail:", error);
+            logger.error(`Unexpected error in sendEmail for CaseID: ${CaseID}: ${error.message}`);
             return res.status(500).json({
                 status: 1,
                 message: "An unexpected error occurred.",
@@ -126,8 +122,8 @@ class EmailController {
     static async sendEmailTO(req, res) {
         const { CaseID, PPuserID } = req.body;
 
-        // Validate required fields
         if (!CaseID || !PPuserID) {
+            logger.error("CaseID and PPuserID are required");
             return res.status(400).json({
                 status: 1,
                 message: "Fields 'CaseID' and 'PPuserID' are required.",
@@ -136,10 +132,9 @@ class EmailController {
 
         try {
             const query = "CALL sp_sendEmail_pp(?, ?)";
-
             db.query(query, [CaseID, PPuserID], async (err, results) => {
                 if (err) {
-                    console.error("Error executing stored procedure:", err);
+                    logger.error(`Error executing stored procedure: ${err}`);
                     return res.status(500).json({
                         status: 1,
                         message: "Error retrieving data from the database",
@@ -150,34 +145,17 @@ class EmailController {
                 const emailDetails = rows[0];
 
                 if (!emailDetails) {
+                    logger.warn(`No email details found for CaseID: ${CaseID}`);
                     return res.status(404).json({
                         status: 1,
                         message: "No email details found for the given CaseID.",
                     });
                 }
 
-                const { receiveEmail, ccEmail, psCaseNo, dated, hearingDate, ipcSection, crm, ppEmail, PPName, SPName, PSName,PPId,sp_id,
-                    ps_id } = emailDetails;
+                const { receiveEmail, ccEmail, psCaseNo, dated, hearingDate, ipcSection, crm, ppEmail, PPName, SPName, PSName, PPId, sp_id, ps_id } = emailDetails;
 
-                // Create instances of EmailTemplate with the case details
-                const emailTemplate1 = new EmailTemplate({
-                    crm,
-                    psCaseNo,
-                    dated,
-                    ipcSection,
-                    PPName,
-                    hearingDate,
-                });
-
-                const emailTemplate2 = new EmailTemplate({
-                    crm,
-                    psCaseNo,
-                    dated,
-                    ipcSection,
-                    SPName,
-                    PSName,
-                    hearingDate,
-                });
+                const emailTemplate1 = new EmailTemplate({ crm, psCaseNo, dated, ipcSection, PPName, hearingDate });
+                const emailTemplate2 = new EmailTemplate({ crm, psCaseNo, dated, ipcSection, SPName, PSName, hearingDate });
 
                 const transporter = nodemailer.createTransport({
                     host: "smtp.gmail.com",
@@ -189,11 +167,9 @@ class EmailController {
                     },
                 });
 
-                // Generate the email content
                 const emailContent1 = emailTemplate1.generateEmailSample();
                 const emailContent2 = emailTemplate2.generateEmailCopy();
 
-                // Mail options for both emails
                 const mailOptions1 = {
                     from: process.env.EMAIL_USER,
                     to: receiveEmail,
@@ -209,60 +185,62 @@ class EmailController {
                     html: `<pre>${emailContent2}</pre>`,
                 };
 
-                // Send both emails
                 const info1 = await transporter.sendMail(mailOptions1);
                 const info2 = await transporter.sendMail(mailOptions2);
 
+                logger.info(`Emails sent successfully for CaseID: ${CaseID}`);
+
                 const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
                 const logParams1 = [
-                    info1.messageId, // Message ID from nodemailer
-                    CaseID,         // Case ID
-                    psCaseNo,       // Case number
-                    dated,          // Case Date
+                    info1.messageId,
+                    CaseID,
+                    psCaseNo,
+                    dated,
                     ipcSection,
-                    hearingDate,    // Case Hearing Date
+                    hearingDate,
                     receiveEmail,
                     ccEmail,
                     sp_id,
-                    ps_id,          // PS ID (not available in this scenario)
+                    ps_id,
                     ppEmail,
                     PPId
-
                 ];
 
                 db.query(logQuery, logParams1, (logErr1) => {
                     if (logErr1) {
-                        console.error("Error logging email details:", logErr1);
+                        logger.error(`Error logging email details for CaseID: ${CaseID}: ${logErr1}`);
                         return res.status(500).json({
                             status: 1,
                             message: "Emails sent, but logging failed.",
                         });
                     }
+
                     const logQuery2 = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
                     const logParams2 = [
-                        info2.messageId, // Message ID from nodemailer
-                        CaseID,         // Case ID
-                        psCaseNo,       // Case number
-                        dated,          // Case Date
+                        info2.messageId,
+                        CaseID,
+                        psCaseNo,
+                        dated,
                         ipcSection,
-                        hearingDate,    // Case Hearing Date
+                        hearingDate,
                         receiveEmail,
                         ccEmail,
                         sp_id,
-                        ps_id,          // PS ID (not available in this scenario)
+                        ps_id,
                         ppEmail,
                         PPId
                     ];
 
                     db.query(logQuery2, logParams2, (logErr2) => {
                         if (logErr2) {
-                            console.error("Error logging email details:", logErr2);
+                            logger.error(`Error logging second email details for CaseID: ${CaseID}: ${logErr2}`);
                             return res.status(500).json({
                                 status: 1,
                                 message: "Emails sent, but logging failed.",
                             });
                         }
 
+                        logger.info(`Email details logged successfully for CaseID: ${CaseID}`);
                         return res.status(200).json({
                             status: 0,
                             message: "Emails sent successfully.",
@@ -277,7 +255,7 @@ class EmailController {
                 });
             });
         } catch (error) {
-            console.error("Error sending email:", error);
+            logger.error(`Error sending email for CaseID: ${CaseID}: ${error.message}`);
             return res.status(500).json({
                 status: 1,
                 message: "Failed to send the email.",
