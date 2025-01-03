@@ -1,7 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const bodyParser = require('body-parser');
+const caseRoutes = require('./routes/caseRoutes');
+const path = require('path');
 require('dotenv').config();
+
 
 const port = process.env.PORT || 3000;  // Use the port from .env or default to 3000
 
@@ -9,7 +13,13 @@ const port = process.env.PORT || 3000;  // Use the port from .env or default to 
 app.use(cors());
 
 // Middleware to parse JSON bodies
-app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use('/api/cases', caseRoutes);
 
 const routes = require('./routes/routes');
 

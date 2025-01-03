@@ -1,5 +1,7 @@
 const db = require("../config/db"); // Import your database connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
+const path = require("path");
+const basePath = `D:\\CaseTrack\\ppoffice\\ppo-office-casetrack\\uploads\\`;
 
 class CaseController {
     
@@ -110,7 +112,7 @@ class CaseController {
 }
    
 
-    // create case by PPoffice
+    // create Case without Doc
     static async createCase(req, res) {
         const {
             CaseNumber,
@@ -205,10 +207,110 @@ class CaseController {
            
         }
     }
+       
+  
+
+     
+     // create case with Doc 
+        static async createCaseDocument(req, res) {
+            try {
+                const {
+                    CaseNumber,
+                    EntryUserID,
+                    CaseDate,
+                    DistrictID,
+                    psID,
+                    caseTypeID,
+                    ref,
+                    ipcAct,
+                    hearingDate,
+                    sendTo,
+                    copyTo,
+                    photocopycaseDiaryExist,
+                    caseDocument
+                } = req.body;
+    
+                // Validate required fields
+                if (
+                    !CaseNumber ||
+                    !EntryUserID ||
+                    !CaseDate ||
+                    !DistrictID ||
+                    !psID ||
+                    !caseTypeID ||
+                    !ref ||
+                    !ipcAct ||
+                    !hearingDate ||
+                    sendTo === undefined ||
+                    copyTo === undefined ||
+                    photocopycaseDiaryExist === undefined
+                ) {
+                    return res.status(400).json({ error: 'Please fill all required fields' });
+                }
+    
+                // Retrieve uploaded document path
+                const imagePath = req.file ? path.basename(req.file.path) : null;
+    
+                // Stored procedure call
+                const query = "CALL sp_CreatecaseV1(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
+                const params = [
+                    CaseNumber,
+                    EntryUserID,
+                    CaseDate,
+                    DistrictID,
+                    psID,
+                    caseTypeID,
+                    ref,
+                    ipcAct,
+                    hearingDate,
+                    sendTo,
+                    copyTo,
+                    photocopycaseDiaryExist,
+                    imagePath, // Pass file path to stored procedure
+                ];
+    
+                // Execute the stored procedure
+                await new Promise((resolve, reject) => {
+                    db.query(query, params, (err) => {
+                        if (err) return reject(err);
+                        resolve();
+                    });
+                });
+    
+                // Fetch the output parameters `CaseID` and `ErrorCode`
+                const outputResults = await new Promise((resolve, reject) => {
+                    db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode", (err, results) => {
+                        if (err) return reject(err);
+                        resolve(results);
+                    });
+                });
+    
+                const { CaseID, ErrorCode } = outputResults[0];
+                console.log(CaseID);
+                console.log(ErrorCode);
+                // Handle possible error codes
+                if (ErrorCode === 1) return res.status(400).json({ error: 'Procedure execution error' });
+                if (ErrorCode === 2) return res.status(400).json({ error: 'Case already exists' });
+                if (ErrorCode === 3) return res.status(400).json({ error: 'User lacks permission to create case' });
+    
+                // Success response
+                return res.status(201).json({
+                    message: 'Case created successfully',
+                    data: { CaseID },
+                });
+            } catch (error) {
+                // Handle unexpected errors
+                return res.status(500).json({ error: 'Unexpected error occurred', details: error.message });
+            }
+        }
+    
+    
+  
+    
+    
+      
  
- 
- 
-    // show all case
+    // show all case with out Doc
     static async showallCase(req, res) {
         try {
          
@@ -233,7 +335,76 @@ class CaseController {
           
           return ResponseHelper.error(res, "An unexpected error occurred",error);
         }
-      }
+      } 
+
+    // show all case with  Doc  
+    static async showallCaseWithDOC(req, res) {
+        try {
+            // Extract is_Assigned parameter from the request body
+            const { is_Assigned } = req.body;
+
+            // Validate the required parameter
+            if (is_Assigned === undefined) {
+                return res.status(400).json({
+                    success: false,
+                    message: "The parameter 'is_Assigned' is required.",
+                });
+            }
+
+            // Stored procedure query
+            const query = "CALL sp_ShowallCase(?)";
+            const params = [is_Assigned]; // Pass the required parameter to the stored procedure
+
+            // Execute the stored procedure
+            const results = await new Promise((resolve, reject) => {
+                db.query(query, params, (err, rows) => {
+                    if (err) return reject(err);
+                    resolve(rows);
+                });
+            });
+
+            // Check if data is returned
+            const cases = results[0]; // First result set contains the data
+
+            if (!cases || cases.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "No cases found.",
+                });
+            }
+
+            // Format the response for Postman
+            const formattedCases = cases.map((caseItem) => ({
+                PPuserName: caseItem.PPuserName,
+                CaseNumber: caseItem.CaseNumber,
+                SpName: caseItem.SpName,
+                PsName: caseItem.PsName,
+                CaseDate: caseItem.CaseDate,
+                CaseType: caseItem.CaseType,
+                CaseHearingDate: caseItem.CaseHearingDate,
+                IPCSection: caseItem.IPCSection,
+                ReferenceNumber: caseItem.ReferenceNumber,
+                CaseId: caseItem.CaseId,
+                BeginReferenceName: caseItem.BeginReferenceName,
+                IsAssigned: caseItem.IsAssigned,
+                //Document: caseItem.Document,
+                Document: caseItem?.Document ?  `${basePath}${caseItem?.Document}` : null,
+            }));
+
+            // Send success response with data
+            return res.status(200).json({
+                success: true,
+                data: formattedCases,
+            });
+        } catch (error) {
+            // Handle unexpected errors
+            return res.status(500).json({
+                success: false,
+                error: "Unexpected error occurred.",
+                details: error.message,
+            });
+        }
+    }
 
       static async showallCaseBetweenRange(req, res) {
         try {
