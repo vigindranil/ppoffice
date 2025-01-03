@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 
+
 export default function LandingPage() {
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -19,7 +20,7 @@ export default function LandingPage() {
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent"></div>
       <div className="absolute inset-0 bg-black/50"></div>
       <div className="relative h-screen w-full overflow-hidden">
-        {/* <motion.div 
+        {/* <motion.div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat brightness-40"
           style={{
             backgroundImage: 'url("/img/ppoimage.jpg")'
@@ -80,4 +81,5 @@ export default function LandingPage() {
     </div>
   )
 }
+
 

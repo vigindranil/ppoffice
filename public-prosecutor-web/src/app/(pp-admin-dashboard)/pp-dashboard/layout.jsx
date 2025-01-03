@@ -1,7 +1,7 @@
 "use client";
 import React, { Suspense, useEffect, useState } from "react";
 import Loading from "./loading";
-import AdminSidebarLayout from "@/components/sidebar-layout";
+import AdminSidebarLayout from "@/components/SidbarProvider";
 import { useSelector } from "react-redux";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";

@@ -1,148 +1,73 @@
-import { serviceUrl } from '@/app/contants';
+import { serverUrl } from '@/app/constants';
 
-async function saveCase(caseData) {
-    try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-            throw new Error("Authentication token not found");
-        }
-
-        const response = await fetch(`${serviceUrl}/api/addCase`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(caseData),
-        });
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error("Unauthorized: Please log in again");
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (result.status === 0) {
-            return result.data;
-        } else {
-            throw new Error(result.message || "Failed to save case");
-        }
-    } catch (error) {
-        console.error("Error saving case:", error);
-        throw error;
+export async function addPPUser(data) {
+  try {
+    const token = sessionStorage.getItem('token');
+    console.log(token);
+    if (!token) {
+      return { success: false, message: 'No authorization token found.' };
     }
+
+    const response = await fetch(`${serverUrl}/api/addppUser`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding PP User:', error);
+    throw error;
+  }
 }
 
-async function fetchCaseTypes() {
-    try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-            throw new Error("Authentication token not found");
-        }
-
-        const response = await fetch(`${serviceUrl}/api/getcasetype`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-        });
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error("Unauthorized: Please log in again");
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.status === 0 && data.data) {
-            return data.data;
-        } else {
-            throw new Error(data.message || "Failed to fetch case types");
-        }
-    } catch (error) {
-        console.error("Error fetching case types:", error);
-        throw error;
+export async function getPPUser(data) {
+  try {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      return { success: false, message: 'No authorization token found.' };
     }
-}
 
-async function fetchReferenceDetails() {
-    try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-            throw new Error("Authentication token not found");
-        }
-
-        const response = await fetch(
-            `${serviceUrl}/api/showRefferenceDetails`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error("Unauthorized: Please log in again");
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.status === 0 && data.data) {
-            return data.data;
-        } else {
-            throw new Error(data.message || "Failed to fetch reference details");
-        }
-    } catch (error) {
-        console.error("Error fetching reference details:", error);
-        throw error; // Re-throw the error so it can be handled by the component
-    }
-}
-async function sendEmail(caseId) {
-    try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-            throw new Error("Authentication token not found");
-        }
-
-        const response = await fetch(`${serviceUrl}/api/send-email`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ CaseID: caseId }),
-        });
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error("Unauthorized: Please log in again");
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (result.status === 0) {
-            return result.data;
-        } else {
-            throw new Error(result.message || "Failed to send email");
-        }
-    } catch (error) {
-        console.error("Error sending email:", error);
-        throw error;
-    }
+    const response = await fetch(`${serverUrl}/api/getppuser?EntryuserID=2`, {
+      headers: {
+        'Authorization': 'Bearer '+token
+      },
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding PP User:', error);
+    throw error;
+  }
 }
 
 
+export async function POST(request) {
+  const { PSUserId } = await request.json()
 
+  // In a real application, you would fetch this data from your database
+  const userData = {
+    ps_id: 54,
+    ps_name: "sunil-125",
+    ps_username: "sunil chetril",
+    ps_email: "vyoma.doe@example.com",
+    ps_contactnumber: 9433364965,
+    WBP_ID: "WB/RQ/RS/978"
+  }
 
-
-
-
-
+  if (PSUserId === userData.ps_id) {
+    return NextResponse.json({
+      status: 0,
+      message: "Data found",
+      data: [userData]
+    })
+  } else {
+    return NextResponse.json({
+      status: 1,
+      message: "User not found",
+      data: []
+    }, { status: 404 })
+  }
+}
 

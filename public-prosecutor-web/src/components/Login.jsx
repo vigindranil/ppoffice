@@ -42,11 +42,11 @@ export default function LoginPage() {
         const userData = response.data;
         dispatch(setToken(userData?.access_token));
         dispatch(setUser(JSON.stringify(userData?.data[0])));
-        console.log(userData?.access_token);
+        console.log(userData?.data[0].AuthorityTypeID);
 
         switch (parseInt(userData?.data[0].AuthorityTypeID)) {
           case 20:
-            router.push("/");
+            router.push("/pp-head-dashboard");
             break;
           case 10:
             router.push("/pp-dashboard");
@@ -55,7 +55,7 @@ export default function LoginPage() {
             router.push("/SPCPDashboard");
             break;
           case 50:
-            router.push("/psdash");
+            router.push("/ps-dashboard");
             break;
           case 100:
             router.push("/dashboard");

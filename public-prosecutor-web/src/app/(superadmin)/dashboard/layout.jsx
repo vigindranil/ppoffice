@@ -2,7 +2,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import Page from "./page";
 import Loading from "./loading";
-import AdminSidebarLayout from "@/components/sidebar-layout";
+import AdminSidebarLayout from "@/components/SidbarProvider";
 import { useSelector } from "react-redux";
 import Footer from '@/components/Footer';
 import Link from "next/link";
@@ -38,7 +38,7 @@ const Layout = () => {
 
   return (
     <>
-      
+
       <Header />
 
       {/* Main Content */}
