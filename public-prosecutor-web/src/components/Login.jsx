@@ -60,6 +60,9 @@ export default function LoginPage() {
           case 50:
             router.push("/psdash");
             break;
+          case 60:
+            router.push("/public-prosecutor-user-dashboard");
+            break;
           case 100:
             router.push("/super-admin-dashboard");
             break;

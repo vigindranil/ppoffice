@@ -22,7 +22,7 @@ export default function AdminDashboard() {
       <div className="absolute inset-0 bg-black bg-opacity-40 -z-10"></div>
 
       <h1 className="text-2xl font-semibold mb-4 text-white">
-        Welcome to your Dashboard
+        Welcome to your Super Administrator Dashboard
       </h1>
       
       <div>

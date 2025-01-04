@@ -28,8 +28,8 @@ import {  useEffect, useState } from "react";
 
 const data = {
   user: {
-    name: "Super Admin",
-    email: "admin@example.com",
+    name: "USER",
+    email: "user@example.com",
     avatar: "/img/user.jpg",
   },
   navMain: [
@@ -73,6 +73,23 @@ const data = {
           title: "Superintendent of Police",
           url: "/sp-list",
         },
+      ],
+    },
+    {
+      title: "Show Detailed Report",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 60,
+      items: [
+        {
+          title: "Cases",
+          url: "/show-public-prosecutor-case-details",
+        },
+        // {
+        //   title: "2",
+        //   url: "/",
+        // },
       ],
     },
   ],
