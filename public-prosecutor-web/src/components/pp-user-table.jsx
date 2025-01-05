@@ -10,80 +10,84 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import { ChevronDown, ChevronUp, Eye, MoreHorizontal, Search, Trash2, UserPen } from 'lucide-react'
-
+import { ChevronDown, ChevronUp, Search, ClipboardPlus, Key } from 'lucide-react'
+import { CustomAlertDialog } from './custom-alert-dialog'
+import { useAlertDialog } from "@/hooks/useAlertDialog"
 
 export default function PPUserTable() {
+  const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [sortColumn, setSortColumn] = useState('pp_id')
-  const [sortDirection, setSortDirection] = useState('asc')
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [newPassword, setNewPassword] = useState("")
+  const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = useState(false)
   const itemsPerPage = 10
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = sessionStorage.getItem('token');
-        const response = await fetch('http://localhost:8000/api/getppuser?EntryuserID=2', {
-          headers: {
-            'Authorization': 'Bearer '+token
-          }
-        })
-        if (!response.ok) {
-          throw new Error('Failed to fetch data')
+  const fetchData = async () => {
+    try {
+      const token = sessionStorage.getItem('token')
+      const response = await fetch('http://localhost:8000/api/getppuser?EntryuserID=2', {
+        headers: {
+          'Authorization': 'Bearer ' + token
         }
-        const result = await response.json()
-        if (result.status === 0 && result.message === "Data found") {
-          setUsers(result.data)
-        } else {
-          throw new Error(result.message || 'Failed to fetch data')
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      } finally {
-        setLoading(false)
+      })
+      if (!response.ok) {
+        throw new Error('Failed to fetch data')
       }
+      const result = await response.json()
+      if (result.status === 0 && result.message === "Data found") {
+        console.log(result.data);
+        
+        setUsers(result.data)
+      } else {
+        throw new Error(result.message || 'Failed to fetch data')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchData()
   }, [])
 
-  const sortData = (column) => {
-    if (column === sortColumn) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortColumn(column)
-      setSortDirection('asc')
+  const handleResetPassword = async () => {
+    if (!selectedUser || !newPassword) return
+    try {
+      const token = sessionStorage.getItem('token')
+      const response = await fetch(`http://localhost:8000/api/changepassword`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({
+          userId: selectedUser.pp_id,
+          newPassword
+        })
+      })
+      const result = await response.json()
+      if (response.ok) {
+        al
+      } else {
+        throw new Error(result.message || 'Failed to reset password')
+      }
+    } catch (error) {
+      alert(error.message)
     }
-
-    const sortedUsers = [...users].sort((a, b) => {
-      if (a[column] < b[column]) return sortDirection === 'asc' ? -1 : 1
-      if (a[column] > b[column]) return sortDirection === 'asc' ? 1 : -1
-      return 0
-    })
-
-    setUsers(sortedUsers)
   }
 
   const filteredUsers = users.filter((user) =>
@@ -92,17 +96,31 @@ export default function PPUserTable() {
     )
   )
 
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   )
+
+  const handleConfirm = () => {
+    closeAlert()
+    setIsPasswordResetDialogOpen(false)
+    setNewPassword('')
+    setSelectedUser(null)
+    fetchData();
+  }
 
   if (loading) return <div className="text-center py-10">Loading...</div>
   if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>
 
   return (
     <div className="container mx-auto py-10">
+      <CustomAlertDialog
+              isOpen={isOpen}
+              alertType={alertType}
+              alertMessage={alertMessage}
+              onClose={closeAlert}
+              onConfirm={handleConfirm}
+            />
       <div className="flex justify-between items-center mb-4">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -122,60 +140,52 @@ export default function PPUserTable() {
         <Table>
           <TableHeader className="bg-slate-100">
             <TableRow>
-              {Object.keys(users[0]).filter((key) => (key == 'pp_name')  || (key == 'pp_username') || (key == 'pp_email')).map((key) => (
-                <TableHead key={key} className="font-bold">
-                  {key.replace('pp_', '').toUpperCase()}
-                </TableHead>
-              ))}
+              <TableHead className="font-bold">NAME</TableHead>
+              <TableHead className="font-bold">USERNAME</TableHead>
+              <TableHead className="font-bold">EMAIL</TableHead>
               <TableHead className="font-bold">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedUsers.map((user) => (
               <TableRow key={user.pp_id}>
-                {Object.entries(user).filter(([key]) => (key == 'pp_name')  || (key == 'pp_username') || (key == 'pp_email')).map(([key, value]) => (
-                  <TableCell key={key}>{value}</TableCell>
-                ))}
-                <TableCell className="flex">
-                  <Eye className='text-muted-foreground hover:text-blue-600 hover:font-bold cursor-pointer mr-1' size={16}/>
-                  <UserPen className='text-muted-foreground hover:text-yellow-600 hover:font-bold cursor-pointer mr-1' size={16}/>
-                  <Trash2 className='text-muted-foreground hover:text-red-600 hover:font-bold cursor-pointer mr-1' size={16}/>
+                <TableCell>{user.pp_name}</TableCell>
+                <TableCell>{user.pp_username}</TableCell>
+                <TableCell>{user.pp_email}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    className="mr-2"
+                    onClick={() => {
+                      setSelectedUser(user)
+                      setIsPasswordResetDialogOpen(true)
+                    }}
+                  >
+                    <Key /> Reset Password
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
-      <Pagination className="mt-4">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious 
-              href="#" 
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              aria-disabled={currentPage === 1}
-            />
-          </PaginationItem>
-          {[...Array(totalPages)].map((_, i) => (
-            <PaginationItem key={i}>
-              <PaginationLink 
-                href="#" 
-                onClick={() => setCurrentPage(i + 1)}
-                isActive={currentPage === i + 1}
-              >
-                {i + 1}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
-          <PaginationItem>
-            <PaginationNext 
-              href="#" 
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              aria-disabled={currentPage === totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <Dialog open={isPasswordResetDialogOpen} onOpenChange={setIsPasswordResetDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Password for {selectedUser?.pp_name}</DialogTitle>
+          </DialogHeader>
+          <Input
+            type="password"
+            placeholder="Enter new password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="mb-4"
+          />
+          <Button className="w-full" onClick={handleResetPassword}>
+            Reset Password
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
-

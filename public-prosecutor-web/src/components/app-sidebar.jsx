@@ -131,13 +131,9 @@ const data = {
           url: "/pp-users",
         },
         {
-          title: "Pending Cases",
+          title: "Assign Case",
           url: "/pp-head-pending-cases",
-        },
-        {
-          title: "Notify to Assigned PP",
-          url: "#",
-        },
+        }
       ],
     },
   ],

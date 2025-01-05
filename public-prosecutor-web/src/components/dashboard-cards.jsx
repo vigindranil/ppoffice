@@ -6,15 +6,15 @@ const cardData = [
   {
     title: "Total Cases",
     subtitle: "All cases in the system",
-    value: "1,234",
+    value: "36",
     icon: FileText,
     color: "#3b82f6", // blue-500
-    link: "/pp-head-pending-cases"
+    link: "/pp-head-total-cases"
   },
   {
     title: "Pending Cases",
     subtitle: "Cases awaiting action",
-    value: "56",
+    value: "8",
     icon: Clock,
     color: "#eab308", // yellow-500
     link: "/pp-head-pending-cases"
@@ -22,19 +22,11 @@ const cardData = [
   {
     title: "Assigned Cases",
     subtitle: "Cases currently in progress",
-    value: "789",
+    value: "28",
     icon: CheckCircle,
     color: "#22c55e", // green-500
-    link: "/pp-head-pending-cases"
-  },
-  {
-    title: "Total Staff",
-    subtitle: "Active team members",
-    value: "42",
-    icon: Users,
-    color: "#a855f7", // purple-500
-    link: "/pp-head-pending-cases"
-  },
+    link: "/pp-head-assigned-cases"
+  }
 ]
 
 export default function DashboardCards() {
