@@ -52,10 +52,10 @@ export default function LoginPage() {
             router.push("/pp-dashboard");
             break;
           case 30:
-            router.push("/SPCPDashboard");
+            router.push("/sp-dashboard");
             break;
           case 50:
-            router.push("/psdash");
+            router.push("/ps-dashboard");
             break;
           case 100:
             router.push("/dashboard");

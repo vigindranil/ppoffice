@@ -136,6 +136,19 @@ const data = {
         }
       ],
     },
+    {
+      title: "SP Operations",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 30,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/sp-dashboard",
+        },
+      ],
+    },
   ],
   projects: [
     {
