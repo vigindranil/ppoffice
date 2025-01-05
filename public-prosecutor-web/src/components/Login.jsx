@@ -49,16 +49,16 @@ export default function LoginPage() {
 
         switch (parseInt(userData?.data[0].AuthorityTypeID)) {
           case 20:
-            router.push("/");
+            router.push("/pp-head-dashboard");
             break;
           case 10:
             router.push("/pp-dashboard");
             break;
           case 30:
-            router.push("/SPCPDashboard");
+            router.push("/sp-dashboard");
             break;
           case 50:
-            router.push("/psdash");
+            router.push("/ps-dashboard");
             break;
           case 60:
             router.push("/public-prosecutor-user-dashboard");

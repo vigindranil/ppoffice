@@ -33,7 +33,7 @@ const Layout = ({children}) => {
   // ];
 
   const breadcrumb = [
-    { href: "/super-admin-dashboard", name: "Dashboard" },{ name: "Public Prosecutor Head List" },
+    { href: "/public-prosecutor-user-dashboard", name: "Dashboard" },{ name: "Public Prosecutor Case Details" },
   ];
 
   return (

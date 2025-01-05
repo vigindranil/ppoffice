@@ -92,6 +92,61 @@ const data = {
         // },
       ],
     },
+    {
+      title: "PP office admin",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Dashboard",
+          url: "#",
+        },
+        {
+          title: "Add cases",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "PP Head Operations",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 20,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/pp-head-dashboard",
+        },
+        {
+          title: "Add PP User",
+          url: "/add-pp-user",
+        },
+        {
+          title: "PP Users",
+          url: "/pp-users",
+        },
+        {
+          title: "Assign Case",
+          url: "/pp-head-pending-cases",
+        }
+      ],
+    },
+    {
+      title: "SP Operations",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 30,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/sp-dashboard",
+        },
+      ],
+    },
   ],
 };
 
