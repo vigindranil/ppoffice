@@ -429,8 +429,7 @@ class CaseController {
             return ResponseHelper.error(res, "An unexpected error occurred", error);
         }
     }
-    
-    
+      
 }
 
 

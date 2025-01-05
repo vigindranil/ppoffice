@@ -11,6 +11,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const districtController = require('../controllers/districtController');
 router.get('/api/alldistrict', authMiddleware.verifyToken, districtController.show);
 router.get('/api/showallCasesBydistrictId',authMiddleware.verifyToken,districtController.showallcasesBydistrict);
+router.post('/api/count-by-ps',authMiddleware.verifyToken,districtController.getCaseCountsByPoliceStation);
 
 
 
