@@ -408,14 +408,14 @@ class CaseController {
 
       static async showallCaseBetweenRange(req, res) {
         try {
-            const { startDate, endDate } = req.body;
+            const { startDate, endDate,isAssign } = req.body;
     
             
     
             // SQL query to call the stored procedure
-            const query = 'CALL sp_ShowallCaseBetweenRange(?, ?)';
+            const query = 'CALL sp_ShowallCaseBetweenRange(?, ?,?)';
     
-            db.query(query, [startDate, endDate], (err, results) => {
+            db.query(query, [startDate, endDate,isAssign], (err, results) => {
                 if (err) {
                     console.error("Error executing stored procedure:", err);
                     return ResponseHelper.error(res, "An error occurred while fetching data");
