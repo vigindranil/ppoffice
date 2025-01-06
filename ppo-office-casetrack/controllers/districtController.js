@@ -51,8 +51,8 @@ class DistrictController {
   static async getCaseCountsByPoliceStation(req, res) {
     try {
         // Get the districtId from the request body
-        const { districtId } = req.body;
-
+        const districtId = req.query.districtId; 
+        
         // Validate the input
         if (!districtId) {
             return res.status(400).json({ error: 'District ID is required.' });
