@@ -43,6 +43,7 @@ router.post("/api/addCase",authMiddleware.verifyToken,CaseController.createCase)
 router.get("/api/showallCase",authMiddleware.verifyToken,CaseController.showallCase); // firsttime create case by ppOffice
 router.post("/api/showallCaseBetweenRange",authMiddleware.verifyToken,CaseController.showallCaseBetweenRange);
 
+router.post("/api/showallCase", authMiddleware.verifyToken,CaseController.showallCaseWithDOC);
 
 // send email
 const EmailController = require("../controllers/emailController");
