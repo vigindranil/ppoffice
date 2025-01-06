@@ -2,27 +2,35 @@
 import React, { Suspense, useEffect, useState } from "react";
 import Loading from "./loading";
 import AdminSidebarLayout from "@/components/sidebar-layout";
-import Footer from "@/components/Footer";
+import { useSelector } from "react-redux";
+import Footer from '@/components/Footer';
 import Header from "@/components/Header";
 
-const Layout = ({ children }) => {
-  
+const Layout = ({children}) => {
+  const [authToken, setAuthToken] = useState("");
+  const [user, setUser] = useState("");
+  const token = useSelector((state) => state.auth.token);
+  const userDetails = useSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    setAuthToken(token);
+    setUser(userDetails);
+  }, [token, userDetails]); 
 
   const breadcrumb = [
-    {name: "Office Admin" },
-    { href: "/pp-office-admin-dashboard", name: "Dashboard" },
-    {name: "Pending Cases" },
+    { name: "Office Admin" },{ href: "/pp-office-admin-dashboard", name: "Dashboard" },{ name: "All Cases List" },
   ];
 
   return (
     <>
+      
       <Header />
-
-      {/* Main Content */}
       <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
           <div className="flex flex-1">
-            <Suspense fallback={<Loading />}>{children}</Suspense>
+            <Suspense fallback={<Loading />}>
+              {children}
+            </Suspense>
           </div>
         </AdminSidebarLayout>
         <Footer />

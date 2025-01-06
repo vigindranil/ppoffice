@@ -176,12 +176,40 @@ export async function showSPUser(entryUserID, districtID) {
   }
 
 
-// 6. Show Head User
+// 4. Show Head User
 export const showPPOfficeHeadUserList = async (req_body) => {
   return new Promise(async (resolve, reject) => {
     try {
       const token = sessionStorage.getItem('token');
       const response = await fetch(`${BASE_URL}showppOfficeHeadUserList`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req_body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+//show cases for office admin
+export const showallCase = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}showallCase`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
