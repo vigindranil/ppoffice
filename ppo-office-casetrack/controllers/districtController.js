@@ -62,25 +62,19 @@ class DistrictController {
         const query = "CALL sp_CountCasesByPoliceStation(?)";
         const params = [districtId]; // Ensure districtId is an integer
 
-        const results = await new Promise((resolve, reject) => {
-            db.query(query, params, (err, result) => {
-                if (err) return reject(err);
-                resolve(result[0]); // Access the first result set from the procedure
-            });
+        db.query(query, [districtId], (err, results) => {
+          if (err) {
+           
+            return ResponseHelper.error(res, "An error occurred while fetching data");
+          }
+  
+          // Assuming your stored procedure returns data in results[0]
+          return ResponseHelper.success_reponse(res, "Data found", results[0]);
         });
-
-        // Return the data in JSON format
-        return res.status(200).json({
-            message: 'Case counts by police stations fetched successfully.',
-            data: results,
-        });
-    } catch (error) {
-        // Handle unexpected errors
-        return res.status(500).json({
-            error: 'Unexpected error occurred.',
-            details: error.message,
-        });
-    }
+      } catch (error) {
+       
+        return ResponseHelper.error(res, "An unexpected error occurred");
+      }
 } 
   
 }
