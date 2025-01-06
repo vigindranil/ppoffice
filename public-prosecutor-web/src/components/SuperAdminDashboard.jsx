@@ -13,13 +13,12 @@ import Link from "next/link";
 
 export default function AdminDashboard() {
   return (
-    <main
-      className="flex-1 p-6 relative w-full bg-cover bg-center h-screen"
-      style={{ backgroundImage: "linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)), url('img/dash2.jpg')" }} 
-    >
-
-      {/* Overlay for Background Image */}
-      <div className="absolute inset-0 bg-black bg-opacity-40 -z-10"></div>
+    <div className="relative min-h-screen w-full">
+    <div 
+      className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]"
+    />
+    <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
+    <main>
 
       <h1 className="text-2xl font-semibold mb-4 text-white">
         Welcome to your Super Administrator Dashboard
@@ -111,5 +110,6 @@ export default function AdminDashboard() {
         </div> */}
       </div>
     </main>
+    </div>
   );
 }
