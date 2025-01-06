@@ -33,7 +33,7 @@ const Layout = () => {
   // ];
 
   const breadcrumb = [
-    { name: "Dashboard" },
+    { name: "Super Admin" },{ name: "Dashboard" },
   ];
 
   return (

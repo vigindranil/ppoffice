@@ -1,7 +1,55 @@
-import { useSelector } from 'react-redux';
-import { decrypt } from '@/utils/crypto';
-import { BASE_URL } from './constants';
+import { BASE_URL } from '@/app/constants'; 
 
+export const fetchPPUsers = async (userID) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}getppuser?EntryuserID=${userID}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+export const handleNotifyToPPUser = async (CaseID, PPuserID) => {
+  return new Promise(async(resolve, reject) => {
+    const token = sessionStorage.getItem('token')
+    const response = await fetch(`${BASE_URL}send-email-pp`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        "CaseID": CaseID,
+        "PPuserID": PPuserID
+      }),
+
+    })
+    if (!response.ok) {
+      reject('Failed to send email');
+    }
+    const result = await response.json()
+    if (result.status === 0) {
+      resolve(result.message);
+      console.log('Sent email:', result.message);
+    } else {
+      reject(result.message);
+    }
+  })
+}
 
 // 1. Add PP Office Admin
 export async function addPPOfficeAdmin(adminData) {
@@ -128,56 +176,30 @@ export async function showSPUser(entryUserID, districtID) {
   }
 
 
-
-
-// Helper function to get the token from Redux store
-const useAuthToken = () => {
-  return useSelector((state) => state.auth.token);
-};
-
-///////////////////////////////////////////////////////////////////////////////////////
-
-// 4. Show PP Office Head User List
-export const showPPOfficeHeadUserList = (encryptedUserData) => async (dispatch, getState) => {
-  try {
-    const token = getState().auth.token;
-    console.log('Token in API call:', token);
-
-    if (!token) {
-      return { success: false, message: 'No authorization token found.' };
-    }
-
-    let decryptedUser;
+// 6. Show Head User
+export const showPPOfficeHeadUserList = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
     try {
-      decryptedUser = JSON.parse(decrypt(encryptedUserData));
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}showppOfficeHeadUserList`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req_body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
     } catch (error) {
-      console.error('Error decrypting user data:', error);
-      return { success: false, message: 'Error decrypting user data' };
+      reject(`Fetch error: ${error.message}`);
     }
-
-    const entryUserID = decryptedUser.AuthorityUserID;
-    console.log('EntryUserID in API call:', entryUserID);
-
-    if (!entryUserID) {
-      return { success: false, message: 'User ID not found in decrypted data' };
-    }
-
-    const response = await fetch(`${BASE_URL}showppOfficeHeadUserList`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ EntryuserID: entryUserID }),
-    });
-    const data = await response.json();
-    console.log('API Response:', data);
-    return data;
-  } catch (error) {
-    console.error('Error fetching PP Office Head User List:', error);
-    throw error;
-  }
+  });
 };
-
-///////////////////////////////////////////////////////////////////////////////////////////
-
