@@ -3,10 +3,10 @@ import React, { Suspense, useEffect, useState } from "react";
 import Loading from "./loading";
 import AdminSidebarLayout from "@/components/sidebar-layout";
 import { useSelector } from "react-redux";
-import Footer from '@/components/Footer';
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 
-const Layout = ({children}) => {
+const Layout = ({ children }) => {
   const [authToken, setAuthToken] = useState("");
   const [user, setUser] = useState("");
   const token = useSelector((state) => state.auth.token);
@@ -15,26 +15,27 @@ const Layout = ({children}) => {
   useEffect(() => {
     setAuthToken(token);
     setUser(userDetails);
-  }, [token, userDetails]); 
+  }, [token, userDetails]);
 
   const breadcrumb = [
-    { name: "Super Admin" }, { name: "Dashboard" },
+    { href: "#", name: "PP Head Admin" },
+    { href: "/pp-head-dashboard", name: "Dashboard" }
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <>
       <Header />
-      <div className="flex flex-1">
+
+      {/* Main Content */}
+      <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
-          <div className="flex-1">
-            <Suspense fallback={<Loading />}>
-              {children}
-            </Suspense>
+          <div className="flex flex-1">
+            <Suspense fallback={<Loading />}>{children}</Suspense>
           </div>
         </AdminSidebarLayout>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </>
   );
 };
 

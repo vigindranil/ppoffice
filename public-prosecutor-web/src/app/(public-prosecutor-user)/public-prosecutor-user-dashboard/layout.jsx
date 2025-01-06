@@ -18,23 +18,24 @@ const Layout = ({children}) => {
   }, [token, userDetails]); 
 
   const breadcrumb = [
-    { name: "Super Admin" }, { name: "Dashboard" },
+    { name: "Public Prosecutor" },{ name: "Dashboard" },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <>
+      
       <Header />
-      <div className="flex flex-1">
+      <div className="flex flex-col h-screen">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
-          <div className="flex-1">
+          <div className="flex flex-1">
             <Suspense fallback={<Loading />}>
               {children}
             </Suspense>
           </div>
         </AdminSidebarLayout>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </>
   );
 };
 

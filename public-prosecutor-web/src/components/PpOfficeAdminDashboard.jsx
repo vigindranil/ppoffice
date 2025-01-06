@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-export default function UserDashboard() {
+export default function OfficeAdminDashboard() {
   return (
   <div className="relative min-h-screen w-full">
     <div 

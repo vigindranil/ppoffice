@@ -93,20 +93,20 @@ const data = {
       ],
     },
     {
-      title: "PP office admin",
+      title: "Reports",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
       type: 10,
       items: [
         {
-          title: "Dashboard",
-          url: "#",
+          title: "Pending Cases",
+          url: "/pp-office-admin-pending-cases",
         },
-        {
-          title: "Add cases",
-          url: "#",
-        },
+        // {
+        //   title: "Add cases",
+        //   url: "#",
+        // },
       ],
     },
     {
