@@ -1,4 +1,4 @@
-import { serverUrl } from '@/app/constants'; 
+import { BASE_URL } from '@/app/constants'; 
 
 export async function addPPUser(data) {
   try {
@@ -8,7 +8,7 @@ export async function addPPUser(data) {
       return { success: false, message: 'No authorization token found.' };
     }
 
-    const response = await fetch(`${serverUrl}/api/addppUser`, {
+    const response = await fetch(`${BASE_URL}addppUser`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -30,7 +30,7 @@ export async function getPPUser(data) {
       return { success: false, message: 'No authorization token found.' };
     }
 
-    const response = await fetch(`${serverUrl}/api/getppuser?EntryuserID=2`, {
+    const response = await fetch(`${BASE_URL}getppuser?EntryuserID=2`, {
       headers: {
         'Authorization': 'Bearer '+token
       },
@@ -40,4 +40,55 @@ export async function getPPUser(data) {
     console.error('Error adding PP User:', error);
     throw error;
   }
+}
+
+export const fetchPPUsers = async (userID) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}getppuser?EntryuserID=${userID}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+export const handleNotifyToPPUser = async (CaseID, PPuserID) => {
+  return new Promise(async(resolve, reject) => {
+    const token = sessionStorage.getItem('token')
+    const response = await fetch(`${BASE_URL}send-email-pp`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        "CaseID": CaseID,
+        "PPuserID": PPuserID
+      }),
+
+    })
+    if (!response.ok) {
+      reject('Failed to send email');
+    }
+    const result = await response.json()
+    if (result.status === 0) {
+      resolve(result.message);
+      console.log('Sent email:', result.message);
+    } else {
+      reject(result.message);
+    }
+  })
 }

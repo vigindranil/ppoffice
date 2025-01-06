@@ -17,7 +17,7 @@ import Image from "next/image";
 import LogoutButton from "@/components/Logout";
 import Header from "@/components/Header";
 
-const Layout = ({children}) => {
+const Layout = () => {
   const [authToken, setAuthToken] = useState("");
   const [user, setUser] = useState("");
   const token = useSelector((state) => state.auth.token);
@@ -33,7 +33,7 @@ const Layout = ({children}) => {
   // ];
 
   const breadcrumb = [
-    { href: "/super-admin-dashboard", name: "Dashboard" },{ name: "Add Public Prosecutor Office Admin" },
+    { name: "Dashboard" },
   ];
 
   return (
@@ -42,11 +42,11 @@ const Layout = ({children}) => {
       <Header />
 
       {/* Main Content */}
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-screen">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
           <div className="flex flex-1">
             <Suspense fallback={<Loading />}>
-              {children}
+              <Page />
             </Suspense>
           </div>
         </AdminSidebarLayout>

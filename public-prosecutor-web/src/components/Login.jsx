@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { setToken, setUser } from "@/redux/slices/authSlice";
 import { useDispatch } from "react-redux";
+import {BASE_URL} from '@/app/constants';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ export default function LoginPage() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/authenticate",
+        `${BASE_URL}authenticate`,
         {
           username: formData.username,
           password: formData.password,
@@ -40,9 +41,11 @@ export default function LoginPage() {
         response.data.message === "Data found"
       ) {
         const userData = response.data;
+        localStorage.setItem('authToken', response.data.access_token);
         dispatch(setToken(userData?.access_token));
         dispatch(setUser(JSON.stringify(userData?.data[0])));
-        console.log(userData?.data[0].AuthorityTypeID);
+        console.log((userData?.data[0].AuthorityTypeID));
+        
 
         switch (parseInt(userData?.data[0].AuthorityTypeID)) {
           case 20:
@@ -57,8 +60,11 @@ export default function LoginPage() {
           case 50:
             router.push("/ps-dashboard");
             break;
+          case 60:
+            router.push("/public-prosecutor-user-dashboard");
+            break;
           case 100:
-            router.push("/dashboard");
+            router.push("/super-admin-dashboard");
             break;
           default:
             console.log("Unknown AuthorityTypeID:", userData.AuthorityTypeID);
@@ -129,7 +135,7 @@ export default function LoginPage() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-2 top-2"
+                  className="absolute right-2 top-1"
                   onClick={togglePasswordVisibility}
                 >
                   {passwordVisible ? (

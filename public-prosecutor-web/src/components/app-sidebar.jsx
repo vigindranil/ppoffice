@@ -15,9 +15,7 @@ import {
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
-// import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -26,31 +24,14 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-// Sample data
+import {  useEffect, useState } from "react";
+
 const data = {
   user: {
-    name: "Super Admin",
-    email: "admin@example.com",
+    name: "USER",
+    email: "user@example.com",
     avatar: "/img/user.jpg",
   },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Add User",
@@ -81,17 +62,34 @@ const data = {
       type: 100,
       items: [
         {
-          title: "History",
-          url: "/pending",
+          title: "Public Prosecutor Head",
+          url: "/pp-head-list",
         },
         {
-          title: "Future",
-          url: "/pending",
+          title: "Office Admin",
+          url: "/pp-office-admin-list",
         },
         {
-          title: "Custom",
-          url: "/pending",
+          title: "Superintendent of Police",
+          url: "/sp-list",
         },
+      ],
+    },
+    {
+      title: "Show Detailed Report",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 60,
+      items: [
+        {
+          title: "Cases",
+          url: "/show-public-prosecutor-case-details",
+        },
+        // {
+        //   title: "2",
+        //   url: "/",
+        // },
       ],
     },
     {
@@ -150,23 +148,6 @@ const data = {
       ],
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
 };
 
 export const AdminAppSidebar = (props) => {
@@ -180,17 +161,16 @@ export const AdminAppSidebar = (props) => {
     setUser(userDetails);
   }, [token, userDetails]);
   console.log(user);
-
   return (
     <Sidebar
       collapsible="icon"
       {...props}
       className="mt-[64px] flex flex-col h-[calc(100vh-64px)] z-20"
     >
-      <SidebarHeader>{/* <TeamSwitcher teams={data.teams} /> */}</SidebarHeader>
+      <SidebarHeader>
+      </SidebarHeader>
       <SidebarContent className="flex-grow">
         <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
@@ -198,4 +178,5 @@ export const AdminAppSidebar = (props) => {
       <SidebarRail />
     </Sidebar>
   );
+
 };

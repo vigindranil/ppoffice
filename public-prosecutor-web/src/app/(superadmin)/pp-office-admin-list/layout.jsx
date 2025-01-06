@@ -33,7 +33,7 @@ const Layout = ({children}) => {
   // ];
 
   const breadcrumb = [
-    { href: "/super-admin-dashboard", name: "Dashboard" },{ name: "Add Public Prosecutor Office Admin" },
+    { href: "/super-admin-dashboard", name: "Dashboard" },{ name: "Public Prosecutor Office Admin List" },
   ];
 
   return (

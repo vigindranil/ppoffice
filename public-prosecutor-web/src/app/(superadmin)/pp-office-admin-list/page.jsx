@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { showPPOfficeAdminUserList } from '../api/get_admin_user'
-import Layout from '../../components/Layout'
+import { showPPOfficeAdminUserList } from '@/app/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -28,8 +27,15 @@ const PPOfficeAdminList = () => {
   }
 
   return (
-    <Layout>
-      <Card className="w-full bg-white/30 backdrop-blur-sm">
+    <main
+      className="flex-1 p-6 relative w-full bg-cover bg-center h-screen"
+      style={{ backgroundImage: "linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)), url('img/dash2.jpg')" }} 
+    >
+
+      {/* Overlay for Background Image */}
+      <div className="absolute inset-0 bg-black bg-opacity-40 -z-10"></div>
+
+      <Card className="w-full max-w-3xl mx-auto bg-white/30 backdrop-blur-sm my-4">
         <CardHeader>
           <CardTitle>PP Office Admin List</CardTitle>
         </CardHeader>
@@ -61,7 +67,8 @@ const PPOfficeAdminList = () => {
           </Table>
         </CardContent>
       </Card>
-    </Layout>
+
+    </main>
   )
 }
 
