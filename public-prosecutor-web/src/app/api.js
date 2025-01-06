@@ -205,11 +205,37 @@ export const showPPOfficeHeadUserList = async (req_body) => {
 };
 
 //show cases for office admin
-export const showallCase = async (req_body) => {
+export const showallCase = async (typeID) => {
   return new Promise(async (resolve, reject) => {
     try {
       const token = sessionStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}showallCase`, {
+      const response = await fetch(`${BASE_URL}showallCase?is_Assigned=${typeID}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+
+//office admin add case
+export const addCase = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}addCase`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

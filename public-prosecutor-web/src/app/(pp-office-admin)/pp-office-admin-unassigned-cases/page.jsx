@@ -30,7 +30,7 @@ const PPAllCaseList = () => {
 
   useEffect(() => {
     if(user){
-      showallCase({is_Assigned: null})
+      showallCase(0)
       .then((result) => {
         console.log(result);
         setAllCaseList(result);
@@ -77,7 +77,7 @@ const PPAllCaseList = () => {
       <main className="relative flex-1 p-6 w-full min-h-screen">
         <Card className="w-full max-w-3xl mx-auto bg-white/60 backdrop-blur-sm my-4">
           <CardHeader>
-            <CardTitle>All Case List</CardTitle>
+            <CardTitle>Unassigned Case List</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -104,9 +104,9 @@ const PPAllCaseList = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Case Number</TableHead>
-                    <TableHead>Jurisdiction</TableHead>
-                    <TableHead>Police Station</TableHead>
+                    <TableHead className="font-bold">Case Number</TableHead>
+                    <TableHead className="font-bold">Jurisdiction</TableHead>
+                    <TableHead className="font-bold">Police Station</TableHead>
                     <TableHead className="font-bold">Case Date</TableHead>
                     <TableHead className="font-bold">Case Type</TableHead>
                     <TableHead className="font-bold">Case Hearing Date</TableHead>

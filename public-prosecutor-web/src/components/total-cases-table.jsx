@@ -12,9 +12,9 @@ import { useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
-import { Input } from './ui/input'
-import { DatePicker } from './date-picker'
-import { Badge } from './ui/badge'
+import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/date-picker'
+import { Badge } from '@/components/ui/badge'
 
 
 export default function CaseTable() {
@@ -65,7 +65,8 @@ export default function CaseTable() {
         },
         body: JSON.stringify({
           "startDate": formatDate(start),
-          "endDate": formatDate(end)
+          "endDate": formatDate(end),
+          "isAssign" :1
         }),
       })
       if (!response.ok) {

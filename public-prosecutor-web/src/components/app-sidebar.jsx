@@ -100,13 +100,34 @@ const data = {
       type: 10,
       items: [
         {
-          title: "Pending Cases",
-          url: "/pp-office-admin-pending-cases",
+          title: "Assigned Cases",
+          url: "/pp-office-admin-assigned-cases",
+        },
+        {
+          title: "Unassigned Cases",
+          url: "/pp-office-admin-unassigned-cases",
+        },
+        {
+          title: "All Cases",
+          url: "/pp-office-admin-all-cases",
         },
         // {
         //   title: "Add cases",
         //   url: "#",
         // },
+      ],
+    },
+    {
+      title: "Actions",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Add Case",
+          url: "/pp-office-admin-add-case",
+        },
       ],
     },
     {
@@ -160,7 +181,8 @@ export const AdminAppSidebar = (props) => {
     setAuthToken(token);
     setUser(userDetails);
   }, [token, userDetails]);
-  console.log(user);
+  // console.log(user);
+  // console.log(authToken);
   return (
     <Sidebar
       collapsible="icon"
