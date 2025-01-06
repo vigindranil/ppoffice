@@ -44,10 +44,9 @@ export default function DashboardCards() {
 
   const fetchPsDetails = async () => {
     try {
-      console.log(`http://localhost:8000/api/showpoliceBydistrict?districtId=${user?.BoundaryID}`);
       
       const token = sessionStorage.getItem('token')
-      const response = await fetch(`http://localhost:8000/api/showpoliceBydistrict?districtId=${user?.BoundaryID}`, {
+      const response = await fetch(`http://localhost:8000/api/count-by-ps?districtId=${user?.BoundaryID}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
