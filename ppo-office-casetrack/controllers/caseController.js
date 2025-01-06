@@ -338,23 +338,16 @@ class CaseController {
       } 
 
     // show all case with  Doc  
+    
     static async showallCaseWithDOC(req, res) {
         try {
             // Extract is_Assigned parameter from the request body
             const { is_Assigned } = req.body;
-
-            // Validate the required parameter
-            if (is_Assigned === undefined) {
-                return res.status(400).json({
-                    success: false,
-                    message: "The parameter 'is_Assigned' is required.",
-                });
-            }
-
-            // Stored procedure query
-            const query = "CALL sp_ShowallCase(?)";
-            const params = [is_Assigned]; // Pass the required parameter to the stored procedure
-
+    
+            // Stored procedure query and parameters
+            const query = "CALL sp_ShowallCasev1(?)";
+            const params = [is_Assigned];
+    
             // Execute the stored procedure
             const results = await new Promise((resolve, reject) => {
                 db.query(query, params, (err, rows) => {
@@ -362,40 +355,53 @@ class CaseController {
                     resolve(rows);
                 });
             });
-
-            // Check if data is returned
-            const cases = results[0]; // First result set contains the data
-
-            if (!cases || cases.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: "No cases found.",
+    
+            // Process the results
+            const cases = results[0]; // The first result set contains the data
+    
+            // Handle logic based on is_Assigned
+            if (is_Assigned === null || is_Assigned === undefined) {
+                // When is_Assigned is NULL: Return the total number of cases
+                const totalCaseCount = cases[0]?.TotalCases || 0; // TotalCases is returned from the stored procedure
+                return res.status(200).json({
+                    success: true,
+                    TotalCaseCount: totalCaseCount,
+                });
+            } else {
+                // When is_Assigned is 1 or 0: Return the cases along with the total count
+                if (!cases || cases.length === 0) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "No cases found.",
+                    });
+                }
+    
+                // Extract TotalCaseCount from the first case
+                const { TotalCaseCount } = cases[0];
+    
+                // Format the cases for response
+                const formattedCases = cases.map((caseItem) => ({
+                    PPuserName: caseItem.PPuserName,
+                    CaseNumber: caseItem.CaseNumber,
+                    SpName: caseItem.SpName,
+                    PsName: caseItem.PsName,
+                    CaseDate: caseItem.CaseDate,
+                    CaseType: caseItem.CaseType,
+                    CaseHearingDate: caseItem.CaseHearingDate,
+                    IPCSection: caseItem.IPCSection,
+                    ReferenceNumber: caseItem.ReferenceNumber,
+                    CaseId: caseItem.CaseId,
+                    BeginReferenceName: caseItem.BeginReferenceName,
+                    IsAssigned: caseItem.IsAssigned,
+                    Document: caseItem?.Document ? `${basePath}${caseItem?.Document}` : null,
+                }));
+    
+                return res.status(200).json({
+                    success: true,
+                    TotalCaseCount, // Include the total count once
+                    data: formattedCases,
                 });
             }
-
-            // Format the response for Postman
-            const formattedCases = cases.map((caseItem) => ({
-                PPuserName: caseItem.PPuserName,
-                CaseNumber: caseItem.CaseNumber,
-                SpName: caseItem.SpName,
-                PsName: caseItem.PsName,
-                CaseDate: caseItem.CaseDate,
-                CaseType: caseItem.CaseType,
-                CaseHearingDate: caseItem.CaseHearingDate,
-                IPCSection: caseItem.IPCSection,
-                ReferenceNumber: caseItem.ReferenceNumber,
-                CaseId: caseItem.CaseId,
-                BeginReferenceName: caseItem.BeginReferenceName,
-                IsAssigned: caseItem.IsAssigned,
-                //Document: caseItem.Document,
-                Document: caseItem?.Document ?  `${basePath}${caseItem?.Document}` : null,
-            }));
-
-            // Send success response with data
-            return res.status(200).json({
-                success: true,
-                data: formattedCases,
-            });
         } catch (error) {
             // Handle unexpected errors
             return res.status(500).json({
@@ -405,6 +411,8 @@ class CaseController {
             });
         }
     }
+    
+    
 
       static async showallCaseBetweenRange(req, res) {
         try {
