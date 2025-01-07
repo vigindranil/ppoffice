@@ -46,6 +46,7 @@ router.post("/api/showallCaseBetweenRange",authMiddleware.verifyToken,CaseContro
 
 router.post("/api/showallCase", authMiddleware.verifyToken,CaseController.showallCaseWithDOC);
 
+router.post("/api/DashboardCount",authMiddleware.verifyToken,CaseController.getDashboardCounts);
 // send email
 const EmailController = require("../controllers/emailController");
 router.post("/api/send-email", authMiddleware.verifyToken,EmailController.sendEmail);
