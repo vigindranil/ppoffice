@@ -45,7 +45,7 @@ export default function LoginPage() {
         dispatch(setToken(userData?.access_token));
         dispatch(setUser(JSON.stringify(userData?.data[0])));
         console.log((userData?.data[0].AuthorityTypeID));
-        
+
 
         switch (parseInt(userData?.data[0].AuthorityTypeID)) {
           case 20:
@@ -58,7 +58,7 @@ export default function LoginPage() {
             router.push("/sp-dashboard");
             break;
           case 50:
-            router.push("/ps-dashboard");
+            router.push("/ps-case");
             break;
           case 60:
             router.push("/public-prosecutor-user-dashboard");

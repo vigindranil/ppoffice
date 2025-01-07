@@ -147,6 +147,31 @@ const data = {
         },
       ],
     },
+
+    {
+        title: "Ps-dashboard",
+        url: "#",
+        icon: SquareTerminal,
+        isActive: true,
+        type: 50,
+        items: [
+          {
+            title: "Dashboard",
+            url: "/ps-dashboard",
+          },
+          {
+            title: "View All Case",
+            url: "/ps-case",
+          },
+          {
+            title: "Police Station Profile",
+            url: "/ps-profile",
+          },{
+            title:"email",
+            url:"/ps-emails-details",
+          }
+        ],
+      },
   ],
 };
 

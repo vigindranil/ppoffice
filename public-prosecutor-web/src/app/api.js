@@ -1,4 +1,4 @@
-import { BASE_URL } from '@/app/constants'; 
+import { BASE_URL } from '@/app/constants';
 
 export async function addPPUser(data) {
   try {
@@ -92,3 +92,234 @@ export const handleNotifyToPPUser = async (CaseID, PPuserID) => {
     }
   })
 }
+
+// export async function fetchCases(psId) {
+//     try {
+//       const response = await fetch(`${BASE_URL}/showallCasesBypsId?psId=${psId}`, {
+//         method: 'GET',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//       });
+
+//       // Check if response is ok, otherwise log the status
+//       if (!response.ok) {
+//         const errorDetail = await response.text();
+//         console.error('Error fetching cases:', errorDetail); // Log response text
+//         throw new Error(`Failed to fetch cases: ${response.status} - ${errorDetail}`);
+//       }
+
+//       // Parse JSON response
+//       const result = await response.json();
+
+//       // Check result status and return data or throw error
+//       if (result.status === 0) {
+//         return result.data || [];
+//       } else {
+//         throw new Error(result.message || 'Failed to fetch cases');
+//       }
+//     } catch (error) {
+//       console.error('Error fetching cases:', error);
+//       throw error;
+//     }
+//   }
+
+export async function fetchCases(psId) {
+    try {
+      // Construct the URL with the provided psId
+      const url = `http://localhost:8000/api/showallCasesBypsId?psId=${psId}`;
+      const token = sessionStorage.getItem('token')
+      // Perform the fetch operation
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // Check if the response is successful
+      if (!response.ok) {
+        const errorDetail = await response.text();
+        console.error('Error fetching cases:', errorDetail);
+        throw new Error(`Failed to fetch cases: ${response.status} - ${errorDetail}`);
+      }
+
+      // Parse the JSON response
+      const result = await response.json();
+
+      // Check the status within the result
+      if (result.status === 0) {
+        return result.data || [];
+      } else {
+        throw new Error(result.message || 'Failed to fetch cases');
+      }
+    } catch (error) {
+      console.error('Error fetching cases:', error);
+      throw error;
+    }
+  }
+
+
+
+  //ps profile
+  export async function fetchUserProfile(PSUserId) {
+    try {
+      const token = sessionStorage.getItem('token');
+      console.log('Token:', token);
+
+      const response = await fetch(`${BASE_URL}showpsUserById`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ PSUserId: PSUserId }),
+      });
+
+      if (!response.ok) {
+        console.error('Response status:', response.status);
+        const errorDetails = await response.text();
+        console.error('Error details:', errorDetails);
+        throw new Error('Failed to fetch user profile');
+      }
+
+      const result = await response.json();
+      console.log('API Response:', result);
+
+      if (result.status === 0 && result.message === "Data found") {
+        return result.data[0];
+      } else {
+        throw new Error(result.message || 'No data found');
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      throw error;
+    }
+  }
+//email//
+// export async function fetchEmailDetails(authorityTypeId, boundaryId) {
+//     try {
+//         const token = sessionStorage.getItem('token');
+//       const response = await fetch(`${BASE_URL}/emailDetails`, {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': `Bearer ${token}`,
+//         },
+//         body: JSON.stringify({ authorityTypeId, boundaryId }),
+//       });
+
+//       if (!response.ok) {
+//         throw new Error('Failed to fetch email details');
+//       }
+
+//       const result = await response.json();
+//       if (result.status === 0 && result.message === "Data found") {
+//         return result.data;
+//       } else {
+//         throw new Error(result.message || 'Failed to fetch email details');
+//       }
+//     } catch (error) {
+//       console.error('Error fetching email details:', error);
+//       throw error;
+//     }
+//   }
+
+
+export async function fetchEmailDetails(authorityTypeId, boundaryId) {
+    try {
+      const token = sessionStorage.getItem('token');
+      if (!token) {
+        throw new Error("Authorization token is missing");
+      }
+
+      const url = `${BASE_URL}/emailDetails`;
+      console.log("Request URL:", url); // Log URL for debugging
+      console.log("Request Body:", { authorityTypeId, boundaryId });
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ authorityTypeId, boundaryId }),
+      });
+
+      if (!response.ok) {
+        const errorMessage = `HTTP Error: ${response.status} ${response.statusText}`;
+        console.error("API Response Error:", errorMessage);
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      if (result.status === 0 && result.message === "Data found") {
+        return result.data;
+      } else {
+        throw new Error(result.message || 'Failed to fetch email details');
+      }
+    } catch (error) {
+      console.error("Error in fetchEmailDetails:", error.message);
+      throw error;
+    }
+  }
+
+
+
+
+//   export async function fetchEmailDetails(authorityTypeId, boundaryId) {
+//     try {
+//         const token = sessionStorage.getItem('token');
+//       const response = await fetch(`${BASE_URL}emailDetails`, {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Authorization': `Bearer ${token}`,
+//         },
+//         body: JSON.stringify({ authorityTypeId, boundaryId }),
+//       });
+
+//       if (!response.ok) {
+//         throw new Error('Failed to fetch email details');
+//       }
+
+//       const result = await response.json();
+//       if (result.status === 0 && result.message === "Data found") {
+//         return result.data;
+//       } else {
+//         throw new Error(result.message || 'Failed to fetch email details');
+//       }
+//     } catch (error) {
+//       console.error('Error fetching email details:', error);
+//       throw error;
+//     }
+//   }
+
+  export async function markEmailAsRead(mailId, caseId, authorityTypeId, boundaryId) {
+    try {
+        const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}emailRead`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ mailId, caseId, authorityTypeId, boundaryId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to mark email as read');
+      }
+
+      const result = await response.json();
+      if (result.status === 0 && result.message === "Mail checked and updated successfully") {
+        return result;
+      } else {
+        throw new Error(result.message || 'Failed to mark email as read');
+      }
+    } catch (error) {
+      console.error('Error marking email as read:', error);
+      throw error;
+    }
+  }
