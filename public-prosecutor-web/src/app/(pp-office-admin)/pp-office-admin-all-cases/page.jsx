@@ -66,7 +66,7 @@ export default function CaseTable() {
         body: JSON.stringify({
           "startDate": formatDate(start),
           "endDate": formatDate(end),
-          "isAssign": 1
+          "isAssign": 2
         }),
       })
       if (!response.ok) {
@@ -170,7 +170,7 @@ export default function CaseTable() {
                   <TableBody>
                     {currentCases.map((caseItem, index) => (
                       <TableRow key={index}>
-                        <TableCell>{caseItem.PPuserName}</TableCell>
+                        <TableCell>{caseItem.PPuserName || "Not Assigned"}</TableCell>
                         <TableCell>{caseItem.CaseNumber}</TableCell>
                         <TableCell>{caseItem.PsName}</TableCell>
                         <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>

@@ -231,17 +231,44 @@ export const showallCase = async (typeID) => {
 
 
 //office admin add case
-export const addCase = async (req_body) => {
+export const createCaseOfficeAdmin = async (req_body) => {
   return new Promise(async (resolve, reject) => {
     try {
+      console.log("Request body 123:", req_body); 
+      
       const token = sessionStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}addCase`, {
+      const response = await fetch(`${BASE_URL}cases/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(req_body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        resolve(result);
+      } else {
+        console.log("hi",result)
+        reject(result.message || 'An error occurred 123');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+
+export const getcasetype = async () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}getcasetype`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
       });
 
       const result = await response.json();
@@ -257,3 +284,106 @@ export const addCase = async (req_body) => {
     }
   });
 };
+
+
+export const showRefferenceDetails = async () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}showRefferenceDetails`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+
+export const alldistrict = async () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}alldistrict`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+
+export const showpoliceBydistrict = async (districtId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}showpoliceBydistrict?districtId=${districtId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+
+export const handleNotifyFromPPOfficeAdmin = async (CaseID) => {
+  return new Promise(async(resolve, reject) => {
+    const token = sessionStorage.getItem('token')
+    const response = await fetch(`${BASE_URL}send-email`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        "CaseID": CaseID
+      }),
+
+    })
+    if (!response.ok) {
+      reject('Failed to send email');
+    }
+    const result = await response.json()
+    if (result.status === 0) {
+      resolve(result.message);
+      console.log('Sent email:', result.message);
+    } else {
+      reject(result.message);
+    }
+  })
+}
