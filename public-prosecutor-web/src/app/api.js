@@ -387,3 +387,32 @@ export const handleNotifyFromPPOfficeAdmin = async (CaseID) => {
     }
   })
 }
+
+
+export const fetchDashboardCount = async (userID) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}DashboardCount`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ "EntryuserID": userID }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result);
+        
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(error.message);
+    }
+  });
+};

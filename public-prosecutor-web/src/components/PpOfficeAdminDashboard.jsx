@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import DashboardCards from "@/components/dashboard-cards";
 
 export default function OfficeAdminDashboard() {
   return (
@@ -13,6 +14,8 @@ export default function OfficeAdminDashboard() {
       <h1 className="text-2xl font-semibold mb-4 text-white">
         Welcome to your Dashboard
       </h1>
+
+      <DashboardCards />
       
       <div>
       </div>

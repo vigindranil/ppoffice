@@ -176,7 +176,7 @@ const AddCasePage = () => {
           />
       <div className="absolute inset-0 bg-black bg-opacity-40 -z-10"></div>
 
-      <Card className="w-full max-w-2xl mx-auto bg-white/30 backdrop-blur-sm my-4">
+      <Card className="w-full max-w-2xl mx-auto bg-white/30 backdrop-blur-sm my-4 overflow-hidden">
         <CardHeader>
           <CardTitle>Add New Case</CardTitle>
         </CardHeader>
@@ -270,7 +270,7 @@ const AddCasePage = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select Reference" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[200px] overflow-y-auto">
                     <SelectGroup>
                       <SelectLabel>References</SelectLabel>
                       {referenceList.map((ref) => (
