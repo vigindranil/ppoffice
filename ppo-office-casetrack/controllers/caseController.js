@@ -289,19 +289,27 @@ class CaseController {
                 console.log(CaseID);
                 console.log(ErrorCode);
                 // Handle possible error codes
-                if (ErrorCode === 1) return res.status(400).json({ error: 'Procedure execution error' });
-                if (ErrorCode === 2) return res.status(400).json({ error: 'Case already exists' });
-                if (ErrorCode === 3) return res.status(400).json({ error: 'User lacks permission to create case' });
+                if (ErrorCode === 1) return res.status(400).json({ status : 1,error: 'Procedure execution error' });
+                if (ErrorCode === 2) return res.status(400).json({ status : 1,message: 'Case already exists' });
+                if (ErrorCode === 3) return res.status(400).json({ status : 1,message: 'User lacks permission to create case' });
     
                 // Success response
                 return res.status(201).json({
+                    status : 0,
                     message: 'Case created successfully',
                     data: { CaseID },
                 });
             } catch (error) {
                 // Handle unexpected errors
-                return res.status(500).json({ error: 'Unexpected error occurred', details: error.message });
+                return res.status(500).json({
+                    status : 1,
+                    message: 'error.message',
+                    
+                });
             }
+
+
+            
         }
     
     
@@ -411,7 +419,6 @@ class CaseController {
             });
         }
     }
-    
     
 
       static async showallCaseBetweenRange(req, res) {
