@@ -169,7 +169,6 @@ export default function CaseTable() {
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
-                      className=""
                       onClick={() => {
                         setIsCaseSelected(true)
                         setSelectedCase(caseItem)

@@ -72,7 +72,7 @@ export default function CaseTable() {
       const result = await response.json()
       if (result.status === 0) {
         await handleNotifyToPPUser(selectedCase?.CaseId, selectedPPUser);
-        openAlert('success', 'PP User has been successfully assigned to Case')
+        openAlert('success', 'PP User has been assigned to Case and email sent successfully')
       } else {
         throw new Error(result.message)
       }
@@ -226,18 +226,14 @@ export default function CaseTable() {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-auto">
                     <DialogHeader>
-                      <DialogTitle>Assign Case</DialogTitle>
+                      <DialogTitle>Case Number - AB12345DJ</DialogTitle>
                     </DialogHeader>
-                    <DialogDescription>
-                      These informations are for case {selectedCase?.CaseNumber}
-                    </DialogDescription>
                     <Card>
                       <CardContent>
                         {selectedCase && (
                           <>
                             <div className="space-y-2">
                               <p><strong>PP User Name:</strong> {selectedCase.PPuserName}</p>
-                              <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
                               <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
                               <p><strong>PS Name:</strong> {selectedCase.PsName}</p>
                               <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>

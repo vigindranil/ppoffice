@@ -56,7 +56,7 @@ export default function ProfilePage() {
   }, [user]);
 
   const handleEmailRead = async (authorityTypeId, boundaryId, mailId, caseId) => {
-    setLoading(true);
+   
     console.log({ 
       "mailId": mailId,
       "caseId": caseId,
@@ -88,8 +88,6 @@ export default function ProfilePage() {
       }
     } catch (err) {
       setError("An error occurred");
-    } finally {
-      setLoading(false);
     }
   };
 
