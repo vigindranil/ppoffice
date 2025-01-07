@@ -289,19 +289,27 @@ class CaseController {
                 console.log(CaseID);
                 console.log(ErrorCode);
                 // Handle possible error codes
-                if (ErrorCode === 1) return res.status(400).json({ error: 'Procedure execution error' });
-                if (ErrorCode === 2) return res.status(400).json({ error: 'Case already exists' });
-                if (ErrorCode === 3) return res.status(400).json({ error: 'User lacks permission to create case' });
+                if (ErrorCode === 1) return res.status(400).json({ status : 1,error: 'Procedure execution error' });
+                if (ErrorCode === 2) return res.status(400).json({ status : 1,message: 'Case already exists' });
+                if (ErrorCode === 3) return res.status(400).json({ status : 1,message: 'User lacks permission to create case' });
     
                 // Success response
                 return res.status(201).json({
+                    status : 0,
                     message: 'Case created successfully',
                     data: { CaseID },
                 });
             } catch (error) {
                 // Handle unexpected errors
-                return res.status(500).json({ error: 'Unexpected error occurred', details: error.message });
+                return res.status(500).json({
+                    status : 1,
+                    message: 'error.message',
+                    
+                });
             }
+
+
+            
         }
     
     
@@ -412,7 +420,6 @@ class CaseController {
         }
     }
     
-    
 
       static async showallCaseBetweenRange(req, res) {
         try {
@@ -437,7 +444,62 @@ class CaseController {
             return ResponseHelper.error(res, "An unexpected error occurred", error);
         }
     }
-      
+    
+    static async getDashboardCounts(req, res) {
+        try {
+            const { EntryuserID } = req.body;
+    
+            // Validate input
+            if (!EntryuserID) {
+                return ResponseHelper.error(res, "EntryuserID is required");
+            }
+    
+            // Call the stored procedure
+            const query = 'CALL sp_DashBoardCount(?)';
+    
+            db.query(query, [EntryuserID], (err, results) => {
+                if (err) {
+                    console.error("Error executing stored procedure:", err);
+                    return ResponseHelper.error(res, "An error occurred while fetching data");
+                }
+    
+                // Assuming the stored procedure returns results in results[0]
+                const caseData = results[0];
+    
+                // Initialize counts
+                let unassignedCases = 0;
+                let assignedCases = 0;
+                let totalCases = 0;
+    
+                // Process the results
+                caseData.forEach(row => {
+                    if (row.caseTypeName === 0) {
+                        unassignedCases = row.CaseCount;
+                    } else if (row.caseTypeName === 1) {
+                        assignedCases = row.CaseCount;
+                    }
+                    totalCases += row.CaseCount;
+                });
+    
+                // Prepare the response
+                const response = {
+                   
+                    
+                      unassignedCases,
+                      assignedCases,
+                      totalCases
+                     
+                };
+    
+                // Send the response
+                return ResponseHelper.success_reponse(res, "Counts retrieved successfully", response);
+            });
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred", error);
+        }
+    }
+    
 }
 
 
