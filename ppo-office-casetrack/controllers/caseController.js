@@ -1,5 +1,7 @@
 const db = require("../config/db"); // Import your database connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
+const path = require("path");
+const basePath = `D:\\CaseTrack\\ppoffice\\ppo-office-casetrack\\uploads\\`;
 
 class CaseController {
     
@@ -110,7 +112,7 @@ class CaseController {
 }
    
 
-    // create case by PPoffice
+    // create Case without Doc
     static async createCase(req, res) {
         const {
             CaseNumber,
@@ -205,10 +207,110 @@ class CaseController {
            
         }
     }
+       
+  
+
+     
+     // create case with Doc 
+        static async createCaseDocument(req, res) {
+            try {
+                const {
+                    CaseNumber,
+                    EntryUserID,
+                    CaseDate,
+                    DistrictID,
+                    psID,
+                    caseTypeID,
+                    ref,
+                    ipcAct,
+                    hearingDate,
+                    sendTo,
+                    copyTo,
+                    photocopycaseDiaryExist,
+                    caseDocument
+                } = req.body;
+    
+                // Validate required fields
+                if (
+                    !CaseNumber ||
+                    !EntryUserID ||
+                    !CaseDate ||
+                    !DistrictID ||
+                    !psID ||
+                    !caseTypeID ||
+                    !ref ||
+                    !ipcAct ||
+                    !hearingDate ||
+                    sendTo === undefined ||
+                    copyTo === undefined ||
+                    photocopycaseDiaryExist === undefined
+                ) {
+                    return res.status(400).json({ error: 'Please fill all required fields' });
+                }
+    
+                // Retrieve uploaded document path
+                const imagePath = req.file ? path.basename(req.file.path) : null;
+    
+                // Stored procedure call
+                const query = "CALL sp_CreatecaseV1(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
+                const params = [
+                    CaseNumber,
+                    EntryUserID,
+                    CaseDate,
+                    DistrictID,
+                    psID,
+                    caseTypeID,
+                    ref,
+                    ipcAct,
+                    hearingDate,
+                    sendTo,
+                    copyTo,
+                    photocopycaseDiaryExist,
+                    imagePath, // Pass file path to stored procedure
+                ];
+    
+                // Execute the stored procedure
+                await new Promise((resolve, reject) => {
+                    db.query(query, params, (err) => {
+                        if (err) return reject(err);
+                        resolve();
+                    });
+                });
+    
+                // Fetch the output parameters `CaseID` and `ErrorCode`
+                const outputResults = await new Promise((resolve, reject) => {
+                    db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode", (err, results) => {
+                        if (err) return reject(err);
+                        resolve(results);
+                    });
+                });
+    
+                const { CaseID, ErrorCode } = outputResults[0];
+                console.log(CaseID);
+                console.log(ErrorCode);
+                // Handle possible error codes
+                if (ErrorCode === 1) return res.status(400).json({ error: 'Procedure execution error' });
+                if (ErrorCode === 2) return res.status(400).json({ error: 'Case already exists' });
+                if (ErrorCode === 3) return res.status(400).json({ error: 'User lacks permission to create case' });
+    
+                // Success response
+                return res.status(201).json({
+                    message: 'Case created successfully',
+                    data: { CaseID },
+                });
+            } catch (error) {
+                // Handle unexpected errors
+                return res.status(500).json({ error: 'Unexpected error occurred', details: error.message });
+            }
+        }
+    
+    
+  
+    
+    
+      
  
- 
- 
-    // show all case
+    // show all case with out Doc
     static async showallCase(req, res) {
         try {
          
@@ -233,18 +335,95 @@ class CaseController {
           
           return ResponseHelper.error(res, "An unexpected error occurred",error);
         }
-      }
+      } 
+
+    // show all case with  Doc  
+    
+    static async showallCaseWithDOC(req, res) {
+        try {
+            // Extract is_Assigned parameter from the request body
+            const { is_Assigned } = req.body;
+    
+            // Stored procedure query and parameters
+            const query = "CALL sp_ShowallCasev1(?)";
+            const params = [is_Assigned];
+    
+            // Execute the stored procedure
+            const results = await new Promise((resolve, reject) => {
+                db.query(query, params, (err, rows) => {
+                    if (err) return reject(err);
+                    resolve(rows);
+                });
+            });
+    
+            // Process the results
+            const cases = results[0]; // The first result set contains the data
+    
+            // Handle logic based on is_Assigned
+            if (is_Assigned === null || is_Assigned === undefined) {
+                // When is_Assigned is NULL: Return the total number of cases
+                const totalCaseCount = cases[0]?.TotalCases || 0; // TotalCases is returned from the stored procedure
+                return res.status(200).json({
+                    success: true,
+                    TotalCaseCount: totalCaseCount,
+                });
+            } else {
+                // When is_Assigned is 1 or 0: Return the cases along with the total count
+                if (!cases || cases.length === 0) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "No cases found.",
+                    });
+                }
+    
+                // Extract TotalCaseCount from the first case
+                const { TotalCaseCount } = cases[0];
+    
+                // Format the cases for response
+                const formattedCases = cases.map((caseItem) => ({
+                    PPuserName: caseItem.PPuserName,
+                    CaseNumber: caseItem.CaseNumber,
+                    SpName: caseItem.SpName,
+                    PsName: caseItem.PsName,
+                    CaseDate: caseItem.CaseDate,
+                    CaseType: caseItem.CaseType,
+                    CaseHearingDate: caseItem.CaseHearingDate,
+                    IPCSection: caseItem.IPCSection,
+                    ReferenceNumber: caseItem.ReferenceNumber,
+                    CaseId: caseItem.CaseId,
+                    BeginReferenceName: caseItem.BeginReferenceName,
+                    IsAssigned: caseItem.IsAssigned,
+                    Document: caseItem?.Document ? `${basePath}${caseItem?.Document}` : null,
+                }));
+    
+                return res.status(200).json({
+                    success: true,
+                    TotalCaseCount, // Include the total count once
+                    data: formattedCases,
+                });
+            }
+        } catch (error) {
+            // Handle unexpected errors
+            return res.status(500).json({
+                success: false,
+                error: "Unexpected error occurred.",
+                details: error.message,
+            });
+        }
+    }
+    
+    
 
       static async showallCaseBetweenRange(req, res) {
         try {
-            const { startDate, endDate } = req.body;
+            const { startDate, endDate,isAssign } = req.body;
     
             
     
             // SQL query to call the stored procedure
-            const query = 'CALL sp_ShowallCaseBetweenRange(?, ?)';
+            const query = 'CALL sp_ShowallCaseBetweenRange(?, ?,?)';
     
-            db.query(query, [startDate, endDate], (err, results) => {
+            db.query(query, [startDate, endDate,isAssign], (err, results) => {
                 if (err) {
                     console.error("Error executing stored procedure:", err);
                     return ResponseHelper.error(res, "An error occurred while fetching data");
@@ -258,8 +437,7 @@ class CaseController {
             return ResponseHelper.error(res, "An unexpected error occurred", error);
         }
     }
-    
-    
+      
 }
 
 

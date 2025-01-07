@@ -11,6 +11,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const districtController = require('../controllers/districtController');
 router.get('/api/alldistrict', authMiddleware.verifyToken, districtController.show);
 router.get('/api/showallCasesBydistrictId',authMiddleware.verifyToken,districtController.showallcasesBydistrict);
+router.get('/api/count-by-ps',authMiddleware.verifyToken,districtController.getCaseCountsByPoliceStation);
 
 
 
@@ -43,6 +44,7 @@ router.post("/api/addCase",authMiddleware.verifyToken,CaseController.createCase)
 router.get("/api/showallCase",authMiddleware.verifyToken,CaseController.showallCase); // firsttime create case by ppOffice
 router.post("/api/showallCaseBetweenRange",authMiddleware.verifyToken,CaseController.showallCaseBetweenRange);
 
+router.post("/api/showallCase", authMiddleware.verifyToken,CaseController.showallCaseWithDOC);
 
 // send email
 const EmailController = require("../controllers/emailController");

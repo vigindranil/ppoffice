@@ -48,7 +48,34 @@ class DistrictController {
     }
   }
 
+  static async getCaseCountsByPoliceStation(req, res) {
+    try {
+        // Get the districtId from the request body
+        const districtId = req.query.districtId; 
+        
+        // Validate the input
+        if (!districtId) {
+            return res.status(400).json({ error: 'District ID is required.' });
+        }
 
+        // Call the stored procedure
+        const query = "CALL sp_CountCasesByPoliceStation(?)";
+        const params = [districtId]; // Ensure districtId is an integer
+
+        db.query(query, [districtId], (err, results) => {
+          if (err) {
+           
+            return ResponseHelper.error(res, "An error occurred while fetching data");
+          }
+  
+          // Assuming your stored procedure returns data in results[0]
+          return ResponseHelper.success_reponse(res, "Data found", results[0]);
+        });
+      } catch (error) {
+       
+        return ResponseHelper.error(res, "An unexpected error occurred");
+      }
+} 
   
 }
 
