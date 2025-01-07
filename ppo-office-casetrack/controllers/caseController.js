@@ -295,13 +295,21 @@ class CaseController {
     
                 // Success response
                 return res.status(201).json({
+                    status : 0,
                     message: 'Case created successfully',
                     data: { CaseID },
                 });
             } catch (error) {
                 // Handle unexpected errors
-                return res.status(500).json({ error: 'Unexpected error occurred', details: error.message });
+                return res.status(500).json({
+                    status : 1,
+                    message: 'error.message',
+                    
+                });
             }
+
+
+            
         }
     
     
@@ -411,7 +419,6 @@ class CaseController {
             });
         }
     }
-    
     
 
       static async showallCaseBetweenRange(req, res) {
