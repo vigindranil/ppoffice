@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { ClipboardPlus, Eye, LoaderCircle, Search } from 'lucide-react'
@@ -92,7 +92,6 @@ export default function CaseTable({ps}) {
   }
 
   const showallCaseBetweenRange = async (ps_id) => {
-
     try {
       const token = sessionStorage.getItem('token');
       const response = await fetch(`http://localhost:8000/api/showallCasesBypsId?psId=${ps_id}`, {
@@ -122,8 +121,9 @@ export default function CaseTable({ps}) {
   }, [userDetails]);
 
   useEffect(() => {
-    showallCaseBetweenRange(ps)
-  }, [])
+    console.log('ps: ',ps)
+    ps && showallCaseBetweenRange(ps)
+  }, [ps])
 
   const filteredData = allCases?.filter((data) =>
     Object?.values(data)?.some((value) =>
@@ -203,6 +203,9 @@ export default function CaseTable({ps}) {
                     <DialogHeader>
                       <DialogTitle>Case Details</DialogTitle>
                     </DialogHeader>
+                    <DialogDescription>
+                      These informations are for case {selectedCase?.CaseNumber}
+                    </DialogDescription>
                     <Card>
                       <CardContent>
                         {selectedCase && (
@@ -215,6 +218,10 @@ export default function CaseTable({ps}) {
                               <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
                               <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
                               <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
+                              <p><strong>IPC Section:</strong> {selectedCase.IPCSection}</p>
+                              <p><strong>Begin Reference:</strong> {selectedCase.BeginReferenceName}</p>
+                              <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
+                              <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p>
                             </div>
                           </>
                         )}

@@ -145,6 +145,10 @@ const data = {
           title: "Dashboard",
           url: "/sp-dashboard",
         },
+        {
+          title: "Notifications",
+          url: "/sp-notifications",
+        },
       ],
     },
   ],

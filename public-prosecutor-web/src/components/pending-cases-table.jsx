@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { ClipboardPlus, LoaderCircle, Search } from 'lucide-react'
@@ -37,17 +37,17 @@ export default function CaseTable() {
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
-    
+
     const date = new Date(dateString);
-    
+
     // Format as "yyyy-mm-dd"
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based
     const day = String(date.getDate()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day}`;
-    };
-    
+  };
+
 
   const handleAssignCasetoPPUser = async () => {
     try {
@@ -103,7 +103,8 @@ export default function CaseTable() {
         },
         body: JSON.stringify({
           "startDate": formatDate(start),
-          "endDate": formatDate(end)
+          "endDate": formatDate(end),
+          "isAssign": 0
         }),
       })
       if (!response.ok) {
@@ -111,8 +112,7 @@ export default function CaseTable() {
       }
       const result = await response.json()
       if (result.status === 0) {
-        const pendingCases = result.data.filter((item) => (item?.IsAssigned == 0))
-        setAllCases(pendingCases)
+        setAllCases(result.data)
       } else {
         throw new Error(result.message || 'Failed to fetch data')
       }
@@ -130,13 +130,14 @@ export default function CaseTable() {
 
   useEffect(() => {
     showallCaseBetweenRange(null, null)
-    if(user){
+    if (user) {
       fetchPPUsers(user.AuthorityUserID)
-      .then((result) => {
-        setPPUsers(result)})
-      .catch((err) => {
-        setError(err);
-      });
+        .then((result) => {
+          setPPUsers(result)
+        })
+        .catch((err) => {
+          setError(err);
+        });
 
     }
   }, [user])
@@ -223,14 +224,14 @@ export default function CaseTable() {
                       <ClipboardPlus /> Assign Case
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
+                  <DialogContent className="sm:max-w-auto">
                     <DialogHeader>
                       <DialogTitle>Assign Case</DialogTitle>
                     </DialogHeader>
+                    <DialogDescription>
+                      These informations are for case {selectedCase?.CaseNumber}
+                    </DialogDescription>
                     <Card>
-                      <CardHeader>
-                        <CardTitle>Case Details</CardTitle>
-                      </CardHeader>
                       <CardContent>
                         {selectedCase && (
                           <>
@@ -242,6 +243,10 @@ export default function CaseTable() {
                               <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
                               <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
                               <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
+                              <p><strong>IPC Section:</strong> {selectedCase.IPCSection}</p>
+                              <p><strong>Begin Reference:</strong> {selectedCase.BeginReferenceName}</p>
+                              <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
+                              <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p>
                             </div>
                           </>
                         )}
