@@ -40,6 +40,8 @@ export default function ProfilePage() {
 
         const data = await response.json();
         if (response.ok) {
+          console.log(data.data);
+          
           setEmailDetails(data.data);
         } else {
           setError(data.message);
@@ -51,8 +53,8 @@ export default function ProfilePage() {
       }
     };
 
-    user && loadEmailDetails(user?.AuthorityUserID, user?.BoundaryID);
-    // user && loadEmailDetails(30, 7);
+    // user && loadEmailDetails(user?.AuthorityUserID, user?.BoundaryID);
+    user && loadEmailDetails(30, 7);
   }, [user]);
 
   const handleEmailRead = async (authorityTypeId, boundaryId, mailId, caseId) => {
@@ -135,11 +137,11 @@ export default function ProfilePage() {
                 {emailDetails.map((email) => (
                   <div
                     key={email.id}
-                    className="p-4 border bg-muted border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+                    className={`p-4 border ${!email?.readStatus && 'bg-muted' } border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300`}
                   >
                     <div className="text-lg font-medium mb-2">
                       <div className="text-blue-600">
-                        Mail ID: <span className="font-normal text-gray-800">{email.mailId}</span> <Badge className='h-2 w-2 p-0' variant='destructive'></Badge>
+                        Mail ID: <span className="font-normal text-gray-800">{email.mailId}</span> {!email?.readStatus && <Badge className='h-2 w-2 p-0' variant='destructive'></Badge>}
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 mb-1">
@@ -148,10 +150,7 @@ export default function ProfilePage() {
                     <div className="mt-4 flex justify-between">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button onClick={()=>handleEmailRead(user?.AuthorityUserID, user?.BoundaryID, email?.id, email?.CaseId)} variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">
-                          {/* <Button variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300"> */}
-                            View
-                          </Button>
+                          {email?.readStatus ? <Button variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button> : <Button onClick={()=>handleEmailRead(user?.AuthorityUserID, user?.BoundaryID, email?.id, email?.CaseId)} variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button>}
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
@@ -173,7 +172,7 @@ export default function ProfilePage() {
                           </div>
                         </DialogContent>
                       </Dialog>
-                      <div className="flex"><span className="text-sm text-muted-foreground">seen </span> <CheckCheck className="h-5 w-5 mx-1 text-blue-400" /></div>
+                      {email?.readStatus && (<div className="flex"><span className="text-sm text-muted-foreground">seen </span> <CheckCheck className="h-5 w-5 mx-1 text-blue-400" /></div>)}
                     </div>
                   </div>
                 ))}
