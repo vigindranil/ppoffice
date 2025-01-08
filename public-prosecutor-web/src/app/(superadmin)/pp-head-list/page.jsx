@@ -32,7 +32,7 @@ const PPHeadList = () => {
     if(user){
       showPPOfficeHeadUserList({EntryuserID: user.AuthorityUserID})
       .then((result) => {
-        console.log(result);
+        // console.log(result);
         setHeadList(result);
       })
       .catch((err) => {
@@ -69,7 +69,7 @@ const PPHeadList = () => {
       <main className="relative flex-1 p-6 w-full min-h-screen">
         <Card className="w-full max-w-3xl mx-auto bg-white/60 backdrop-blur-sm my-4">
           <CardHeader>
-            <CardTitle>PP Head List</CardTitle>
+            <CardTitle>Public Prosecutor Head List</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -83,7 +83,7 @@ const PPHeadList = () => {
           <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             type="text"
-            placeholder="Search Cases..."
+            placeholder="Search Head officials..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
