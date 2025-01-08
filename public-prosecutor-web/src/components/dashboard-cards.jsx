@@ -1,15 +1,22 @@
+'use client'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, FileText, Clock, CheckCircle, ArrowRight } from 'lucide-react'
+import { FileText, Clock, CheckCircle, ArrowRight } from 'lucide-react'
+import { decrypt } from '@/utils/crypto';
+import { fetchDashboardCount } from '@/app/api';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 const cardData = [
+
   {
     title: "Total Cases",
     subtitle: "All cases in the system",
     value: "36",
     icon: FileText,
     color: "#3b82f6", // blue-500
-    link: "/pp-head-total-cases"
+    link: "/pp-head-total-cases",
+    type: "totalCases"
   },
   {
     title: "Pending Cases",
@@ -17,7 +24,8 @@ const cardData = [
     value: "8",
     icon: Clock,
     color: "#eab308", // yellow-500
-    link: "/pp-head-pending-cases"
+    link: "/pp-head-pending-cases",
+    type: "unassignedCases"
   },
   {
     title: "Assigned Cases",
@@ -25,14 +33,41 @@ const cardData = [
     value: "28",
     icon: CheckCircle,
     color: "#22c55e", // green-500
-    link: "/pp-head-assigned-cases"
+    link: "/pp-head-assigned-cases",
+    type: "assignedCases"
   }
 ]
 
 export default function DashboardCards() {
+  const [caseCount, setCaseCount] = useState(null);
+  const userDetails = useSelector((state) => state.auth.user);
+  const [user, setUser] = useState("");
+
+  useEffect(() => {
+    const decoded_user = JSON.parse(decrypt(userDetails));
+    setUser(decoded_user);
+  }, [userDetails]);
+
+   useEffect(() => {
+      if (user) {
+        fetchDashboardCount(user?.AuthorityUserID)
+          .then((result) => {
+            console.log(result);
+            setCaseCount(result)
+          })
+          .catch((err) => {
+            console.error("Error fetching case count:", err);
+            setCaseCount({
+              "unassignedCases": 0,
+              "assignedCases": 0,
+              "totalCases": 0
+          })
+          });
+      }
+    }, [user])
   return (
     (<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {cardData.map((card, index) => (
+      {caseCount && cardData.map((card, index) => (
         <Card
           key={index}
           className="relative shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4"
@@ -45,7 +80,7 @@ export default function DashboardCards() {
             <card.icon className="h-4 w-4" style={{ color: card.color }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{card.value}</div>
+            <div className="text-2xl font-bold">{caseCount[`${card?.type}`] || 0}</div>
             <p className="text-xs text-muted-foreground mt-1">{card.subtitle}</p>
             <div className="flex items-center pt-4 group" style={{ color: card.color }}>
               <span className="text-sm">View details</span>

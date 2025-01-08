@@ -58,7 +58,7 @@ export default function LoginPage() {
             router.push("/sp-dashboard");
             break;
           case 50:
-            router.push("/ps-dashboard");
+            router.push("/ps-case");
             break;
           case 60:
             router.push("/public-prosecutor-user-dashboard");

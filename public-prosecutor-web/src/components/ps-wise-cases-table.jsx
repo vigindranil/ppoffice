@@ -93,6 +93,7 @@ export default function CaseTable({ps}) {
 
   const showallCaseBetweenRange = async (ps_id) => {
     try {
+      console.log(ps_id)
       const token = sessionStorage.getItem('token');
       const response = await fetch(`http://localhost:8000/api/showallCasesBypsId?psId=${ps_id}`, {
         headers: {
@@ -104,6 +105,8 @@ export default function CaseTable({ps}) {
       }
       const result = await response.json()
       if (result.status === 0) {
+        console.log(result);
+        
         setAllCases(result.data)
       } else {
         throw new Error(result.message || 'Failed to fetch data')
@@ -121,8 +124,7 @@ export default function CaseTable({ps}) {
   }, [userDetails]);
 
   useEffect(() => {
-    console.log('ps: ',ps)
-    ps && showallCaseBetweenRange(ps)
+    ps && showallCaseBetweenRange(ps);
   }, [ps])
 
   const filteredData = allCases?.filter((data) =>
@@ -180,7 +182,7 @@ export default function CaseTable({ps}) {
         <TableBody>
           {currentCases.map((caseItem, index) => (
             <TableRow key={index}>
-              <TableCell>{caseItem.PPuserName}</TableCell>
+              <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell>
               <TableCell>{caseItem.CaseNumber}</TableCell>
               <TableCell>{caseItem.PsName}</TableCell>
               <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
@@ -211,7 +213,7 @@ export default function CaseTable({ps}) {
                         {selectedCase && (
                           <>
                             <div className="space-y-2">
-                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName}</p>
+                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName || 'Not Assigned' }</p>
                               <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
                               <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
                               <p><strong>PS Name:</strong> {selectedCase.PsName}</p>

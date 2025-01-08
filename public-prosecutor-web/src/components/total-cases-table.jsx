@@ -159,7 +159,7 @@ export default function CaseTable() {
         <TableBody>
           {currentCases.map((caseItem, index) => (
             <TableRow key={index}>
-              <TableCell>{caseItem.PPuserName}</TableCell>
+              <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell>
               <TableCell>{caseItem.CaseNumber}</TableCell>
               <TableCell>{caseItem.PsName}</TableCell>
               <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
@@ -189,7 +189,7 @@ export default function CaseTable() {
                         {selectedCase && (
                           <>
                             <div className="space-y-2">
-                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName}</p>
+                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName || 'Not Assigned'}</p>
                               <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
                               <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
                               <p><strong>PS Name:</strong> {selectedCase.PsName}</p>

@@ -51,8 +51,8 @@ export default function ProfilePage() {
       }
     };
 
-    user && loadEmailDetails(user?.AuthorityUserID, user?.BoundaryID);
-    // user && loadEmailDetails(30, 7);
+    // user && loadEmailDetails(user?.AuthorityUserID, user?.BoundaryID);
+    user && loadEmailDetails(30, 7);
   }, [user]);
 
   const handleEmailRead = async (authorityTypeId, boundaryId, mailId, caseId) => {
