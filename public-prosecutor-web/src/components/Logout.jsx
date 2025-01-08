@@ -19,7 +19,7 @@ const LogoutButton = () => {
     // await fetch('/api/logout', { method: 'POST' });
 
     // Redirect user to the login page after logging out
-    router.push('/login');
+    router.push('/logout');
   };
 
   return (

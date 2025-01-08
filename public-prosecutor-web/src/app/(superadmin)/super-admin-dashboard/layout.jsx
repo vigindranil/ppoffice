@@ -5,6 +5,8 @@ import AdminSidebarLayout from "@/components/sidebar-layout";
 import { useSelector } from "react-redux";
 import Footer from '@/components/Footer';
 import Header from "@/components/Header";
+import AuthorizationWrapper from "@/components/AuthorizationWrapper";
+import { decrypt } from "@/utils/crypto";
 
 const Layout = ({children}) => {
   const [authToken, setAuthToken] = useState("");
@@ -13,9 +15,10 @@ const Layout = ({children}) => {
   const userDetails = useSelector((state) => state.auth.user);
 
   useEffect(() => {
-    setAuthToken(token);
-    setUser(userDetails);
-  }, [token, userDetails]); 
+    if(userDetails)
+      {const decryptedUser = JSON.parse(decrypt(userDetails))
+    setUser(decryptedUser);}
+  }, [userDetails]); 
 
   const breadcrumb = [
     { name: "Super Admin" }, { name: "Dashboard" },
@@ -26,6 +29,10 @@ const Layout = ({children}) => {
       <Header />
       <div className="flex flex-1">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
+        <AuthorizationWrapper
+          authorizedUserTypes={[100]}
+          redirectPath="/super-admin-dashboard"
+        ></AuthorizationWrapper>
           <div className="flex-1">
             <Suspense fallback={<Loading />}>
               {children}
