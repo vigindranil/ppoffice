@@ -13,7 +13,7 @@ class notificationController {
       }
   
       // SQL query to call the stored procedure
-      const query = 'CALL sp_mailDetails_byID(?, ?)';
+      const query = 'CALL sp_GetMailDetails(?, ?)';
       const params = [authorityTypeId, boundaryId];
   
       db.query(query, params, (err, results) => {
