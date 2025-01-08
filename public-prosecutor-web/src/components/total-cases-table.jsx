@@ -12,9 +12,9 @@ import { useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
-import { Input } from '@/components/ui/input'
-import { DatePicker } from '@/components/date-picker'
-import { Badge } from '@/components/ui/badge'
+import { Input } from './ui/input'
+import { DatePicker } from './date-picker'
+import { Badge } from './ui/badge'
 
 
 export default function CaseTable() {
@@ -34,16 +34,16 @@ export default function CaseTable() {
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
-    
+
     const date = new Date(dateString);
-    
+
     // Format as "yyyy-mm-dd"
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based
     const day = String(date.getDate()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day}`;
-    };
+  };
 
   const handleConfirm = () => {
     closeAlert()
@@ -66,7 +66,7 @@ export default function CaseTable() {
         body: JSON.stringify({
           "startDate": formatDate(start),
           "endDate": formatDate(end),
-          "isAssign" :1
+          "isAssign": 2
         }),
       })
       if (!response.ok) {
@@ -120,7 +120,7 @@ export default function CaseTable() {
         onClose={closeAlert}
         onConfirm={handleConfirm}
       />
-      
+
       <div className='flex gap-4 mb-3'>
         <DatePicker date={fromDate ? formatDate(fromDate) : null} setDate={setFromDate} placeholder="From (Date Range)" />
         <DatePicker date={toDate ? formatDate(toDate) : null} setDate={setToDate} placeholder="To (Date Range)" />
@@ -159,7 +159,7 @@ export default function CaseTable() {
         <TableBody>
           {currentCases.map((caseItem, index) => (
             <TableRow key={index}>
-              <TableCell>{caseItem.PPuserName}</TableCell>
+              <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell>
               <TableCell>{caseItem.CaseNumber}</TableCell>
               <TableCell>{caseItem.PsName}</TableCell>
               <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
@@ -169,7 +169,6 @@ export default function CaseTable() {
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
-                      className=""
                       onClick={() => {
                         setIsCaseSelected(true)
                         setSelectedCase(caseItem)
@@ -178,28 +177,29 @@ export default function CaseTable() {
                       <Eye /> More Details
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
+                  <DialogContent className="sm:max-w-auto">
                     <DialogHeader>
                       <DialogTitle>Case Details</DialogTitle>
                     </DialogHeader>
                     <DialogDescription>
-            Make changes to your profile here. Click save when you're done.
-          </DialogDescription>
+                      These informations are for case {selectedCase?.CaseNumber}
+                    </DialogDescription>
                     <Card>
-                    <CardHeader>
-                        <CardTitle>Case Details</CardTitle>
-                      </CardHeader>
                       <CardContent>
                         {selectedCase && (
                           <>
                             <div className="space-y-2">
-                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName}</p>
+                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName || 'Not Assigned'}</p>
                               <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
                               <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
                               <p><strong>PS Name:</strong> {selectedCase.PsName}</p>
                               <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
                               <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
                               <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
+                              <p><strong>IPC Section:</strong> {selectedCase.IPCSection}</p>
+                              <p><strong>Begin Reference:</strong> {selectedCase.BeginReferenceName}</p>
+                              <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
+                              <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p>
                             </div>
                           </>
                         )}

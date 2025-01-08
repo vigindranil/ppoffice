@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { ClipboardPlus, LoaderCircle, Search } from 'lucide-react'
+import { ClipboardPlus, Eye, LoaderCircle, Search } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
@@ -17,7 +17,7 @@ import { DatePicker } from './date-picker'
 import { fetchPPUsers, handleNotifyToPPUser } from "@/app/api";
 
 
-export default function CaseTable() {
+export default function CaseTable({ps}) {
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
   const [selectedCase, setSelectedCase] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -37,17 +37,17 @@ export default function CaseTable() {
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
-
+    
     const date = new Date(dateString);
-
+    
     // Format as "yyyy-mm-dd"
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based
     const day = String(date.getDate()).padStart(2, '0');
-
+    
     return `${year}-${month}-${day}`;
-  };
-
+    };
+    
 
   const handleAssignCasetoPPUser = async () => {
     try {
@@ -72,7 +72,7 @@ export default function CaseTable() {
       const result = await response.json()
       if (result.status === 0) {
         await handleNotifyToPPUser(selectedCase?.CaseId, selectedPPUser);
-        openAlert('success', 'PP User has been assigned to Case and email sent successfully')
+        openAlert('success', 'PP User has been successfully assigned to Case')
       } else {
         throw new Error(result.message)
       }
@@ -85,33 +85,28 @@ export default function CaseTable() {
 
   const handleConfirm = () => {
     closeAlert()
-    showallCaseBetweenRange(null, null)
+    showallCaseBetweenRange(ps)
     setSelectedCase(null)
     setIsCaseSelected(false)
     setSelectedPPUser('')
   }
 
-  const showallCaseBetweenRange = async (start, end) => {
-
+  const showallCaseBetweenRange = async (ps_id) => {
     try {
+      console.log(ps_id)
       const token = sessionStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/showallCaseBetweenRange', {
-        method: 'POST',
+      const response = await fetch(`http://localhost:8000/api/showallCasesBypsId?psId=${ps_id}`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          "startDate": formatDate(start),
-          "endDate": formatDate(end),
-          "isAssign": 0
-        }),
       })
       if (!response.ok) {
         throw new Error('Failed to fetch data')
       }
       const result = await response.json()
       if (result.status === 0) {
+        console.log(result);
+        
         setAllCases(result.data)
       } else {
         throw new Error(result.message || 'Failed to fetch data')
@@ -129,17 +124,8 @@ export default function CaseTable() {
   }, [userDetails]);
 
   useEffect(() => {
-    showallCaseBetweenRange(null, null)
-    if (user) {
-      fetchPPUsers(user?.AuthorityUserID)
-        .then((result) => {
-          setPPUsers(result)
-        })
-        .catch((err) => {
-          setError(err);
-        });
-    }
-  }, [user])
+    ps && showallCaseBetweenRange(ps);
+  }, [ps])
 
   const filteredData = allCases?.filter((data) =>
     Object?.values(data)?.some((value) =>
@@ -167,15 +153,7 @@ export default function CaseTable() {
         onClose={closeAlert}
         onConfirm={handleConfirm}
       />
-      <div className='flex gap-4 mb-3'>
-        <DatePicker date={fromDate ? formatDate(fromDate) : null} setDate={setFromDate} placeholder="From (Date Range)" />
-        <DatePicker date={toDate ? formatDate(toDate) : null} setDate={setToDate} placeholder="To (Date Range)" />
-        <Button
-          className="ml-2 bg-blue-400 hover:bg-blue-600"
-          onClick={() => showallCaseBetweenRange(fromDate, toDate)}
-        >{loading ? 'Loading...' : 'Get Cases'}</Button>
-      </div>
-      <div className='w-100 h-[1px] bg-slate-100 my-4'></div>
+      
       <div className="flex justify-between items-center mb-4">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -220,19 +198,23 @@ export default function CaseTable() {
                         setSelectedPPUser('')
                       }}
                     >
-                      <ClipboardPlus /> Assign Case
+                      <Eye /> More Details
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-auto">
+                  <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                      <DialogTitle>Case Number - AB12345DJ</DialogTitle>
+                      <DialogTitle>Case Details</DialogTitle>
                     </DialogHeader>
+                    <DialogDescription>
+                      These informations are for case {selectedCase?.CaseNumber}
+                    </DialogDescription>
                     <Card>
                       <CardContent>
                         {selectedCase && (
                           <>
                             <div className="space-y-2">
-                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName || 'Not Assigned'}</p>
+                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName || 'Not Assigned' }</p>
+                              <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
                               <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
                               <p><strong>PS Name:</strong> {selectedCase.PsName}</p>
                               <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
@@ -247,24 +229,7 @@ export default function CaseTable() {
                         )}
                       </CardContent>
                     </Card>
-                    <div className="space-y-2">
-                      <label htmlFor="pp-user-select" className="block text-sm font-medium text-gray-700">
-                        Assign to PP User
-                      </label>
-                      <Select onValueChange={setSelectedPPUser} value={selectedPPUser}>
-                        <SelectTrigger id="pp-user-select">
-                          <SelectValue placeholder="Select a PP user" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ppUsers?.map((user) => (
-                            <SelectItem key={user.pp_id} value={user.pp_id.toString()}>
-                              {user.pp_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button disabled={assignCaseLoading} onClick={() => handleAssignCasetoPPUser()} className="bg-blue-500 hover:bg-blue-600">{assignCaseLoading ? 'Loading...' : 'Assign'}</Button>
+                    
                   </DialogContent>
                 </Dialog>
               </TableCell>

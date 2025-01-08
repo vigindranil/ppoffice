@@ -144,7 +144,7 @@ const Page = () => {
               />
             </div>
           </div>
-          <Button type="submit" className="w-full">Add PP User</Button>
+          <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600">Add PP User</Button>
         </form>
         {message && <p className="mt-4 text-center text-red-600">{message}</p>}
       </CardContent>

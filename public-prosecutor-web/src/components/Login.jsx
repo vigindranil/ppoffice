@@ -52,13 +52,13 @@ export default function LoginPage() {
             router.push("/pp-head-dashboard");
             break;
           case 10:
-            router.push("/pp-office-admin-dashboard");
+            router.push("/pp-dashboard");
             break;
           case 30:
             router.push("/sp-dashboard");
             break;
           case 50:
-            router.push("/ps-dashboard");
+            router.push("/ps-case");
             break;
           case 60:
             router.push("/public-prosecutor-user-dashboard");

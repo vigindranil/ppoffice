@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { ClipboardPlus, Eye, LoaderCircle, Search } from 'lucide-react'
@@ -64,7 +64,8 @@ export default function CaseTable() {
         },
         body: JSON.stringify({
           "startDate": formatDate(start),
-          "endDate": formatDate(end)
+          "endDate": formatDate(end),
+          "isAssign": 1
         }),
       })
       if (!response.ok) {
@@ -72,8 +73,7 @@ export default function CaseTable() {
       }
       const result = await response.json()
       if (result.status === 0) {
-        const pendingCases = result.data.filter((item) => (item?.IsAssigned == 1))
-        setAllCases(pendingCases)
+        setAllCases(result.data)
       } else {
         throw new Error(result.message || 'Failed to fetch data')
       }
@@ -106,6 +106,11 @@ export default function CaseTable() {
   const totalPages = Math.ceil(filteredData?.length / casesPerPage)
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
+
+  const openDialog = () => {
+    setIsCaseSelected(true)
+    setSelectedCase(caseItem)
+  }
 
   if (loading) return <div className="text-center py-10"><LoaderCircle className='animate-spin mx-auto' /></div>
   if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>
@@ -156,7 +161,7 @@ export default function CaseTable() {
         <TableBody>
           {currentCases.map((caseItem, index) => (
             <TableRow key={index}>
-              <TableCell>{caseItem.PPuserName}</TableCell>
+              <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell>
               <TableCell>{caseItem.CaseNumber}</TableCell>
               <TableCell>{caseItem.PsName}</TableCell>
               <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
@@ -166,30 +171,34 @@ export default function CaseTable() {
                     <Button
                       variant="outline"
                       className=""
-                      onClick={() => {
-                        setIsCaseSelected(true)
-                        setSelectedCase(caseItem)
-                      }}
+                      onClick={() => openDialog()}
                     >
                       <Eye /> More Details
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
+                  <DialogContent className="sm:max-w-auto">
                     <DialogHeader>
                       <DialogTitle>Case Details</DialogTitle>
                     </DialogHeader>
+                    <DialogDescription>
+                      These informations are for case {selectedCase?.CaseNumber}
+                    </DialogDescription>
                     <Card>
                       <CardContent>
                         {selectedCase && (
                           <>
                             <div className="space-y-2">
-                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName}</p>
+                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName || 'Not Assigned'}</p>
                               <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
                               <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
                               <p><strong>PS Name:</strong> {selectedCase.PsName}</p>
                               <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
                               <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
                               <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
+                              <p><strong>IPC Section:</strong> {selectedCase.IPCSection}</p>
+                              <p><strong>Begin Reference:</strong> {selectedCase.BeginReferenceName}</p>
+                              <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
+                              <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p>
                             </div>
                           </>
                         )}

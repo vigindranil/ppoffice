@@ -33,107 +33,7 @@ const data = {
     avatar: "/img/user.jpg",
   },
   navMain: [
-    {
-      title: "Add User",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      type: 100,
-      items: [
-        {
-          title: "Public Prosecutor Head",
-          url: "/add-pp-head",
-        },
-        {
-          title: "Office Admin",
-          url: "/add-pp-office-admin",
-        },
-        {
-          title: "Superintendent of Police",
-          url: "/add-sp",
-        },
-      ],
-    },
-    {
-      title: "Show User List",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      type: 100,
-      items: [
-        {
-          title: "Public Prosecutor Head",
-          url: "/pp-head-list",
-        },
-        {
-          title: "Office Admin",
-          url: "/pp-office-admin-list",
-        },
-        {
-          title: "Superintendent of Police",
-          url: "/sp-list",
-        },
-      ],
-    },
-    {
-      title: "Show Detailed Report",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      type: 60,
-      items: [
-        {
-          title: "Cases",
-          url: "/show-public-prosecutor-case-details",
-        },
-        // {
-        //   title: "2",
-        //   url: "/",
-        // },
-      ],
-    },
-    {
-      title: "Reports",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      type: 10,
-      items: [
-        {
-          title: "Assigned Cases",
-          url: "/pp-office-admin-assigned-cases",
-        },
-        {
-          title: "Unassigned Cases",
-          url: "/pp-office-admin-unassigned-cases",
-        },
-        {
-          title: "All Cases",
-          url: "/pp-office-admin-all-cases",
-        },
-        // {
-        //   title: "Add cases",
-        //   url: "#",
-        // },
-      ],
-    },
-    {
-      title: "Actions",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      type: 10,
-      items: [
-        {
-          title: "Add Case",
-          url: "/pp-office-admin-add-case",
-        },
-        // {
-        //   title: "Notifications",
-        //   url: "/pp-office-admin-notifications",
-        // },
-      ],
-    },
+   
     {
       title: "PP Head Operations",
       url: "#",
@@ -170,6 +70,119 @@ const data = {
           title: "Dashboard",
           url: "/sp-dashboard",
         },
+        {
+          title: "Notifications",
+          url: "/sp-notifications",
+        },
+      ],
+    },
+    {
+      title: "Ps-dashboard",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 50,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/ps-case",
+        },
+        {
+          title: "Police Station Profile",
+          url: "/ps-profile",
+        },{
+          title:"Notifications",
+          url:"/ps-emails-details",
+        }
+      ],
+    },
+    {
+      title: "Show User List",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 100,
+      items: [
+        {
+          title: "Public Prosecutor Head",
+          url: "/pp-head-list",
+        },
+        {
+          title: "Office Admin",
+          url: "/pp-office-admin-list",
+        },
+        {
+          title: "Superintendent of Police",
+          url: "/sp-list",
+        },
+      ],
+    },
+    {
+      title: "Add User",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 100,
+      items: [
+        {
+          title: "Public Prosecutor Head",
+          url: "/add-pp-head",
+        },
+        {
+          title: "Office Admin",
+          url: "/add-pp-office-admin",
+        },
+        {
+          title: "Superintendent of Police",
+          url: "/add-sp",
+        },
+      ],
+    },
+    {
+      title: "Show Detailed Report",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 60,
+      items: [
+        {
+          title: "Cases",
+          url: "/show-public-prosecutor-case-details",
+        },
+      ],
+    },
+    {
+      title: "Reports",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Assigned Cases",
+          url: "/pp-office-admin-assigned-cases",
+        },
+        {
+          title: "Unassigned Cases",
+          url: "/pp-office-admin-unassigned-cases",
+        },
+        {
+          title: "All Cases",
+          url: "/pp-office-admin-all-cases",
+        },
+      ],
+    },
+    {
+      title: "Actions",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Add Case",
+          url: "/pp-office-admin-add-case",
+        },
       ],
     },
   ],
@@ -185,8 +198,7 @@ export const AdminAppSidebar = (props) => {
     setAuthToken(token);
     setUser(userDetails);
   }, [token, userDetails]);
-  // console.log(user);
-  // console.log(authToken);
+  console.log(user);
   return (
     <Sidebar
       collapsible="icon"
