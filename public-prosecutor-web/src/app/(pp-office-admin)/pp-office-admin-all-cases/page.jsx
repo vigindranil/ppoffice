@@ -113,7 +113,7 @@ export default function CaseTable() {
       <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
-        <Card className="w-full max-w-3xl mx-auto bg-white/60 backdrop-blur-sm my-4">
+        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
           <CardHeader>
             <CardTitle>All Case List</CardTitle>
           </CardHeader>
@@ -136,7 +136,7 @@ export default function CaseTable() {
                   <DatePicker date={fromDate ? formatDate(fromDate) : null} setDate={setFromDate} placeholder="From (Date Range)" />
                   <DatePicker date={toDate ? formatDate(toDate) : null} setDate={setToDate} placeholder="To (Date Range)" />
                   <Button
-                    className="ml-2 bg-blue-400 hover:bg-blue-600"
+                    className="ml-2 bg-blue-500 hover:bg-blue-700"
                     onClick={() => showallCaseBetweenRange(formatDate(fromDate), formatDate(toDate))}
                   >{loading ? 'Loading...' : 'Get Cases'}</Button>
                 </div>
@@ -194,7 +194,7 @@ export default function CaseTable() {
                                 <DialogTitle>Case Details</DialogTitle>
                               </DialogHeader>
                               <DialogDescription>
-                                Make changes to your profile here. Click save when you're done.
+                                {/* Make changes to your profile here. Click save when you're done. */}
                               </DialogDescription>
                               <Card>
                                 <CardHeader>

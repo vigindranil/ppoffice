@@ -9,7 +9,6 @@ import AuthorizationWrapper from "@/components/AuthorizationWrapper";
 import { decrypt } from "@/utils/crypto";
 
 const Layout = ({children}) => {
-  const [authToken, setAuthToken] = useState("");
   const [user, setUser] = useState("");
   const token = useSelector((state) => state.auth.token);
   const userDetails = useSelector((state) => state.auth.user);

@@ -593,6 +593,7 @@ export const showpoliceBydistrict = async (districtId) => {
 export const handleNotifyFromPPOfficeAdmin = async (CaseID) => {
   return new Promise(async(resolve, reject) => {
     const token = sessionStorage.getItem('token')
+    console.log("CaseID: ",CaseID)
     const response = await fetch(`${BASE_URL}send-email`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -609,10 +610,37 @@ export const handleNotifyFromPPOfficeAdmin = async (CaseID) => {
     }
     const result = await response.json()
     if (result.status === 0) {
+      console.log(result.message)
       resolve(result.message);
       console.log('Sent email:', result.message);
     } else {
       reject(result.message);
+      console.log(result.message)
     }
   })
 }
+
+
+export const showCaseDetailsUser = async (userID) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}caseDetailsByPPuserId?ppuserID=${userID}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};

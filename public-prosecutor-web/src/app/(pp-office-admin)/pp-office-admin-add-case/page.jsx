@@ -40,6 +40,7 @@ const AddCasePage = () => {
   const [referenceList, setReferenceList] = useState([])
   const [allDistrictList, setAllDistrictList] = useState([])
   const [allPSList, setAllPSList] = useState([])
+  const [allSendList, setAllSendList] = useState([])
   const [caseTypeList, setCaseTypeList] = useState([])
 
   const [formData, setFormData] = useState({
@@ -108,17 +109,29 @@ const AddCasePage = () => {
     }
   }, [formData.DistrictID]);
 
+  useEffect(() => {
+    if (formData.sendTo) {
+      showpoliceBydistrict(formData.sendTo)
+        .then((result) => {
+          setAllSendList(result);
+        })
+        .catch((err) => {
+          openAlert('error', err?.message || "An unexpected error occurred");
+        });
+    }
+  }, [formData.sendTo]);
+
   const handleSelectChange = (name, value) => {
     setFormData(prevState => {
       const newState = { ...prevState, [name]: value };
-      if (name === 'DistrictID') {
-        newState.sendTo = value;
-        newState.psID = '';
-        newState.copyTo = '';
-      }
-      if (name === 'psID') {
-        newState.copyTo = value;
-      }
+      // if (name === 'DistrictID') {  
+      //   newState.sendTo = value;
+      //   newState.psID = '';
+      //   newState.copyTo = '';
+      // }
+      // if (name === 'psID') {
+      //   newState.copyTo = value;
+      // }
       return newState;
     });
   }
@@ -132,7 +145,7 @@ const AddCasePage = () => {
     setIsLoading(true)
     createCaseOfficeAdmin(formData)
       .then(async(result) => {
-          // console.log(result)
+          console.log(result)
           openAlert('success', result.message || "success")
           await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID)
           setFormData({
@@ -166,17 +179,21 @@ const AddCasePage = () => {
   }
 
   return (
-    <main className="flex-1 p-6 relative w-full bg-cover bg-center h-screen">
-      <CustomAlertDialog
-            isOpen={isOpen}
-            alertType={alertType}
-            alertMessage={alertMessage}
-            onClose={closeAlert}
-            onConfirm={handleConfirm}
+    <div className="relative min-h-screen w-full">
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]"
           />
-      <div className="absolute inset-0 bg-black bg-opacity-40 -z-10"></div>
-
-      <Card className="w-full max-w-2xl mx-auto bg-white/30 backdrop-blur-sm my-4 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
+          <main className="relative flex-1 p-6 w-full min-h-screen">
+          <CustomAlertDialog
+                isOpen={isOpen}
+                alertType={alertType}
+                alertMessage={alertMessage}
+                onClose={closeAlert}
+                onConfirm={handleConfirm}
+              />
+    
+          <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
         <CardHeader>
           <CardTitle>Add New Case</CardTitle>
         </CardHeader>
@@ -185,7 +202,7 @@ const AddCasePage = () => {
           <div className="flex flex-col gap-4">
             <div className="flex space-x-4">
               <div className="flex-1 space-y-2">
-                <Label htmlFor="CaseNumber">Case Number</Label>
+                <Label className="font-bold" htmlFor="CaseNumber">Case Number</Label>
                 <Input
                   icon={Hash}
                   id="CaseNumber"
@@ -196,7 +213,7 @@ const AddCasePage = () => {
                 />
               </div>
               <div className="flex-1 space-y-2">
-                <Label htmlFor="CaseDate">Case Date</Label>
+                <Label className="font-bold" htmlFor="CaseDate">Case Date</Label>
                 <Input
                   icon={Calendar}
                   id="CaseDate"
@@ -209,7 +226,7 @@ const AddCasePage = () => {
             </div>
             <div className="flex space-x-4">
               <div className="flex-1 space-y-2">
-                <Label htmlFor="DistrictID">District</Label>
+                <Label className="font-bold" htmlFor="DistrictID">District</Label>
                 <Select onValueChange={(value) => handleSelectChange('DistrictID', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select District" />
@@ -227,7 +244,7 @@ const AddCasePage = () => {
                 </Select>
               </div>
               <div className="flex-1 space-y-2">
-                <Label htmlFor="psID">Police Station</Label>
+                <Label className="font-bold" htmlFor="psID">Police Station</Label>
                 <Select onValueChange={(value) => handleSelectChange('psID', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Police Station" />
@@ -247,7 +264,7 @@ const AddCasePage = () => {
             </div>
             <div className="flex space-x-4">
               <div className="flex-1 space-y-2">
-                <Label htmlFor="caseTypeID">Case Type</Label>
+                <Label className="font-bold" htmlFor="caseTypeID">Case Type</Label>
                 <Select onValueChange={(value) => handleSelectChange('caseTypeID', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Case Type" />
@@ -265,7 +282,7 @@ const AddCasePage = () => {
                 </Select>
               </div>
               <div className="flex-1 space-y-2">
-                <Label htmlFor="ref">Reference</Label>
+                <Label className="font-bold" htmlFor="ref">Reference</Label>
                 <Select onValueChange={(value) => handleSelectChange('ref', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Reference" />
@@ -285,7 +302,7 @@ const AddCasePage = () => {
             </div>
             <div className="flex space-x-4">
               <div className="flex-1 space-y-2">
-                <Label htmlFor="ipcAct">IPC Act</Label>
+                <Label className="font-bold" htmlFor="ipcAct">IPC Act</Label>
                 <Input
                   icon={Book}
                   id="ipcAct"
@@ -296,7 +313,7 @@ const AddCasePage = () => {
                 />
               </div>
               <div className="flex-1 space-y-2">
-                <Label htmlFor="hearingDate">Hearing Date</Label>
+                <Label className="font-bold" htmlFor="hearingDate">Hearing Date</Label>
                 <Input
                   icon={Clock}
                   id="hearingDate"
@@ -309,27 +326,67 @@ const AddCasePage = () => {
             </div>
             <div className="flex space-x-4">
               <div className="flex-1 space-y-2">
-                <Label htmlFor="photocopycaseDiaryExist">Photocopy Case Diary Exists</Label>
-                <Input
-                  icon={Image}
-                  id="photocopycaseDiaryExist"
-                  name="photocopycaseDiaryExist"
-                  type="number"
-                  min="0"
-                  max="1"
-                  placeholder="0 or 1"
-                  value={formData.photocopycaseDiaryExist}
-                  onChange={handleChange}
-                />
+                <Label className="font-bold" htmlFor="sendTo">Send To</Label>
+                <Select onValueChange={(value) => setFormData({ ...formData, 'sendTo': value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Send To" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Send To</SelectLabel>
+                      {allDistrictList.map((district) => (
+                        <SelectItem key={district.districtId} value={district.districtId.toString()}>
+                          {district.districtName}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1 space-y-2">
+                <Label className="font-bold" htmlFor="copyTo">Copy To</Label>
+                <Select onValueChange={(value) => setFormData({ ...formData, 'copyTo': value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Copy To" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Copy To</SelectLabel>
+                      {allSendList.map((ps) => (
+                        <SelectItem key={ps.id} value={ps.id.toString()}>
+                          {ps.ps_name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            <Button onClick={handleAddCase} className="w-full" disabled={isLoading}>
+            <div className="flex space-x-4">
+              <div className="w-1/2 space-y-2">
+                <Label className="font-bold" htmlFor="photocopycaseDiaryExist">Photocopy Case Diary Exists</Label>
+                <Select onValueChange={(value) => setFormData({ ...formData, 'photocopycaseDiaryExist': value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Photocopy Case Diary Exists" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Photocopy Case Diary Exists or Not</SelectLabel>
+                      <SelectItem value="1">Yes</SelectItem>
+                      <SelectItem value="0">No</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={handleAddCase} className="max-w-min bg-blue-500 mx-auto my-5 mt-5" disabled={isLoading}>
               {isLoading ? 'Adding Case...' : 'Add Case'}
             </Button>
           </div>
         </CardContent>
       </Card>
     </main>
+    </div>
   )
 }
 

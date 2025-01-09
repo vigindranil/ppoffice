@@ -97,7 +97,7 @@ const SPList = () => {
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
-        <Card className="w-full max-w-3xl mx-auto bg-white/60 backdrop-blur-sm my-4">
+        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
           <CardHeader>
             <CardTitle>Public Prosecutor Office Admin List</CardTitle>
           </CardHeader>
@@ -162,12 +162,12 @@ const SPList = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Contact Number</TableHead>
-                      <TableHead>WBP ID</TableHead>
+                      <TableHead className="font-bold">ID</TableHead>
+                      <TableHead className="font-bold">Name</TableHead>
+                      <TableHead className="font-bold">Username</TableHead>
+                      <TableHead className="font-bold">Email</TableHead>
+                      <TableHead className="font-bold">Contact Number</TableHead>
+                      <TableHead className="font-bold">WBP ID</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

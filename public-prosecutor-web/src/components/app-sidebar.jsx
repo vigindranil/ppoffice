@@ -5,13 +5,19 @@ import {
   AudioWaveform,
   BookOpen,
   Bot,
+  CheckCheck,
   Command,
+  FolderOpen,
+  FolderPlus,
+  FolderSearch,
   Frame,
   GalleryVerticalEnd,
   Map,
   PieChart,
   Settings2,
   SquareTerminal,
+  UserPlus,
+  UserSearch,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -99,7 +105,7 @@ const data = {
     {
       title: "Show User List",
       url: "#",
-      icon: SquareTerminal,
+      icon: UserSearch,
       isActive: true,
       type: 100,
       items: [
@@ -120,7 +126,7 @@ const data = {
     {
       title: "Add User",
       url: "#",
-      icon: SquareTerminal,
+      icon: UserPlus,
       isActive: true,
       type: 100,
       items: [
@@ -141,7 +147,7 @@ const data = {
     {
       title: "Show Detailed Report",
       url: "#",
-      icon: SquareTerminal,
+      icon: FolderOpen,
       isActive: true,
       type: 60,
       items: [
@@ -154,7 +160,7 @@ const data = {
     {
       title: "Reports",
       url: "#",
-      icon: SquareTerminal,
+      icon: FolderSearch,
       isActive: true,
       type: 10,
       items: [
@@ -175,7 +181,7 @@ const data = {
     {
       title: "Actions",
       url: "#",
-      icon: SquareTerminal,
+      icon: FolderPlus,
       isActive: true,
       type: 10,
       items: [

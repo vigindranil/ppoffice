@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import DashboardCards from "@/components/dashboard-cards";
+import DashboardCards from "@/components/dashboard-cards-office-admin";
 
 export default function OfficeAdminDashboard() {
   return (

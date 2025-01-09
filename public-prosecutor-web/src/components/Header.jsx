@@ -8,7 +8,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
-import LogoutButton from "@/components/Logout";
+import { UserAvatarDropdown } from "@/components/UserAvatarDropdown";
 
 const Header = () => {
   return (
@@ -32,7 +32,7 @@ const Header = () => {
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
-                <LogoutButton />
+                <UserAvatarDropdown />
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>

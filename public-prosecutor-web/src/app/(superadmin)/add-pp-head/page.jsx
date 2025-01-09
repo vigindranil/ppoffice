@@ -148,8 +148,8 @@ const Page = () => {
             onConfirm={handleConfirm}
           />
 
-      <Card className="w-full max-w-2xl mx-auto bg-white/50 backdrop-blur-sm my-4 overflow-hidden">
-        <CardHeader>
+      <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
+        <CardHeader className="mb-5">
           <CardTitle>Add Public Prosecutor Head</CardTitle>
         </CardHeader>
         <CardContent>
@@ -157,7 +157,7 @@ const Page = () => {
           <div className="flex flex-col gap-4">
             <div className="flex space-x-4">
               <div className="flex-1 space-y-2">
-                <Label htmlFor="FullName">Full Name</Label>
+                <Label className="font-bold" htmlFor="FullName">Full Name</Label>
                 <Input
                   //  icon={Hash}
                    icon={Hash}
@@ -171,7 +171,7 @@ const Page = () => {
                  />
               </div>
               <div className="flex-1 space-y-2">
-                <Label htmlFor="ContractNo">Contact Number</Label>
+                <Label className="font-bold" htmlFor="ContractNo">Contact Number</Label>
                 <Input
                   icon={Hash}
                   id="ContractNo"
@@ -181,13 +181,14 @@ const Page = () => {
                   value={formData.ContractNo}
                   onChange={handleChange}
                   required
+                  maxLength={10}
                 />
                 {formErrors.ContractNo && <p className="text-sm text-red-500">{formErrors.ContractNo}</p>}
               </div>
             </div>
             <div className="flex space-x-4">
               <div className="flex-1 space-y-2">
-                <Label htmlFor="Username">Username</Label>
+                <Label className="font-bold" htmlFor="Username">Username</Label>
                 <Input
                   icon={Hash}
                   id="Username"
@@ -199,7 +200,7 @@ const Page = () => {
                 />
               </div>
               <div className="flex-1 space-y-2">
-                  <Label htmlFor="UserPassword">Password</Label>
+                  <Label className="font-bold" htmlFor="UserPassword">Password</Label>
                   <div className="relative">
                     <Input
                       icon={Hash}
@@ -232,7 +233,7 @@ const Page = () => {
             </div>
             <div className="flex space-x-4">
               <div className="flex-1 space-y-2">
-                <Label htmlFor="Email">Email</Label>
+                <Label className="font-bold" htmlFor="Email">Email</Label>
                 <Input
                   icon={Hash}
                   id="Email"
@@ -247,7 +248,7 @@ const Page = () => {
                 {formErrors.Email && <p className="text-sm text-red-500">{formErrors.Email}</p>}
               </div>
               <div className="flex-1 space-y-2">
-                <Label htmlFor="LicenseNumber">License Number</Label>
+                <Label className="font-bold" htmlFor="LicenseNumber">License Number</Label>
                 <Input
                   icon={Hash}
                   id="LicenseNumber"
@@ -259,7 +260,7 @@ const Page = () => {
                 />
               </div>
             </div>
-            <Button onClick={handleAddHead} className="w-full" disabled={isLoading || Object.values(formErrors).some(error => error !== '')}>
+            <Button onClick={handleAddHead} className="max-w-min mx-auto mt-10 mb-5 bg-blue-500" disabled={isLoading || Object.values(formErrors).some(error => error !== '')}>
               {isLoading ? 'Please Wait...' : 'Add Head Official'}
             </Button>
           </div>
