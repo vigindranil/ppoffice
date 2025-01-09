@@ -272,6 +272,73 @@ class SuperAdminController {
       return ResponseHelper.error(res, "An unexpected error occurred",error);
     }
   }
+
+  static async getUserCounts(req, res) {
+    try {
+        const { EntryuserID } = req.body;
+
+        // Validate input
+        if (!EntryuserID) {
+            return ResponseHelper.error(res, "EntryuserID is required");
+        }
+
+        // Call the stored procedure
+        const query = 'CALL sp_UserCount(?)';
+
+        db.query(query, [EntryuserID], (err, results) => {
+            if (err) {
+                console.error("Error executing stored procedure:", err);
+                return ResponseHelper.error(res, "An error occurred while fetching data");
+            }
+
+            // Assuming the stored procedure returns results in results[0]
+            const caseData = results[0];
+            console.log(caseData);
+
+            let PPofficeAdmin = 0; // Default to 0
+            let PPHead = 0;        // Default to 0
+            let SPuser = 0;        // Default to 0
+            let PSuser =0;
+            let PPuser =0;
+            // Process the results
+            caseData.forEach(row => {
+                if (row.userType === 10) {
+                    PPofficeAdmin = row.usercount; // Assign count for PPofficeAdmin
+                } else if (row.userType === 20) {
+                    PPHead = row.usercount; // Assign count for PPHead
+                } else if (row.userType === 30) {
+                    SPuser = row.usercount; // Assign count for SPuser
+                }
+                else if (row.userType === 50) {
+                  PSuser = row.usercount; // Assign count for PSuser
+              }
+              else if (row.userType === 60) {
+                PPuser = row.usercount; // Assign count for PPuser
+            }
+            });
+
+            // Prepare the response
+            const response = {
+                PPofficeAdmin,
+                PPHead,
+                SPuser,
+                PSuser,
+                PPuser
+            };
+
+            // Send the response
+            return ResponseHelper.success_reponse(res, "Counts retrieved successfully", response);
+        });
+    } catch (error) {
+        console.error("Unexpected error:", error);
+        return ResponseHelper.error(res, "An unexpected error occurred", error);
+    }
+}
+
+
+
+
+
 }
 
 module.exports = SuperAdminController;
