@@ -9,62 +9,53 @@ class SuperAdminController {
 
     // Validate the required input fields
     if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber) {
-      return ResponseHelper.error(res, "Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber are required");
+        return ResponseHelper.error(res, "Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber are required", null, 400);
     }
 
     try {
-      // Call the stored procedure
-      const query = "CALL sp_saveCreateppofficeAdmin(?, ?, ?, ?, ?, ?, ?, @PPofficeAdminID, @ErrorCode)";
-      const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber, EntryUserID];
+        // Call the stored procedure
+        const query = "CALL sp_saveCreateppofficeAdmin(?, ?, ?, ?, ?, ?, ?, @PPofficeAdminID, @ErrorCode)";
+        const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber, EntryUserID];
 
-      // Execute the stored procedure
-      await new Promise((resolve, reject) => {
-        db.query(query, params, (err, results) => {
-          if (err) {
-            return ResponseHelper.error(res, "An error occurred while fetching data");
-          }
-          resolve(results);
+        // Execute the stored procedure
+        await new Promise((resolve, reject) => {
+            db.query(query, params, (err, results) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(results);
+            });
         });
-      });
 
-      // Fetch the output parameters from the procedure
-      const output = await new Promise((resolve, reject) => {
-        db.query("SELECT @PPofficeAdminID AS PPofficeAdminID, @ErrorCode AS ErrorCode", (err, results) => {
-          if (err) {
-            return ResponseHelper.error(res, "An error occurred while fetching data");
-          }
-          resolve(results[0]);
+        // Fetch the output parameters from the procedure
+        const output = await new Promise((resolve, reject) => {
+            db.query("SELECT @PPofficeAdminID AS PPofficeAdminID, @ErrorCode AS ErrorCode", (err, results) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(results[0]);
+            });
         });
-      });
 
-      const { PPofficeAdminID, ErrorCode } = output;
+        const { PPofficeAdminID, ErrorCode } = output;
+        console.log(ErrorCode);
 
-      // Check the output error code from the stored procedure
-      if (ErrorCode === 0) {
-
-        return ResponseHelper.success_reponse(res,"PPOfficeAdmin user created successfully",{ id: PPofficeAdminID });
-       
-      } 
-      if (ErrorCode === 4) {
-
-        return ResponseHelper.success_reponse(res,"Login user is invalid");
-       
-      }
-      if (ErrorCode === 5) {
-
-        return ResponseHelper.success_reponse(res,"log in user has no permission to add user");
-       
-      }
-      else {
-         return ResponseHelper.error(res,"Failed to create PPOfficeAdmin. Please check your input.",err);
-        
-      }
+        // Check the output error code from the stored procedure
+        if (ErrorCode === 0) {
+            return ResponseHelper.success_reponse(res, "PPOfficeAdmin user created successfully", { id: PPofficeAdminID });
+        } else if (ErrorCode === 4) {
+            return ResponseHelper.error(res, "Login user is invalid", null, 400);
+        } else if (ErrorCode === 5) {
+            return ResponseHelper.error(res, "Log in user has no permission to add user", null, 403);
+        } else {
+            return ResponseHelper.error(res, "Failed to create PPOfficeAdmin. Please check your input.", null, 400);
+        }
     } catch (error) {
-     
-      return ResponseHelper.error(res,"An unexpected error occurred while creating the PPOfficeAdmin.",error);
-
+        console.error(error); // Log error for debugging
+        return ResponseHelper.error(res, "An unexpected error occurred while creating the PPOfficeAdmin.", error, 500);
     }
-  }
+}
+
 
 
   static async createPPHeadUser(req, res) {
@@ -84,7 +75,7 @@ class SuperAdminController {
       await new Promise((resolve, reject) => {
         db.query(query, params, (err, results) => {
           if (err) {
-            return ResponseHelper.error(res, "An error occurred while fetching data");
+            return ResponseHelper.error(res, "An error occurred while fetching data",err);
           }
           resolve(results);
         });
@@ -94,7 +85,7 @@ class SuperAdminController {
       const output = await new Promise((resolve, reject) => {
         db.query("SELECT @PPofficeHeadID AS PPofficeHeadID, @ErrorCode AS ErrorCode", (err, results) => {
           if (err) {
-            return ResponseHelper.error(res, "An error occurred while fetching data");
+            return ResponseHelper.error(res, "An error occurred while fetching data",err);
           }
           resolve(results[0]);
         });
@@ -103,24 +94,20 @@ class SuperAdminController {
       const { PPofficeHeadID, ErrorCode } = output;
      
       // Check the output error code from the stored procedure
-      if (ErrorCode === 4) {
 
-        return ResponseHelper.success_reponse(res,"Login user is invalid");
-       
-      }
-
-      if (ErrorCode === 5) {
-
-        return ResponseHelper.success_reponse(res,"log in user has no permission to add user");
-       
-      }
-      
-      else if (ErrorCode === 0) {
+      if (ErrorCode === 0) {
 
         return ResponseHelper.success_reponse(res,"PPHead user created successfully",{ id: PPofficeHeadID });
        
       }
-      
+      else if (ErrorCode === 4) 
+        {
+        return ResponseHelper.error(res, "Login user is invalid", null, 400);
+      }
+     else if (ErrorCode === 5) 
+      {
+        return ResponseHelper.error(res, "Log in user has no permission to add user", null, 403);
+      }
       else {
          return ResponseHelper.error(res,"Failed to create PPHead. Please check your input.",err);
         
@@ -150,7 +137,7 @@ class SuperAdminController {
       await new Promise((resolve, reject) => {
         db.query(query, params, (err, results) => {
           if (err) {
-            return ResponseHelper.error(res, "An error occurred while fetching data");
+            return ResponseHelper.error(res, "An error occurred while fetching data",err);
           }
           resolve(results);
         });
@@ -160,34 +147,31 @@ class SuperAdminController {
       const output = await new Promise((resolve, reject) => {
         db.query("SELECT @SPID AS SPID, @ErrorCode AS ErrorCode", (err, results) => {
           if (err) {
-            return ResponseHelper.error(res, "An error occurred while fetching data");
+            return ResponseHelper.error(res, "An error occurred while fetching data",err);
           }
           resolve(results[0]);
         });
       });
 
       const { SPID, ErrorCode } = output;
-     
-      // Check the output error code from the stored procedure
-      if (ErrorCode === 4) {
+     console.log(ErrorCode);
+      // Check the output error code from the stored procedure 
 
-        return ResponseHelper.success_reponse(res,"Login user is invalid");
-       
-      }
-
-      if (ErrorCode === 5) {
-
-        return ResponseHelper.success_reponse(res,"log in user has no permission to add user");
-       
-      }
-      
-      else if (ErrorCode === 0) {
+      if (ErrorCode === 0) {
 
         return ResponseHelper.success_reponse(res,"SP user created successfully",{ id: SPID });
        
       }
-      
-      else {
+      else if (ErrorCode === 4) 
+        {
+        return ResponseHelper.error(res, "Login user is invalid", null, 400);
+       } 
+     else if (ErrorCode === 5) 
+      {
+        return ResponseHelper.error(res, "Log in user has no permission to add user", null, 403);
+      }
+      else
+       {
          return ResponseHelper.error(res,"Failed to create PPHead. Please check your input.",err);
         
       }
@@ -211,19 +195,19 @@ class SuperAdminController {
       const query = 'CALL sp_getPPOfficeAdminuser(?)';
       db.query(query, [EntryuserID], (err, results) => {
         if (err) {
-          return ResponseHelper.error(res, "An error occurred while fetching data");
+          return ResponseHelper.error(res, "An error occurred while fetching data",err);
         }
-        if (results[0] && results[0].length > 0) 
+        else if (results[0] && results[0].length > 0) 
         {
             return ResponseHelper.success_reponse(res, "Data found", results[0]);
         }
         else
         {
-            return ResponseHelper.error(res, "logged in user no acess to see ppAdminuser list");
+            return ResponseHelper.error(res, "logged in user no acess to see ppAdminuser list",err);
         }
       });
     } catch (error) {
-      return ResponseHelper.error(res, "An unexpected error occurred");
+      return ResponseHelper.error(res, "An unexpected error occurred",error);
     }
   }
   
@@ -242,17 +226,17 @@ class SuperAdminController {
         if (err) {
           return ResponseHelper.error(res, "An error occurred while fetching data");
         }
-        if (results[0] && results[0].length > 0) 
+       else if (results[0] && results[0].length > 0) 
         {
             return ResponseHelper.success_reponse(res, "Data found", results[0]);
         }
         else
         {
-            return ResponseHelper.error(res, "logged in user no acess to see ppHeaduser list");
+            return ResponseHelper.error(res, "logged in user no acess to see ppHeaduser list",err);
         }
       });
     } catch (error) {
-      return ResponseHelper.error(res, "An unexpected error occurred");
+      return ResponseHelper.error(res, "An unexpected error occurred",error);
     }
   }
   
@@ -271,20 +255,20 @@ class SuperAdminController {
       const params = [EntryuserID,DistrictID];
       db.query(query, params, (err, results) => {
         if (err) {
-          return ResponseHelper.error(res, "An error occurred while fetching data");
+          return ResponseHelper.error(res, "An error occurred while fetching data",err);
         }
         
-        if (results[0] && results[0].length > 0) 
+       else if (results[0] && results[0].length > 0) 
         {
             return ResponseHelper.success_reponse(res, "Data found", results[0]);
         }
         else
         {
-            return ResponseHelper.error(res, "logged in user no acess to see sp list");
+            return ResponseHelper.error(res, "logged in user has no acess to see sp list",err);
         }
       });
     } catch (error) {
-      return ResponseHelper.error(res, "An unexpected error occurred");
+      return ResponseHelper.error(res, "An unexpected error occurred",error);
     }
   }
 }
