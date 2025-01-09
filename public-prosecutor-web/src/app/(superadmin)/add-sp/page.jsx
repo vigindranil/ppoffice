@@ -194,7 +194,7 @@ const AddSP = () => {
               </div>
               <div className="flex space-x-4">
                 <div className="w-1/2 space-y-2">
-                  <Label className="font-bold" htmlFor="DistrictID">District ID</Label>
+                  <Label className="font-bold" htmlFor="DistrictID">District</Label>
                   <Select onValueChange={(value) => handleSelectChange('DistrictID', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select District" />
