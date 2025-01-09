@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import AuthorizationWrapper from "@/components/AuthorizationWrapper";
 import { decrypt } from "@/utils/crypto";
+import { useSelector } from "react-redux";
 
 const Layout = ({ children }) => {
   const [user, setUser] = useState("");

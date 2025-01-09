@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, Clock, CheckCircle, ArrowRight } from 'lucide-react'
+import { FileText, Clock, CheckCircle, ArrowRight, Users } from 'lucide-react'
 import { decrypt } from '@/utils/crypto';
 import { fetchDashboardCount } from '@/app/api';
 import { useEffect, useState } from 'react';
@@ -10,30 +10,30 @@ import { useSelector } from 'react-redux';
 const cardData = [
 
   {
-    title: "Total Cases",
-    subtitle: "All cases in the system",
+    title: "Public Prosecutor Head",
+    subtitle: "Total No. of Heads",
     value: "36",
-    icon: FileText,
+    icon: Users,
     color: "#3b82f6", // blue-500
-    link: "/pp-head-total-cases",
+    link: "/pp-head-list",
     type: "totalCases"
   },
   {
-    title: "Pending Cases",
-    subtitle: "Cases awaiting action",
+    title: "Office Admin",
+    subtitle: "Total No. of Office Admins",
     value: "8",
-    icon: Clock,
+    icon: Users,
     color: "#eab308", // yellow-500
-    link: "/pp-head-pending-cases",
+    link: "/pp-office-admin-list",
     type: "unassignedCases"
   },
   {
-    title: "Assigned Cases",
-    subtitle: "Cases currently in progress",
+    title: "Superintendent of Police",
+    subtitle: "Total No. SPs",
     value: "28",
-    icon: CheckCircle,
+    icon: Users,
     color: "#22c55e", // green-500
-    link: "/pp-head-assigned-cases",
+    link: "/sp-list",
     type: "assignedCases"
   }
 ]

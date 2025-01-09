@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, Wifi, WifiOff, CircleArrowRight } from "lucide-react";
 import Link from "next/link";
-import DashboardCards from "./dashboard-cards";
+import DashboardCards from "./dashboard-cards-super-admin";
 
 export default function AdminDashboard() {
   return (
