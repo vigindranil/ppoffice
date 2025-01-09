@@ -245,20 +245,21 @@ class SuperAdminController {
     try {
       // Retrieve the EntryUserID from the query parameters
       const {EntryuserID,DistrictID} =  req.body;
-
-      if (!EntryuserID || !DistrictID) {
-        return ResponseHelper.error(res, "EntryuserID is required");
-      }
+     
+      // if (!EntryuserID || !DistrictID) {
+      //   return ResponseHelper.error(res, "EntryuserID and is required");
+      // }
 
       // SQL query to call the stored procedure with the EntryuserID parameter
-      const query = 'CALL sp_getSPuser(?,?)';
+      const query = 'CALL sp_getSPuserV1(?,?)';
       const params = [EntryuserID,DistrictID];
       db.query(query, params, (err, results) => {
+        console.log(results);
         if (err) {
           return ResponseHelper.error(res, "An error occurred while fetching data",err);
         }
         
-       else if (results[0] && results[0].length > 0) 
+       else if (results[0] || results[0].length > 0) 
         {
             return ResponseHelper.success_reponse(res, "Data found", results[0]);
         }
