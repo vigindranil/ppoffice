@@ -26,7 +26,7 @@ class EmailController {
 
                 const rows = results[0];
                 const emailDetails = rows[0];
-
+                console.log(emailDetails);
                 if (!emailDetails) {
                     return res.status(404).json({
                         status: 1,
@@ -100,6 +100,8 @@ class EmailController {
                             message: "Email sent and logged successfully.",
                             data: {
                                 messageId: info.messageId,
+                                DistrictName :emailDetails.DistrictName,
+                                PoliceStationName: emailDetails.PoliceStationName,
                                 response: info.response,
                             },
                         });
@@ -148,7 +150,7 @@ class EmailController {
 
                 const rows = results[0];
                 const emailDetails = rows[0];
-
+               
                 if (!emailDetails) {
                     return res.status(404).json({
                         status: 1,
@@ -271,6 +273,10 @@ class EmailController {
                                 response1: info1.response,
                                 messageId2: info2.messageId,
                                 response2: info2.response,
+                                DistrictName :emailDetails.DistrictName,
+                                PoliceStationName: emailDetails.PoliceStationName,
+                                PPUserName:emailDetails.PPUserName
+
                             },
                         });
                     });
