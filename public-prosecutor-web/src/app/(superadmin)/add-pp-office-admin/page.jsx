@@ -150,7 +150,7 @@ const Page = () => {
 
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
           <CardHeader className="mb-5">
-            <CardTitle>Add Public Prosecutor Head</CardTitle>
+            <CardTitle>Add Office Admin</CardTitle>
           </CardHeader>
           <CardContent>
 
@@ -261,7 +261,7 @@ const Page = () => {
                 </div>
               </div>
               <Button onClick={handleAddOfficeAdmin} className="max-w-min mx-auto mt-10 mb-5 bg-blue-500" disabled={isLoading || Object.values(formErrors).some(error => error !== '')}>
-                {isLoading ? 'Please Wait...' : 'Add Head Official'}
+                {isLoading ? 'Please Wait...' : 'Add Office Admin'}
               </Button>
             </div>
           </CardContent>
