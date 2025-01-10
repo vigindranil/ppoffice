@@ -2,28 +2,6 @@ import { BASE_URL } from '@/app/constants';
 
 ////////////////////////////////////////////
 
-export async function addPPUser(data) {
-  try {
-    const token = sessionStorage.getItem('token');
-    console.log(token);
-    if (!token) {
-      return { success: false, message: 'No authorization token found.' };
-    }
-
-    const response = await fetch(`${BASE_URL}addppUser`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Error adding PP User:', error);
-    throw error;
-  }
-}
 
 export async function getPPUser(data) {
   try {
@@ -662,6 +640,7 @@ export const handleNotifyFromPPOfficeAdmin = async (CaseID) => {
 }
 
 
+// fetch case details for public prosecutor user
 export const showCaseDetailsUser = async (userID) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -687,6 +666,7 @@ export const showCaseDetailsUser = async (userID) => {
 };
 
 
+//fetch user count for dashboard
 export const fetchSuperDashboardCount = async (userID) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -711,6 +691,61 @@ export const fetchSuperDashboardCount = async (userID) => {
       }
     } catch (error) {
       reject(error.message);
+    }
+  });
+};
+
+
+
+
+// export async function addPPUser(data) {
+//   try {
+//     const token = sessionStorage.getItem('token');
+//     console.log(token);
+//     if (!token) {
+//       return { success: false, message: 'No authorization token found.' };
+//     }
+
+//     const response = await fetch(`${BASE_URL}addppUser`, {
+//       method: 'POST',
+//       headers: {
+//         'Authorization': `Bearer ${token}`,
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(data),
+//     });
+//     return await response.json();
+//   } catch (error) {
+//     console.error('Error adding PP User:', error);
+//     throw error;
+//   }
+// }
+
+export const addPPUser = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}addppUser`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req_body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        console.log(result.message);
+        
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
     }
   });
 };

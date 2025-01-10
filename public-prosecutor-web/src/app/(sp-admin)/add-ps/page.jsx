@@ -75,24 +75,15 @@ const Page = () => {
   }
 
   useEffect(() => {
-    alldistrict()
-      .then((result) => {
-        setAllDistrictList(result);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [])
-
-  useEffect(() => {
-    districtID && showpoliceBydistrict(districtID)
+    user && showpoliceBydistrict(user?.BoundaryID)
             .then((result) => {
+              console.log(user?.BoundaryID)
               setAllPSList(result);
             })
             .catch((err) => {
               console.log(err);
             });
-  },[districtID])
+  },[user])
 
   return (
     <Card className="w-full max-w-md mx-auto h-full bg-white/30 backdrop-blur-sm my-4">
@@ -191,24 +182,6 @@ const Page = () => {
             
           </div>
           <div className="flex space-x-4">
-              <div className="flex-1 space-y-2">
-                <Label htmlFor="DistrictID">District</Label>
-                <Select onValueChange={(value) => setDistrictID(value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select District" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Districts</SelectLabel>
-                      {allDistrictList?.map((district) => (
-                        <SelectItem key={district.districtId} value={district.districtId.toString()}>
-                          {district.districtName}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
               <div className="flex-1 space-y-2">
                 <Label htmlFor="PsID">Police Station</Label>
                 <Select onValueChange={(value) => setFormData({ ...formData, "PsID": value })}>

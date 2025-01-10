@@ -16,6 +16,7 @@ import {
   Menu,
   PieChart,
   Settings2,
+  ShieldPlus,
   SquareTerminal,
   UserPlus,
   UserSearch,
@@ -42,9 +43,9 @@ const data = {
   navMain: [
    
     {
-      title: "PP Head Operations",
+      title: "Navigation",
       url: "#",
-      icon: SquareTerminal,
+      icon: Menu,
       isActive: true,
       type: 20,
       items: [
@@ -52,6 +53,15 @@ const data = {
           title: "Dashboard",
           url: "/pp-head-dashboard",
         },
+      ],
+    },
+    {
+      title: "Operations",
+      url: "#",
+      icon: ShieldPlus,
+      isActive: true,
+      type: 20,
+      items: [
         {
           title: "Add PP User",
           url: "/add-pp-user",
