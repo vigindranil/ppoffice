@@ -24,34 +24,35 @@ export default function ProfilePage() {
     setUser(decoded_user);
   }, [userDetails]);
 
-  useEffect(() => {
-    const loadEmailDetails = async (authorityTypeId, boundaryId) => {
-      setLoading(true);
-      try {
-        const token = sessionStorage.getItem("token");
-        const response = await fetch("http://localhost:8000/api/emailDetails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-          body: JSON.stringify({ "authorityTypeId": authorityTypeId, "boundaryId": boundaryId }),
-        });
+  const loadEmailDetails = async (authorityTypeId, boundaryId) => {
+    setLoading(true);
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch("http://localhost:8000/api/emailDetails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ "authorityTypeId": authorityTypeId, "boundaryId": boundaryId }),
+      });
 
-        const data = await response.json();
-        if (response.ok) {
-          console.log(data.data);
-          
-          setEmailDetails(data.data);
-        } else {
-          setError(data.message);
-        }
-      } catch (err) {
-        setError("An error occurred");
-      } finally {
-        setLoading(false);
+      const data = await response.json();
+      if (response.ok) {
+        console.log(data.data);
+        
+        setEmailDetails(data.data);
+      } else {
+        setError(data.message);
       }
-    };
+    } catch (err) {
+      setError("An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
 
     // user && loadEmailDetails(user?.AuthorityUserID, user?.BoundaryID);
     user && loadEmailDetails(30, 7);
@@ -85,6 +86,8 @@ export default function ProfilePage() {
       const data = await response.json();
       if (response.ok) {
         console.log(data.message);
+        user && loadEmailDetails(30, 7);
+        // loadEmailDetails(user?.AuthorityUserID, user?.BoundaryID);
       } else {
         console.log(data.message);
       }
@@ -137,20 +140,20 @@ export default function ProfilePage() {
                 {emailDetails.map((email) => (
                   <div
                     key={email.id}
-                    className={`p-4 border ${!email?.readStatus && 'bg-muted' } border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300`}
+                    className={`p-4 border ${email?.readStatus != 1 && 'bg-muted' } border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300`}
                   >
                     <div className="text-lg font-medium mb-2">
                       <div className="text-blue-600">
-                        Mail ID: <span className="font-normal text-gray-800">{email.mailId}</span> {!email?.readStatus && <Badge className='h-2 w-2 p-0' variant='destructive'></Badge>}
+                        Mail ID: <span className="font-normal text-gray-800">{email.mailId}</span> {email?.readStatus != 1 && <Badge className='h-2 w-2 p-0' variant='destructive'></Badge>}
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 mb-1">
-                      <strong>Case Number:</strong> {email.caseNumber}
+                      <strong>Case Number:</strong> {email.CaseNumber}
                     </p>
                     <div className="mt-4 flex justify-between">
                       <Dialog>
                         <DialogTrigger asChild>
-                          {email?.readStatus ? <Button variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button> : <Button onClick={()=>handleEmailRead(user?.AuthorityUserID, user?.BoundaryID, email?.id, email?.CaseId)} variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button>}
+                          {email?.readStatus == 1 ? <Button variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button> : <Button onClick={()=>handleEmailRead(user?.AuthorityUserID, user?.BoundaryID, email?.id, email?.caseID)} variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button>}
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
@@ -161,7 +164,7 @@ export default function ProfilePage() {
                               <strong>Mail ID:</strong> {email.mailId}
                             </p>
                             <p className="text-sm text-gray-600 mb-1">
-                              <strong>Case Number:</strong> {email.caseNumber}
+                              <strong>Case Number:</strong> {email.CaseNumber}
                             </p>
                             <p className="text-sm text-gray-600 mb-1">
                               <strong>IPC Section:</strong> {email.Ipc_section}
@@ -172,7 +175,7 @@ export default function ProfilePage() {
                           </div>
                         </DialogContent>
                       </Dialog>
-                      {email?.readStatus && (<div className="flex"><span className="text-sm text-muted-foreground">seen </span> <CheckCheck className="h-5 w-5 mx-1 text-blue-400" /></div>)}
+                      {email?.readStatus == 1 && (<div className="flex"><span className="text-sm text-muted-foreground">seen </span> <CheckCheck className="h-5 w-5 mx-1 text-blue-400" /></div>)}
                     </div>
                   </div>
                 ))}

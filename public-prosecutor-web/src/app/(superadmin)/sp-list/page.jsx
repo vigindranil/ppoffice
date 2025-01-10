@@ -24,7 +24,7 @@ const SPList = () => {
   const [spList, setSPList] = useState([])
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
-  const [districtId, setDistrictId] = useState(6);
+  const [districtId, setDistrictId] = useState(0);
   const [allDistrictList, setAllDistrictList] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)

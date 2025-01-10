@@ -81,7 +81,7 @@ export default function DashboardCards() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{caseCount[`${card?.type}`] || 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">{card.subtitle}</p>
+            <p className="text-xs text-bold-foreground mt-1">{card.subtitle}</p>
             <div className="flex items-center pt-4 group" style={{ color: card.color }}>
               <span className="text-sm">View details</span>
               <ArrowRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />

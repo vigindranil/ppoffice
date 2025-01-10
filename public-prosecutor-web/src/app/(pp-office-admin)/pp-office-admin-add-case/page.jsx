@@ -147,7 +147,15 @@ const AddCasePage = () => {
       .then(async(result) => {
           console.log(result)
           openAlert('success', result.message || "success")
-          await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID)
+          try{
+            const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID)
+            console.log(res);
+          }catch(err){
+            console.log(err);
+            
+          }
+
+          
           setFormData({
             CaseNumber: '',
             EntryUserID: '',
@@ -165,7 +173,7 @@ const AddCasePage = () => {
         
       })
       .catch((err) => {
-        // console.log(err)
+        console.log(err)
         openAlert('error', err || "An unexpected error occurred")
         setError(err || "An unexpected error occurred");
       })

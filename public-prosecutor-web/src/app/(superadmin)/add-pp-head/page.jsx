@@ -103,24 +103,24 @@ const Page = () => {
 
     setIsLoading(true)
     addPPHead(formData)
-      .then(async(result) => {
-          // console.log(result)
-          openAlert('success', `Head User Added Successfully!
+      .then(async (result) => {
+        console.log(result)
+        openAlert('success', `Head User Added Successfully!
             Username: ${formData.Username}
             Password: ${formData.UserPassword}`);
-          setFormData({
-            Username: '',
-            UserPassword: '',
-            EntryUserID: '',
-            FullName: '',
-            ContractNo: '',
-            Email: '',
-            LicenseNumber: ''
-          })
-        
+        setFormData({
+          Username: '',
+          UserPassword: '',
+          EntryUserID: '',
+          FullName: '',
+          ContractNo: '',
+          Email: '',
+          LicenseNumber: ''
+        })
+
       })
       .catch((err) => {
-        // console.log(err)
+        console.log(err)
         openAlert('error', err || "An unexpected error occurred")
         setError(err || "An unexpected error occurred");
       })
@@ -140,66 +140,66 @@ const Page = () => {
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
-      <CustomAlertDialog
-            isOpen={isOpen}
-            alertType={alertType}
-            alertMessage={alertMessage}
-            onClose={closeAlert}
-            onConfirm={handleConfirm}
-          />
+        <CustomAlertDialog
+          isOpen={isOpen}
+          alertType={alertType}
+          alertMessage={alertMessage}
+          onClose={closeAlert}
+          onConfirm={handleConfirm}
+        />
 
-      <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
-        <CardHeader className="mb-5">
-          <CardTitle>Add Public Prosecutor Head</CardTitle>
-        </CardHeader>
-        <CardContent>
-          
-          <div className="flex flex-col gap-4">
-            <div className="flex space-x-4">
-              <div className="flex-1 space-y-2">
-                <Label className="font-bold" htmlFor="FullName">Full Name</Label>
-                <Input
-                  //  icon={Hash}
-                   icon={Hash}
-                   id="FullName"
-                   name="FullName"
-                   placeholder="Enter full name"
-                   value={formData.FullName}
-                   onChange={handleChange}
-                   required
-                   maxLength={30}
-                 />
+        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
+          <CardHeader className="mb-5">
+            <CardTitle>Add Public Prosecutor Head</CardTitle>
+          </CardHeader>
+          <CardContent>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex space-x-4">
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="FullName">Full Name</Label>
+                  <Input
+                    //  icon={Hash}
+                    icon={Hash}
+                    id="FullName"
+                    name="FullName"
+                    placeholder="Enter full name"
+                    value={formData.FullName}
+                    onChange={handleChange}
+                    required
+                    maxLength={30}
+                  />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="ContractNo">Contact Number</Label>
+                  <Input
+                    icon={Hash}
+                    id="ContractNo"
+                    name="ContractNo"
+                    type="tel"
+                    placeholder="Enter contact number"
+                    value={formData.ContractNo}
+                    onChange={handleChange}
+                    required
+                    maxLength={10}
+                  />
+                  {formErrors.ContractNo && <p className="text-sm text-red-500">{formErrors.ContractNo}</p>}
+                </div>
               </div>
-              <div className="flex-1 space-y-2">
-                <Label className="font-bold" htmlFor="ContractNo">Contact Number</Label>
-                <Input
-                  icon={Hash}
-                  id="ContractNo"
-                  name="ContractNo"
-                  type="tel"
-                  placeholder="Enter contact number"
-                  value={formData.ContractNo}
-                  onChange={handleChange}
-                  required
-                  maxLength={10}
-                />
-                {formErrors.ContractNo && <p className="text-sm text-red-500">{formErrors.ContractNo}</p>}
-              </div>
-            </div>
-            <div className="flex space-x-4">
-              <div className="flex-1 space-y-2">
-                <Label className="font-bold" htmlFor="Username">Username</Label>
-                <Input
-                  icon={Hash}
-                  id="Username"
-                  name="Username"
-                  placeholder="Enter username"
-                  value={formData.Username}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="flex-1 space-y-2">
+              <div className="flex space-x-4">
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="Username">Username</Label>
+                  <Input
+                    icon={Hash}
+                    id="Username"
+                    name="Username"
+                    placeholder="Enter username"
+                    value={formData.Username}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="flex-1 space-y-2">
                   <Label className="font-bold" htmlFor="UserPassword">Password</Label>
                   <div className="relative">
                     <Input
@@ -230,44 +230,44 @@ const Page = () => {
                   </div>
                   {/* <p className="text-sm text-gray-500">Use a strong, unique password</p> */}
                 </div>
-            </div>
-            <div className="flex space-x-4">
-              <div className="flex-1 space-y-2">
-                <Label className="font-bold" htmlFor="Email">Email</Label>
-                <Input
-                  icon={Hash}
-                  id="Email"
-                  name="Email"
-                  type="email"
-                  placeholder="Enter e-mail address"
-                  value={formData.Email}
-                  onChange={handleChange}
-                  required
-                  className={formErrors.Email ? 'border-red-500' : ''}
-                />
-                {formErrors.Email && <p className="text-sm text-red-500">{formErrors.Email}</p>}
               </div>
-              <div className="flex-1 space-y-2">
-                <Label className="font-bold" htmlFor="LicenseNumber">License Number</Label>
-                <Input
-                  icon={Hash}
-                  id="LicenseNumber"
-                  name="LicenseNumber"
-                  placeholder="Enter license number"
-                  value={formData.LicenseNumber}
-                  onChange={handleChange}
-                  required
-                />
+              <div className="flex space-x-4">
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="Email">Email</Label>
+                  <Input
+                    icon={Hash}
+                    id="Email"
+                    name="Email"
+                    type="email"
+                    placeholder="Enter e-mail address"
+                    value={formData.Email}
+                    onChange={handleChange}
+                    required
+                    className={formErrors.Email ? 'border-red-500' : ''}
+                  />
+                  {formErrors.Email && <p className="text-sm text-red-500">{formErrors.Email}</p>}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="LicenseNumber">License Number</Label>
+                  <Input
+                    icon={Hash}
+                    id="LicenseNumber"
+                    name="LicenseNumber"
+                    placeholder="Enter license number"
+                    value={formData.LicenseNumber}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
+              <Button onClick={handleAddHead} className="max-w-min mx-auto mt-10 mb-5 bg-blue-500" disabled={isLoading || Object.values(formErrors).some(error => error !== '')}>
+                {isLoading ? 'Please Wait...' : 'Add Head Official'}
+              </Button>
             </div>
-            <Button onClick={handleAddHead} className="max-w-min mx-auto mt-10 mb-5 bg-blue-500" disabled={isLoading || Object.values(formErrors).some(error => error !== '')}>
-              {isLoading ? 'Please Wait...' : 'Add Head Official'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </main>
-  </div>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
   )
 }
 

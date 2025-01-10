@@ -262,32 +262,61 @@ export async function fetchCases(psId) {
     });
   };
   
+
+  export async function addPsStaff(data) {
+    try {
+      const token = sessionStorage.getItem('token');
+      console.log(token);
+      if (!token) {
+        return { success: false, message: 'No authorization token found.' };
+      }
+  
+      const response = await fetch(`${BASE_URL}addpsStaff`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error adding PS User:', error);
+      throw error;
+    }
+  }
   
 ////////////////////////////////////////////////
 
 // [SuperAdmin] Add PP Office Admin
-export async function addPPOfficeAdmin(adminData) {
-  try {
+export const addPPOfficeAdmin = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}addppofficeAdmin`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req_body),
+      });
 
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      return { success: false, message: 'No authorization token found.' };
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        console.log(result.message);
+        
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
     }
-
-    const response = await fetch(`${BASE_URL}addppofficeAdmin`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(adminData),
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Error adding PP Office Admin:', error);
-    throw error;
-  }
-}
+  });
+};
 
 
 // [SuperAdmin] Show PP Office Admin User List
@@ -320,28 +349,35 @@ export const showPPOfficeAdminUserList = async (req_body) => {
 
 
 // [SuperAdmin] Add PP Head
-export async function addPPHead(headData) {
-  try {
 
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      return { success: false, message: 'No authorization token found.' };
+export const addPPHead = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}addppHead`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req_body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        console.log(result.message);
+        
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
     }
-
-    const response = await fetch(`${BASE_URL}addppHead`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(headData),
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Error adding PP Head:', error);
-    throw error;
-  }
-}
+  });
+};
 
 
 // [SuperAdmin] Show Head User
@@ -374,29 +410,34 @@ export const showPPOfficeHeadUserList = async (req_body) => {
 
 
 // [SuperAdmin] Add SP
-export async function addSP(spData) {
-  try {
+export const addSP = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}addSP`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req_body),
+      });
 
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      return { success: false, message: 'No authorization token found.' };
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        console.log(result.message);
+        
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
     }
-
-    const response = await fetch(`${BASE_URL}addSP`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(spData),
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('Error adding SP:', error);
-    throw error;
-  }
-}
-
+  });
+};
 
 // [SuperAdmin] Show SP User
 export const showSPUser = async (req_body) => {
@@ -641,6 +682,35 @@ export const showCaseDetailsUser = async (userID) => {
       }
     } catch (error) {
       reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+
+export const fetchSuperDashboardCount = async (userID) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}showUserCounts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ "EntryuserID": userID }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result);
+        
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(error.message);
     }
   });
 };

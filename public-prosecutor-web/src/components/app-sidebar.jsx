@@ -13,6 +13,7 @@ import {
   Frame,
   GalleryVerticalEnd,
   Map,
+  Menu,
   PieChart,
   Settings2,
   SquareTerminal,
@@ -80,6 +81,10 @@ const data = {
           title: "Notifications",
           url: "/sp-notifications",
         },
+        {
+          title: "Add PS",
+          url: "/add-ps",
+        },
       ],
     },
     {
@@ -100,6 +105,19 @@ const data = {
           title:"Notifications",
           url:"/ps-emails-details",
         }
+      ],
+    },
+    {
+      title: "Navigation",
+      url: "#",
+      icon: Menu,
+      isActive: true,
+      type: 100,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/super-admin-dashboard",
+        },
       ],
     },
     {
@@ -145,6 +163,19 @@ const data = {
       ],
     },
     {
+      title: "Navigation",
+      url: "#",
+      icon: Menu,
+      isActive: true,
+      type: 60,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/public-prosecutor-user-dashboard",
+        },
+      ],
+    },
+    {
       title: "Show Detailed Report",
       url: "#",
       icon: FolderOpen,
@@ -152,8 +183,21 @@ const data = {
       type: 60,
       items: [
         {
-          title: "Cases",
+          title: "My Cases",
           url: "/show-public-prosecutor-case-details",
+        },
+      ],
+    },
+    {
+      title: "Navigation",
+      url: "#",
+      icon: Menu,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/pp-office-admin-dashboard",
         },
       ],
     },
