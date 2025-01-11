@@ -68,6 +68,8 @@ router.post("/api/showppOfficeAdminUserList",authMiddleware.verifyToken,superAdm
 router.post("/api/showppOfficeHeadUserList",authMiddleware.verifyToken,superAdmin.showppofficeHeadnUser);
 router.post("/api/addSP",authMiddleware.verifyToken,superAdmin.createSPUser);
 router.post("/api/showspUser",authMiddleware.verifyToken,superAdmin.showspUser);
+router.post("/api/showUserCounts",authMiddleware.verifyToken,superAdmin.getUserCounts);
+
 
 const notifications = require("../controllers/notificationConroller");
 router.post("/api/emailDetails",authMiddleware.verifyToken,notifications.showMailDetailsById);

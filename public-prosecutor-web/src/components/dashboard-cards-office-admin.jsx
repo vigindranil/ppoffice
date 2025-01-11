@@ -15,7 +15,7 @@ const cardData = [
     value: "36",
     icon: FileText,
     color: "#3b82f6", // blue-500
-    link: "/pp-head-total-cases",
+    link: "/pp-office-admin-all-cases",
     type: "totalCases"
   },
   {
@@ -24,7 +24,7 @@ const cardData = [
     value: "8",
     icon: Clock,
     color: "#eab308", // yellow-500
-    link: "/pp-head-pending-cases",
+    link: "/pp-office-admin-unassigned-cases",
     type: "unassignedCases"
   },
   {
@@ -33,7 +33,7 @@ const cardData = [
     value: "28",
     icon: CheckCircle,
     color: "#22c55e", // green-500
-    link: "/pp-head-assigned-cases",
+    link: "/pp-office-admin-assigned-cases",
     type: "assignedCases"
   }
 ]

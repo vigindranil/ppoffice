@@ -1,17 +1,15 @@
-"use client";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense } from "react";
 import Loading from "./loading";
 import AdminSidebarLayout from "@/components/sidebar-layout";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import Page from "./page";
 
-const Layout = ({ children }) => {
-  
+const Layout = async () => {
 
   const breadcrumb = [
-    { name: "PP Head Admin" },
-    { href: "/pp-head-dashboard", name: "Dashboard" },
-    { href: "#", name: "Total Cases" },
+    { href: "#", name: "SP Admin" },
+    { href: "#", name: "Notifications" }
   ];
 
   return (
@@ -22,7 +20,7 @@ const Layout = ({ children }) => {
       <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
           <div className="flex flex-1">
-            <Suspense fallback={<Loading />}>{children}</Suspense>
+            <Suspense fallback={<Loading />}><Page /></Suspense>
           </div>
         </AdminSidebarLayout>
         <Footer />

@@ -73,7 +73,7 @@ const PPAllCaseList = () => {
       <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
-        <Card className="w-full max-w-3xl mx-auto bg-white/60 backdrop-blur-sm my-4">
+        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
           <CardHeader>
             <CardTitle>Assigned Case List</CardTitle>
           </CardHeader>

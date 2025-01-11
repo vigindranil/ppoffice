@@ -5,13 +5,21 @@ import {
   AudioWaveform,
   BookOpen,
   Bot,
+  CheckCheck,
   Command,
+  FolderOpen,
+  FolderPlus,
+  FolderSearch,
   Frame,
   GalleryVerticalEnd,
   Map,
+  Menu,
   PieChart,
   Settings2,
+  ShieldPlus,
   SquareTerminal,
+  UserPlus,
+  UserSearch,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -35,9 +43,9 @@ const data = {
   navMain: [
    
     {
-      title: "PP Head Operations",
+      title: "Navigation",
       url: "#",
-      icon: SquareTerminal,
+      icon: Menu,
       isActive: true,
       type: 20,
       items: [
@@ -45,6 +53,15 @@ const data = {
           title: "Dashboard",
           url: "/pp-head-dashboard",
         },
+      ],
+    },
+    {
+      title: "Operations",
+      url: "#",
+      icon: ShieldPlus,
+      isActive: true,
+      type: 20,
+      items: [
         {
           title: "Add PP User",
           url: "/add-pp-user",
@@ -74,6 +91,10 @@ const data = {
           title: "Notifications",
           url: "/sp-notifications",
         },
+        {
+          title: "Add PS",
+          url: "/add-ps",
+        },
       ],
     },
     {
@@ -97,9 +118,22 @@ const data = {
       ],
     },
     {
+      title: "Navigation",
+      url: "#",
+      icon: Menu,
+      isActive: true,
+      type: 100,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/super-admin-dashboard",
+        },
+      ],
+    },
+    {
       title: "Show User List",
       url: "#",
-      icon: SquareTerminal,
+      icon: UserSearch,
       isActive: true,
       type: 100,
       items: [
@@ -120,7 +154,7 @@ const data = {
     {
       title: "Add User",
       url: "#",
-      icon: SquareTerminal,
+      icon: UserPlus,
       isActive: true,
       type: 100,
       items: [
@@ -139,22 +173,48 @@ const data = {
       ],
     },
     {
-      title: "Show Detailed Report",
+      title: "Navigation",
       url: "#",
-      icon: SquareTerminal,
+      icon: Menu,
       isActive: true,
       type: 60,
       items: [
         {
-          title: "Cases",
+          title: "Dashboard",
+          url: "/public-prosecutor-user-dashboard",
+        },
+      ],
+    },
+    {
+      title: "Show Detailed Report",
+      url: "#",
+      icon: FolderOpen,
+      isActive: true,
+      type: 60,
+      items: [
+        {
+          title: "My Cases",
           url: "/show-public-prosecutor-case-details",
+        },
+      ],
+    },
+    {
+      title: "Navigation",
+      url: "#",
+      icon: Menu,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/pp-office-admin-dashboard",
         },
       ],
     },
     {
       title: "Reports",
       url: "#",
-      icon: SquareTerminal,
+      icon: FolderSearch,
       isActive: true,
       type: 10,
       items: [
@@ -175,7 +235,7 @@ const data = {
     {
       title: "Actions",
       url: "#",
-      icon: SquareTerminal,
+      icon: FolderPlus,
       isActive: true,
       type: 10,
       items: [

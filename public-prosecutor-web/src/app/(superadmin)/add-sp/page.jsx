@@ -1,164 +1,568 @@
+// 'use client'
+
+// import React, { useEffect, useState } from 'react'
+// import { addSP , alldistrict } from '@/app/api'
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Input } from "@/components/ui/input"
+// import { CustomAlertDialog } from "@/components/custom-alert-dialog"
+// import { useAlertDialog } from "@/hooks/useAlertDialog"
+// import { Button } from "@/components/ui/button"
+// import { Label } from "@/components/ui/label"
+// import { useSelector } from 'react-redux'
+// import {
+//   Select,
+//   SelectContent,
+//   SelectGroup,
+//   SelectItem,
+//   SelectLabel,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select"
+// import { decrypt } from '@/utils/crypto'
+// import { Eye, EyeOff, Hash } from 'lucide-react'
+
+// const AddSP = () => {
+//   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
+//   const [user, setUser] = useState(null)
+//   const encryptedUser = useSelector((state) => state.auth.user)
+//   const [allDistrictList, setAllDistrictList] = useState([])
+//   const [formData, setFormData] = useState({
+//     Username: '',
+//     UserPassword: '',
+//     EntryUserID: 10,
+//     FullName: '',
+//     ContractNo: '',
+//     Email: '',
+//     LicenseNumber: '',
+//     DistrictID: ''
+//   })
+//   const [message, setMessage] = useState('')
+
+//   const [showPassword, setShowPassword] = useState(false)
+
+//   useEffect(() => {
+//       const decoded_user = JSON.parse(decrypt(encryptedUser));
+//       setUser(decoded_user);
+//       setFormData(prevState => ({
+//         ...prevState,
+//         EntryUserID: decoded_user.AuthorityUserID
+//       }));
+//     }, [encryptedUser]);
+
+//   useEffect(() => {
+//     if (user) {
+
+//       alldistrict()
+//         .then((result) => {
+//           setAllDistrictList(result);
+//         })
+//         .catch((err) => {
+//           openAlert('error', err?.message || "An unexpected error occurred");
+//         });
+//     }
+//   }, [user]);
+
+//   const handleSelectChange = (name, value) => {
+//     setFormData(prevState => {
+//       const newState = { ...prevState, [name]: value };
+//       return newState;
+//     });
+//   }
+
+//   const handleChange = (e) => {
+//     setFormData({ ...formData, [e.target.name]: e.target.value })
+//   }
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault()
+//     try {
+//       const result = await addSP(formData)
+//       setMessage(result.message)
+//       if (result.status === 0) {
+//         setFormData({
+//           Username: '',
+//           UserPassword: '',
+//           EntryUserID: 10,
+//           FullName: '',
+//           ContractNo: '',
+//           Email: '',
+//           LicenseNumber: '',
+//           DistrictID: ''
+//         })
+//       }
+//     } catch (error) {
+//       setMessage('Error adding SP')
+//     }
+//   }
+
+//   const handleConfirm = () => {
+//     closeAlert()
+//   }
+
+//   return (
+//     <div className="relative min-h-screen w-full">
+//       <div
+//         className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]"
+//       />
+//       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
+//       <main className="relative flex-1 p-6 w-full min-h-screen">
+//         <CustomAlertDialog
+//           isOpen={isOpen}
+//           alertType={alertType}
+//           alertMessage={alertMessage}
+//           onClose={closeAlert}
+//           onConfirm={handleConfirm}
+//         />
+
+//         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
+//           <CardHeader className="mb-5">
+//             <CardTitle>Superintendent of Police</CardTitle>
+//           </CardHeader>
+//           <CardContent>
+//             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+//               <div className="flex space-x-4">
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="Username">Username</Label>
+//                   <Input
+//                     id="Username"
+//                     name="Username"
+//                     placeholder="Enter username"
+//                     value={formData.Username}
+//                     onChange={handleChange}
+//                     required
+//                   />
+//                 </div>
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="UserPassword">Password</Label>
+//                   <div className="relative">
+//                     <Input
+//                       icon={Hash}
+//                       id="UserPassword"
+//                       name="UserPassword"
+//                       type={showPassword ? "text" : "password"}
+//                       placeholder="Enter password"
+//                       value={formData.UserPassword}
+//                       onChange={handleChange}
+//                       required
+//                     />
+//                     <Button
+//                       type="button"
+//                       variant="ghost"
+//                       size="sm"
+//                       className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+//                       onMouseDown={() => setShowPassword(true)}
+//                       onMouseUp={() => setShowPassword(false)}
+//                       onMouseLeave={() => setShowPassword(false)}
+//                     >
+//                       {showPassword ? (
+//                         <EyeOff className="h-4 w-4" />
+//                       ) : (
+//                         <Eye className="h-4 w-4" />
+//                       )}
+//                     </Button>
+//                   </div>
+//                   {/* <p className="text-sm text-gray-500">Use a strong, unique password</p> */}
+//                 </div>
+//               </div>
+//               <div className="flex space-x-4">
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="FullName">Full Name</Label>
+//                   <Input
+//                     id="FullName"
+//                     name="FullName"
+//                     placeholder="Enter your full name"
+//                     value={formData.FullName}
+//                     onChange={handleChange}
+//                     required
+//                   />
+//                 </div>
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="ContractNo">Contact Number</Label>
+//                   <Input
+//                     id="ContractNo"
+//                     name="ContractNo"
+//                     placeholder="Enter contact number"
+//                     type="tel"
+//                     value={formData.ContractNo}
+//                     onChange={handleChange}
+//                     required
+//                     maxLength={10}
+//                   />
+//                 </div>
+//               </div>
+//               <div className="flex space-x-4">
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="Email">Email</Label>
+//                   <Input
+//                     id="Email"
+//                     name="Email"
+//                     placeholder="Enter e-mail address"
+//                     type="email"
+//                     value={formData.Email}
+//                     onChange={handleChange}
+//                     required
+//                   />
+//                 </div>
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="LicenseNumber">License Number</Label>
+//                   <Input
+//                     id="LicenseNumber"
+//                     name="LicenseNumber"
+//                     placeholder="Enter license number"
+//                     value={formData.LicenseNumber}
+//                     onChange={handleChange}
+//                     required
+//                   />
+//                 </div>
+//               </div>
+//               <div className="flex space-x-4">
+//                 <div className="w-1/2 space-y-2">
+//                   <Label className="font-bold" htmlFor="DistrictID">District</Label>
+//                   <Select onValueChange={(value) => handleSelectChange('DistrictID', value)}>
+//                   <SelectTrigger>
+//                     <SelectValue placeholder="Select District" />
+//                   </SelectTrigger>
+//                   <SelectContent>
+//                     <SelectGroup>
+//                       <SelectLabel>Districts</SelectLabel>
+//                       {allDistrictList.map((district) => (
+//                         <SelectItem key={district.districtId} value={district.districtId.toString()}>
+//                           {district.districtName}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectGroup>
+//                   </SelectContent>
+//                 </Select>
+//                 </div>
+//               </div>
+//               <Button type="submit" className="max-w-min mx-auto mt-10 mb-5 bg-blue-500">Add SP</Button>
+//             </form>
+//             {message && <p className="mt-4 text-center text-green-600">{message}</p>}
+//           </CardContent>
+//         </Card>
+
+//       </main>
+//     </div>
+//   )
+// }
+
+// export default AddSP
+
 'use client'
 
-import React, { useState } from 'react'
-import { addSP } from '@/app/api'
+import React, { useState, useEffect } from 'react'
+import { addSP , alldistrict } from '@/app/api'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { CustomAlertDialog } from "@/components/custom-alert-dialog"
+import { useAlertDialog } from "@/hooks/useAlertDialog"
+import { DatePicker } from '@/components/date-picker'
+import { isValidIndianPhoneNumber, isValidEmail } from '@/utils/validation'
+import { useSelector } from 'react-redux'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Calendar, FileText, Hash, MapPin, Bookmark, Book, Clock, Send, Copy, Image, Eye, EyeOff } from 'lucide-react'
+import { decrypt } from '@/utils/crypto'
 
-const AddSP = () => {
+const Page = () => {
+  const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [triggerAddCase, setTriggerAddCase] = useState(false)
+  const [user, setUser] = useState(null)
+  const encryptedUser = useSelector((state) => state.auth.user)
+  const token = useSelector((state) => state.auth.token)
+  const [allDistrictList, setAllDistrictList] = useState([])
+
   const [formData, setFormData] = useState({
     Username: '',
     UserPassword: '',
-    EntryUserID: 10,
+    EntryUserID: '',
     FullName: '',
     ContractNo: '',
     Email: '',
     LicenseNumber: '',
     DistrictID: ''
   })
-  const [message, setMessage] = useState('')
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+  const [formErrors, setFormErrors] = useState({
+    FullName: '',
+    ContractNo: '',
+    Email: '',
+  })
+
+  const [showPassword, setShowPassword] = useState(false)
+
+  useEffect(() => {
+    const decoded_user = JSON.parse(decrypt(encryptedUser));
+    setUser(decoded_user);
+    setFormData(prevState => ({
+      ...prevState,
+      EntryUserID: decoded_user.AuthorityUserID
+    }));
+  }, [encryptedUser]);
+
+  useEffect(() => {
+    if (user) {
+
+      alldistrict()
+        .then((result) => {
+          setAllDistrictList(result);
+        })
+        .catch((err) => {
+          openAlert('error', err?.message || "An unexpected error occurred");
+        });
+    }
+  }, [user]);
+
+  const handleSelectChange = (name, value) => {
+    setFormData(prevState => {
+      const newState = { ...prevState, [name]: value };
+      return newState;
+    });
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    try {
-      const result = await addSP(formData)
-      setMessage(result.message)
-      if (result.status === 0) {
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+    if (formErrors[name]) {
+      setFormErrors({ ...formErrors, [name]: '' })
+    }
+  }
+
+  const validateForm = () => {
+    const errors = {
+      FullName: '',
+      ContractNo: '',
+      Email: '',
+    };
+
+    if (!formData.FullName.trim()) {
+      errors.FullName = 'Full Name is required';
+    }
+
+    if (!formData.ContractNo.trim()) {
+      errors.ContractNo = 'Contact Number is required';
+    } else if (!isValidIndianPhoneNumber(formData.ContractNo)) {
+      errors.ContractNo = 'Invalid Indian phone number';
+    }
+
+    if (!formData.Email.trim()) {
+      errors.Email = 'Email is required';
+    } else if (!isValidEmail(formData.Email)) {
+      errors.Email = 'Invalid email address';
+    }
+
+    setFormErrors(errors);
+    return Object.values(errors).every(error => error === '');
+  };
+
+  const handleAddSP = () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true)
+    addSP(formData)
+      .then(async (result) => {
+        console.log(result)
+        openAlert('success', `Head User Added Successfully!
+            Username: ${formData.Username}
+            Password: ${formData.UserPassword}`);
         setFormData({
           Username: '',
           UserPassword: '',
-          EntryUserID: 10,
+          EntryUserID: '',
           FullName: '',
           ContractNo: '',
           Email: '',
           LicenseNumber: '',
           DistrictID: ''
         })
-      }
-    } catch (error) {
-      setMessage('Error adding SP')
-    }
+
+      })
+      .catch((err) => {
+        console.log(err)
+        openAlert('error', err || "An unexpected error occurred")
+        setError(err || "An unexpected error occurred");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }
+
+  const handleConfirm = () => {
+    closeAlert()
   }
 
   return (
-    <main
-      className="flex-1 p-6 relative w-full bg-cover bg-center h-screen"
-      style={{ backgroundImage: "linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)), url('img/dash2.jpg')" }} 
-    >
+    <div className="relative min-h-screen w-full">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
+      <main className="relative flex-1 p-6 w-full min-h-screen">
+        <CustomAlertDialog
+          isOpen={isOpen}
+          alertType={alertType}
+          alertMessage={alertMessage}
+          onClose={closeAlert}
+          onConfirm={handleConfirm}
+        />
 
-      {/* Overlay for Background Image */}
-      <div className="absolute inset-0 bg-black bg-opacity-40 -z-10"></div>
+        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
+          <CardHeader className="mb-5">
+            <CardTitle>Add Superintendent of Police</CardTitle>
+          </CardHeader>
+          <CardContent>
 
-      <Card className="w-full max-w-md mx-auto bg-white/30 backdrop-blur-sm my-4">
-        <CardHeader>
-          <CardTitle>Add SP</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex space-x-4">
-              <div className="flex-1 space-y-2">
-                <Label htmlFor="Username">Username</Label>
-                <Input
-                  id="Username"
-                  name="Username"
-                  placeholder="Enter username"
-                  value={formData.Username}
-                  onChange={handleChange}
-                  required
-                />
+            <div className="flex flex-col gap-4">
+              <div className="flex space-x-4">
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="FullName">Full Name</Label>
+                  <Input
+                    //  icon={Hash}
+                    icon={Hash}
+                    id="FullName"
+                    name="FullName"
+                    placeholder="Enter full name"
+                    value={formData.FullName}
+                    onChange={handleChange}
+                    required
+                    maxLength={30}
+                  />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="ContractNo">Contact Number</Label>
+                  <Input
+                    icon={Hash}
+                    id="ContractNo"
+                    name="ContractNo"
+                    type="tel"
+                    placeholder="Enter contact number"
+                    value={formData.ContractNo}
+                    onChange={handleChange}
+                    required
+                    maxLength={10}
+                  />
+                  {formErrors.ContractNo && <p className="text-sm text-red-500">{formErrors.ContractNo}</p>}
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="UserPassword">Password</Label>
-                <Input
-                  id="UserPassword"
-                  name="UserPassword"
-                  placeholder="Enter password"
-                  type="password"
-                  value={formData.UserPassword}
-                  onChange={handleChange}
-                  required
-                />
+              <div className="flex space-x-4">
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="Username">Username</Label>
+                  <Input
+                    icon={Hash}
+                    id="Username"
+                    name="Username"
+                    placeholder="Enter username"
+                    value={formData.Username}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="UserPassword">Password</Label>
+                  <div className="relative">
+                    <Input
+                      icon={Hash}
+                      id="UserPassword"
+                      name="UserPassword"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter password"
+                      value={formData.UserPassword}
+                      onChange={handleChange}
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onMouseDown={() => setShowPassword(true)}
+                      onMouseUp={() => setShowPassword(false)}
+                      onMouseLeave={() => setShowPassword(false)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  {/* <p className="text-sm text-gray-500">Use a strong, unique password</p> */}
+                </div>
               </div>
+              <div className="flex space-x-4">
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="Email">Email</Label>
+                  <Input
+                    icon={Hash}
+                    id="Email"
+                    name="Email"
+                    type="email"
+                    placeholder="Enter e-mail address"
+                    value={formData.Email}
+                    onChange={handleChange}
+                    required
+                    className={formErrors.Email ? 'border-red-500' : ''}
+                  />
+                  {formErrors.Email && <p className="text-sm text-red-500">{formErrors.Email}</p>}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="LicenseNumber">License Number</Label>
+                  <Input
+                    icon={Hash}
+                    id="LicenseNumber"
+                    name="LicenseNumber"
+                    placeholder="Enter license number"
+                    value={formData.LicenseNumber}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex space-x-4">
+                <div className="w-1/2 space-y-2">
+                  <Label className="font-bold" htmlFor="DistrictID">District</Label>
+                  <Select onValueChange={(value) => handleSelectChange('DistrictID', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select District" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Districts</SelectLabel>
+                      {allDistrictList.map((district) => (
+                        <SelectItem key={district.districtId} value={district.districtId.toString()}>
+                          {district.districtName}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                </div>
+              </div>
+              <Button onClick={handleAddSP} className="max-w-min mx-auto mt-10 mb-5 bg-blue-500" disabled={isLoading || Object.values(formErrors).some(error => error !== '')}>
+                {isLoading ? 'Please Wait...' : 'Add SP'}
+              </Button>
             </div>
-            <div className="flex space-x-4">
-              <div className="flex-1 space-y-2">
-                <Label htmlFor="FullName">Full Name</Label>
-                <Input
-                  id="FullName"
-                  name="FullName"
-                  placeholder="Enter your full name"
-                  value={formData.FullName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ContractNo">Contact Number</Label>
-                <Input
-                  id="ContractNo"
-                  name="ContractNo"
-                  placeholder="Enter contact number"
-                  type="tel"
-                  value={formData.ContractNo}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-            <div className="flex space-x-4">
-              <div className="flex-1 space-y-2">
-                <Label htmlFor="Email">Email</Label>
-                <Input
-                  id="Email"
-                  name="Email"
-                  placeholder="Enter e-mail address"
-                  type="email"
-                  value={formData.Email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="LicenseNumber">License Number</Label>
-                <Input
-                  id="LicenseNumber"
-                  name="LicenseNumber"
-                  placeholder="Enter license number"
-                  value={formData.LicenseNumber}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-            <div className="flex space-x-4">
-              <div className="flex-1 space-y-2">
-                <Label htmlFor="DistrictID">District ID</Label>
-                <Input
-                  id="DistrictID"
-                  name="DistrictID"
-                  type="number"
-                  placeholder="Enter district id"
-                  value={formData.DistrictID}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-            <Button type="submit" className="w-full">Add SP</Button>
-          </form>
-          {message && <p className="mt-4 text-center text-green-600">{message}</p>}
-        </CardContent>
-      </Card>
-
-    </main>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
   )
 }
 
-export default AddSP
+export default Page
 

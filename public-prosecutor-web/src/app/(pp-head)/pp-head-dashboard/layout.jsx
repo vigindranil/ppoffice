@@ -18,7 +18,7 @@ const Layout = ({ children }) => {
   }, [token, userDetails]);
 
   const breadcrumb = [
-    { href: "#", name: "PP Head Admin" },
+    { name: "PP Head Admin" },
     { href: "/pp-head-dashboard", name: "Dashboard" }
   ];
 

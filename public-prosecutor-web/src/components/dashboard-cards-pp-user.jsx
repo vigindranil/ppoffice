@@ -10,31 +10,13 @@ import { useSelector } from 'react-redux';
 const cardData = [
 
   {
-    title: "Total Cases",
-    subtitle: "All cases in the system",
-    value: "36",
+    title: "Cases",
+    subtitle: "All your assigned cases",
+    value: "40",
     icon: FileText,
     color: "#3b82f6", // blue-500
-    link: "/pp-head-total-cases",
+    link: "/show-public-prosecutor-case-details",
     type: "totalCases"
-  },
-  {
-    title: "Pending Cases",
-    subtitle: "Cases awaiting action",
-    value: "8",
-    icon: Clock,
-    color: "#eab308", // yellow-500
-    link: "/pp-head-pending-cases",
-    type: "unassignedCases"
-  },
-  {
-    title: "Assigned Cases",
-    subtitle: "Cases currently in progress",
-    value: "28",
-    icon: CheckCircle,
-    color: "#22c55e", // green-500
-    link: "/pp-head-assigned-cases",
-    type: "assignedCases"
   }
 ]
 
@@ -58,9 +40,7 @@ export default function DashboardCards() {
           .catch((err) => {
             console.error("Error fetching case count:", err);
             setCaseCount({
-              "unassignedCases": 0,
-              "assignedCases": 0,
-              "totalCases": 0
+              "assignedCases": 0
           })
           });
       }
