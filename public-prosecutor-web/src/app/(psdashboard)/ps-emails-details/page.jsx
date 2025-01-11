@@ -54,8 +54,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
 
-    // user && loadEmailDetails(user?.AuthorityUserID, user?.BoundaryID);
-    user && loadEmailDetails(30, 7);
+    user && loadEmailDetails(user?.AuthorityTypeID, user?.BoundaryID);
+    // user && loadEmailDetails(30, 7);
   }, [user]);
 
   const handleEmailRead = async (authorityTypeId, boundaryId, mailId, caseId) => {
@@ -86,8 +86,8 @@ export default function ProfilePage() {
       const data = await response.json();
       if (response.ok) {
         console.log(data.message);
-        user && loadEmailDetails(30, 7);
-        // loadEmailDetails(user?.AuthorityUserID, user?.BoundaryID);
+        // user && loadEmailDetails(30, 7);
+        loadEmailDetails(user?.AuthorityTypeID, user?.BoundaryID);
       } else {
         console.log(data.message);
       }
@@ -117,12 +117,9 @@ export default function ProfilePage() {
   if (error) {
     return (
       <div className="container mx-auto py-10">
-        <Card className="w-full max-w-3xl mx-auto bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-600">Error</CardTitle>
-          </CardHeader>
+        <Card className="w-full max-w-3xl mx-auto text-center py-2">
           <CardContent>
-            <p className="text-red-600">{error}</p>
+            <p>{error}</p>
           </CardContent>
         </Card>
       </div>
@@ -153,7 +150,7 @@ export default function ProfilePage() {
                     <div className="mt-4 flex justify-between">
                       <Dialog>
                         <DialogTrigger asChild>
-                          {email?.readStatus == 1 ? <Button variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button> : <Button onClick={()=>handleEmailRead(user?.AuthorityUserID, user?.BoundaryID, email?.id, email?.caseID)} variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button>}
+                          {email?.readStatus == 1 ? <Button variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button> : <Button onClick={()=>handleEmailRead(user?.AuthorityTypeID, user?.BoundaryID, email?.id, email?.caseID)} variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button>}
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
