@@ -20,7 +20,7 @@ const Layout = ({children}) => {
     }, [userDetails]); 
 
   const breadcrumb = [
-    { href: "/public-prosecutor-user-dashboard", name: "Dashboard" },{ name: "Public Prosecutor Case Details" },
+    { name: "Public Prosecutor" },{ href: "/public-prosecutor-user-dashboard", name: "Dashboard" },{ name: "Public Prosecutor Case Details" },
   ];
 
   return (

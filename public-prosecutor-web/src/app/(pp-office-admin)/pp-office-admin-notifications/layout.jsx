@@ -20,7 +20,7 @@ const Layout = ({children}) => {
   }, [userDetails]);  
 
   const breadcrumb = [
-    { name: "Office Admin" },{ name: "Dashboard" },
+    { name: "Office Admin" },{ href: "/pp-office-admin-dashboard", name: "Dashboard" },{ name: "Notifications" },
   ];
 
   return (
@@ -31,7 +31,7 @@ const Layout = ({children}) => {
         <AdminSidebarLayout breadcrumb={breadcrumb}>
         <AuthorizationWrapper
           authorizedUserTypes={[10]}
-          redirectPath="/super-admin-dashboard"
+          redirectPath="/pp-office-admin-dashboard"
         ></AuthorizationWrapper>
           <div className="flex flex-1">
             <Suspense fallback={<Loading />}>

@@ -35,7 +35,7 @@ const Layout = ({ children }) => {
         <AdminSidebarLayout breadcrumb={breadcrumb}>
         <AuthorizationWrapper
           authorizedUserTypes={[10]}
-          redirectPath="/super-admin-dashboard"
+          redirectPath="/pp-office-admin-dashboard"
         ></AuthorizationWrapper>
           <div className="flex flex-1">
             <Suspense fallback={<Loading />}>{children}</Suspense>
