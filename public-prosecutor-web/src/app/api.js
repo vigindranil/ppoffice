@@ -483,7 +483,7 @@ export const createCaseOfficeAdmin = async (req_body) => {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
         },
         body: JSON.stringify(req_body),
       });

@@ -55,7 +55,8 @@ const AddCasePage = () => {
     hearingDate: '',
     sendTo: '',
     copyTo: '',
-    photocopycaseDiaryExist: ''
+    photocopycaseDiaryExist: '',
+    caseDocument: null,
   })
 
   useEffect(() => {
@@ -141,6 +142,53 @@ const AddCasePage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  // const handleFileChange = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     if (file.size > 200 * 1024) { // 200 KB in bytes
+  //       openAlert('error', 'File size should not exceed 200 KB');
+  //       return;
+  //     }
+  //     if (!['image/jpeg', 'image/jpg', 'application/pdf'].includes(file.type)) {
+  //       openAlert('error', 'Only JPG, JPEG, or PDF files are allowed');
+  //       return;
+  //     }
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setFormData(prevState => ({
+  //         ...prevState,
+  //         caseDocument: {
+  //           name: file.name,
+  //           type: file.type,
+  //           size: file.size,
+  //           data: reader.result
+  //         },
+  //         photocopycaseDiaryExist: '1'
+  //       }));
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // }
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 200 * 1024) { // 200 KB in bytes
+        openAlert('error', 'File size should not exceed 200 KB');
+        return;
+      }
+      if (!['image/jpeg', 'image/jpg', 'application/pdf'].includes(file.type)) {
+        openAlert('error', 'Only JPG, JPEG, or PDF files are allowed');
+        return;
+      }
+      setFormData(prevState => ({
+        ...prevState,
+        caseDocument: file,
+        photocopycaseDiaryExist: '1'
+      }));
+    }
+  }
+
   const handleAddCase = () => {
     setIsLoading(true)
     createCaseOfficeAdmin(formData)
@@ -168,7 +216,8 @@ const AddCasePage = () => {
             hearingDate: '',
             sendTo: '',
             copyTo: '',
-            photocopycaseDiaryExist: ''
+            photocopycaseDiaryExist: '0',
+            caseDocument: null,
           })
         
       })
@@ -370,7 +419,7 @@ const AddCasePage = () => {
                 </Select>
               </div>
             </div>
-            <div className="flex space-x-4">
+            {/* <div className="flex space-x-4">
               <div className="w-1/2 space-y-2">
                 <Label className="font-bold" htmlFor="photocopycaseDiaryExist">Photocopy Case Diary Exists</Label>
                 <Select onValueChange={(value) => setFormData({ ...formData, 'photocopycaseDiaryExist': value })}>
@@ -386,9 +435,32 @@ const AddCasePage = () => {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
+            </div> */}
+            <div className="flex space-x-4">
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="caseDocument">Case Document</Label>
+                  <Input
+                    icon={FileText}
+                    id="caseDocument"
+                    name="caseDocument"
+                    type="file"
+                    accept=".jpg,.jpeg,.pdf"
+                    onChange={handleFileChange}
+                  />
+                  <p className="text-sm text-gray-500">Max file size: 200 KB. Allowed formats: JPG, JPEG, PDF</p>
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="photocopycaseDiaryExist">Photocopy Case Diary Exists</Label>
+                  <Input
+                    id="photocopycaseDiaryExist"
+                    name="photocopycaseDiaryExist"
+                    value={formData.photocopycaseDiaryExist === '1' ? 'Yes' : 'No'}
+                    readOnly
+                  />
+                </div>
+              </div>
             <Button onClick={handleAddCase} className="max-w-min bg-blue-500 mx-auto my-5 mt-5" disabled={isLoading}>
-              {isLoading ? 'Adding Case...' : 'Add Case'}
+              {isLoading ? 'Please Wait...' : 'Add Case'}
             </Button>
           </div>
         </CardContent>
