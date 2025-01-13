@@ -1,7 +1,9 @@
 const db = require("../config/db"); // Import your database connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
 const path = require("path");
-const basePath = `D:\\CaseTrack\\ppoffice\\ppo-office-casetrack\\uploads\\`;
+// const basePath = `D:\\CaseTrack\\ppoffice\\ppo-office-casetrack\\`;
+
+const basePath = `D:\\git\ppoffice\\ppo-office-casetrack\\`;
 
 class CaseController {
     
@@ -212,107 +214,200 @@ class CaseController {
 
      
      // create case with Doc 
-        static async createCaseDocument(req, res) {
-            try {
-                const {
-                    CaseNumber,
-                    EntryUserID,
-                    CaseDate,
-                    DistrictID,
-                    psID,
-                    caseTypeID,
-                    ref,
-                    ipcAct,
-                    hearingDate,
-                    sendTo,
-                    copyTo,
-                    photocopycaseDiaryExist,
-                    caseDocument
-                } = req.body;
+        // static async createCaseDocument(req, res) {
+        //     try {
+        //         const {
+        //             CaseNumber,
+        //             EntryUserID,
+        //             CaseDate,
+        //             DistrictID,
+        //             psID,
+        //             caseTypeID,
+        //             ref,
+        //             ipcAct,
+        //             hearingDate,
+        //             sendTo,
+        //             copyTo,
+        //             photocopycaseDiaryExist,
+        //             caseDocument
+        //         } = req.body;
+        //    console.log("its---------",req?.body?.caseDocument);
+        //         // Validate required fields
+        //         if (
+        //             !CaseNumber ||
+        //             !EntryUserID ||
+        //             !CaseDate ||
+        //             !DistrictID ||
+        //             !psID ||
+        //             !caseTypeID ||
+        //             !ref ||
+        //             !ipcAct ||
+        //             !hearingDate ||
+        //             sendTo === undefined ||
+        //             copyTo === undefined ||
+        //             photocopycaseDiaryExist === undefined
+        //         ) {
+        //             return res.status(400).json({ error: 'Please fill all required fields' });
+        //         }
     
-                // Validate required fields
-                if (
-                    !CaseNumber ||
-                    !EntryUserID ||
-                    !CaseDate ||
-                    !DistrictID ||
-                    !psID ||
-                    !caseTypeID ||
-                    !ref ||
-                    !ipcAct ||
-                    !hearingDate ||
-                    sendTo === undefined ||
-                    copyTo === undefined ||
-                    photocopycaseDiaryExist === undefined
-                ) {
-                    return res.status(400).json({ error: 'Please fill all required fields' });
-                }
+        //         // Retrieve uploaded document path
+        //         const imagePath = req.file ? path.basename(req.file.path) : null;
     
-                // Retrieve uploaded document path
-                const imagePath = req.file ? path.basename(req.file.path) : null;
+        //         // Stored procedure call
+        //         const query = "CALL sp_CreatecaseV1(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
+        //         const params = [
+        //             CaseNumber,
+        //             EntryUserID,
+        //             CaseDate,
+        //             DistrictID,
+        //             psID,
+        //             caseTypeID,
+        //             ref,
+        //             ipcAct,
+        //             hearingDate,
+        //             sendTo,
+        //             copyTo,
+        //             photocopycaseDiaryExist,
+        //             imagePath, // Pass file path to stored procedure
+        //         ];
     
-                // Stored procedure call
-                const query = "CALL sp_CreatecaseV1(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
-                const params = [
-                    CaseNumber,
-                    EntryUserID,
-                    CaseDate,
-                    DistrictID,
-                    psID,
-                    caseTypeID,
-                    ref,
-                    ipcAct,
-                    hearingDate,
-                    sendTo,
-                    copyTo,
-                    photocopycaseDiaryExist,
-                    imagePath, // Pass file path to stored procedure
-                ];
+        //         // Execute the stored procedure
+        //         await new Promise((resolve, reject) => {
+        //             db.query(query, params, (err) => {
+        //                 if (err) return reject(err);
+        //                 resolve();
+        //             });
+        //         });
     
-                // Execute the stored procedure
-                await new Promise((resolve, reject) => {
-                    db.query(query, params, (err) => {
-                        if (err) return reject(err);
-                        resolve();
-                    });
-                });
+        //         // Fetch the output parameters `CaseID` and `ErrorCode`
+        //         const outputResults = await new Promise((resolve, reject) => {
+        //             db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode", (err, results) => {
+        //                 if (err) return reject(err);
+        //                 resolve(results);
+        //             });
+        //         });
     
-                // Fetch the output parameters `CaseID` and `ErrorCode`
-                const outputResults = await new Promise((resolve, reject) => {
-                    db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode", (err, results) => {
-                        if (err) return reject(err);
-                        resolve(results);
-                    });
-                });
+        //         const { CaseID, ErrorCode } = outputResults[0];
+        //         console.log(CaseID);
+        //         console.log(ErrorCode);
+        //         // Handle possible error codes
+        //         if (ErrorCode === 1) return res.status(400).json({ status : 1,error: 'Procedure execution error' });
+        //         if (ErrorCode === 2) return res.status(400).json({ status : 1,message: 'Case already exists' });
+        //         if (ErrorCode === 3) return res.status(400).json({ status : 1,message: 'User lacks permission to create case' });
     
-                const { CaseID, ErrorCode } = outputResults[0];
-                console.log(CaseID);
-                console.log(ErrorCode);
-                // Handle possible error codes
-                if (ErrorCode === 1) return res.status(400).json({ status : 1,error: 'Procedure execution error' });
-                if (ErrorCode === 2) return res.status(400).json({ status : 1,message: 'Case already exists' });
-                if (ErrorCode === 3) return res.status(400).json({ status : 1,message: 'User lacks permission to create case' });
-    
-                // Success response
-                return res.status(201).json({
-                    status : 0,
-                    message: 'Case created successfully',
-                    data: { CaseID },
-                });
-            } catch (error) {
-                // Handle unexpected errors
-                return res.status(500).json({
-                    status : 1,
-                    message: 'error.message',
+        //         // Success response
+        //         return res.status(201).json({
+        //             status : 0,
+        //             message: 'Case created successfully',
+        //             data: { CaseID },
+        //         });
+        //     } catch (error) {
+        //         // Handle unexpected errors
+        //         return res.status(500).json({
+        //             status : 1,
+        //             message: 'error.message',
                     
-                });
-            }
+        //         });
+        //     }
 
 
             
+        // }
+    
+    
+
+
+
+    static async createCaseWithDocument(req, res) {
+        try {
+            // Destructure data from the request body
+            const {
+                CaseNumber,
+                EntryUserID,
+                CaseDate,
+                DistrictID,
+                psID,
+                caseTypeID,
+                ref,
+                ipcAct,
+                hearingDate,
+                sendTo,
+                copyTo,
+                photocopycaseDiaryExist
+            } = req.body;
+
+            // Validate required fields
+            if (
+                !CaseNumber || !EntryUserID || !CaseDate || !DistrictID || !psID || !caseTypeID ||
+                !ref || !ipcAct || !hearingDate || sendTo === undefined || copyTo === undefined ||
+                photocopycaseDiaryExist === undefined
+            ) {
+                return res.status(400).json({ error: 'All required fields must be provided' });
+            }
+
+            // Retrieve uploaded file path
+            const caseDocumentPath = req.file ? req.file.path : null;
+
+            // Stored procedure call
+            const query = "CALL sp_CreatecaseV1(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
+            const params = [
+                CaseNumber,
+                EntryUserID,
+                CaseDate,
+                DistrictID,
+                psID,
+                caseTypeID,
+                ref,
+                ipcAct,
+                hearingDate,
+                sendTo,
+                copyTo,
+                photocopycaseDiaryExist,
+                caseDocumentPath
+            ];
+
+            // Execute stored procedure
+            await new Promise((resolve, reject) => {
+                db.query(query, params, (err) => {
+                    if (err) return reject(err);
+                    resolve();
+                });
+            });
+
+            // Fetch output parameters (CaseID and ErrorCode)
+            const outputResults = await new Promise((resolve, reject) => {
+                db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode", (err, results) => {
+                    if (err) return reject(err);
+                    resolve(results);
+                });
+            });
+
+            const { CaseID, ErrorCode } = outputResults[0];
+
+            // Handle possible error codes
+            if (ErrorCode === 1) return res.status(400).json({ status: 1, error: 'Procedure execution error' });
+            if (ErrorCode === 2) return res.status(400).json({ status: 1, message: 'Case already exists' });
+            if (ErrorCode === 3) return res.status(400).json({ status: 1, message: 'User lacks permission to create case' });
+
+            // Return success response
+            return res.status(201).json({
+                status: 0,
+                message: 'Case created successfully',
+                data: { CaseID }
+            });
+        } catch (error) {
+            // Handle unexpected errors
+            return res.status(500).json({
+                status: 1,
+                message: 'An error occurred while creating the case',
+                error: error.message
+            });
         }
-    
-    
+    }
+
+
+
+
   
     
     
