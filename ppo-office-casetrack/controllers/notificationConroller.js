@@ -13,7 +13,7 @@ class notificationController {
       }
   
       // SQL query to call the stored procedure
-      const query = 'CALL sp_GetMailDetails(?, ?)';
+      const query = 'CALL GetMailDetailsv1(?, ?)';
       const params = [authorityTypeId, boundaryId];
   
       db.query(query, params, (err, results) => {
@@ -25,7 +25,7 @@ class notificationController {
         if (results[0] && results[0].length > 0) {
           return ResponseHelper.success_reponse(res, "Data found", results[0]);
         } else {
-          return ResponseHelper.error(res, "No data found");
+          return ResponseHelper.success_reponse(res, "No data found");
         }
       });
     } catch (error) {
@@ -45,7 +45,7 @@ class notificationController {
       }
 
       // SQL query to call the stored procedure
-      const query = 'CALL sp_checkmail_Read(?, ?, ?, ?)';
+      const query = 'CALL sp_checkmail_Readv1(?, ?, ?, ?)';
       const params = [mailId, caseId, authorityTypeId, boundaryId];
 
       // Execute the query
