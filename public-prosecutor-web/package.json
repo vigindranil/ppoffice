@@ -37,7 +37,8 @@
     "react-redux": "^9.2.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "universal-cookie": "^7.2.2"
+    "universal-cookie": "^7.2.2",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react'
 import { showallCase } from '@/app/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { ClipboardPlus, LoaderCircle, Search } from 'lucide-react'
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useDispatch, useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
 import { Input } from '@/components/ui/input'
+import { ChevronDown, ChevronUp, Download, FileSpreadsheet, Search } from 'lucide-react'
+import * as XLSX from 'xlsx'
 
 const PPAllCaseList = () => {
   const [allCaseList, setAllCaseList] = useState([])
@@ -16,32 +18,30 @@ const PPAllCaseList = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const [expandedRows, setExpandedRows] = useState({})
   const itemsPerPage = 10
   const dispatch = useDispatch()
   const encryptedUser = useSelector((state) => state.auth.user)
-  const token = useSelector((state) => state.auth.token)
-  const [user, setUser] = useState("");
-
+  const [user, setUser] = useState("")
 
   useEffect(() => {
-    const decoded_user = JSON.parse(decrypt(encryptedUser));
-    setUser(decoded_user);
-  }, [encryptedUser]);
+    const decoded_user = JSON.parse(decrypt(encryptedUser))
+    setUser(decoded_user)
+  }, [encryptedUser])
 
   useEffect(() => {
     if (user) {
       showallCase(1)
         .then((result) => {
-          console.log(result);
-          setAllCaseList(result);
+          console.log(result)
+          setAllCaseList(result)
         })
         .catch((err) => {
-          setMessage(err?.message || "An unexpected error occurred");
+          setMessage(err?.message || "An unexpected error occurred")
         })
         .finally(() => {
-          setIsLoading(false);
+          setIsLoading(false)
         })
-
     }
   }, [user])
 
@@ -67,6 +67,19 @@ const PPAllCaseList = () => {
     })
   }
 
+  const toggleRowExpansion = (index) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }))
+  }
+
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Cases")
+    XLSX.writeFile(workbook, "case_list.xlsx")
+  }
 
   return (
     <div className="relative min-h-screen w-full">
@@ -74,8 +87,12 @@ const PPAllCaseList = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Assigned Case List</CardTitle>
+            <Button onClick={downloadExcel} className="flex items-center gap-2">
+              <FileSpreadsheet className="h-4 w-4" />
+              Export to Excel
+            </Button>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -99,42 +116,84 @@ const PPAllCaseList = () => {
                     <span className="mr-2 text-xs">Total number of records: {filteredData.length}</span>
                   </div>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="font-bold">Case Number</TableHead>
-                      <TableHead className="font-bold">Jurisdiction</TableHead>
-                      <TableHead className="font-bold">Police Station</TableHead>
-                      <TableHead className="font-bold">Case Date</TableHead>
-                      <TableHead className="font-bold">Case Type</TableHead>
-                      <TableHead className="font-bold">Case Hearing Date</TableHead>
-                      <TableHead className="font-bold">IPC Section</TableHead>
-                      <TableHead className="font-bold">Reference</TableHead>
-                      <TableHead className="font-bold">Document</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {currentAllCaseList?.map((head, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{head.CaseNumber}</TableCell>
-                        <TableCell>{head.SpName}</TableCell>
-                        <TableCell>{head.PsName}</TableCell>
-                        <TableCell>{formatDate(head.CaseDate)}</TableCell>
-                        <TableCell>{head.CaseType}</TableCell>
-                        <TableCell>{formatDate(head.CaseHearingDate)}</TableCell>
-                        <TableCell>{head.IPCSection}</TableCell>
-                        <TableCell>{head.BeginReferenceName}</TableCell>
-                        <TableCell>
-                          {head.Document && (
-                            <a href={`http://localhost:8000/${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              View Document
-                            </a>
-                          )}
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="font-bold"></TableHead>
+                        <TableHead className="font-bold">Case Number</TableHead>
+                        <TableHead className="font-bold hidden md:table-cell">Jurisdiction</TableHead>
+                        <TableHead className="font-bold hidden md:table-cell">Police Station</TableHead>
+                        <TableHead className="font-bold hidden md:table-cell">Case Date</TableHead>
+                        <TableHead className="font-bold hidden lg:table-cell">Case Type</TableHead>
+                        <TableHead className="font-bold hidden lg:table-cell">Case Hearing Date</TableHead>
+                        <TableHead className="font-bold hidden lg:table-cell">IPC Section</TableHead>
+                        <TableHead className="font-bold hidden lg:table-cell">Reference</TableHead>
+                        <TableHead className="font-bold hidden lg:table-cell">Document</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {currentAllCaseList?.map((head, index) => (
+                        <React.Fragment key={index}>
+                          <TableRow>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="p-0"
+                                onClick={() => toggleRowExpansion(index)}
+                              >
+                                {expandedRows[index] ? (
+                                  <ChevronUp className="h-4 w-4" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TableCell>
+                            <TableCell>{head.CaseNumber}</TableCell>
+                            <TableCell className="hidden md:table-cell">{head.SpName}</TableCell>
+                            <TableCell className="hidden md:table-cell">{head.PsName}</TableCell>
+                            <TableCell className="hidden md:table-cell">{formatDate(head.CaseDate)}</TableCell>
+                            <TableCell className="hidden lg:table-cell">{head.CaseType}</TableCell>
+                            <TableCell className="hidden lg:table-cell">{formatDate(head.CaseHearingDate)}</TableCell>
+                            <TableCell className="hidden lg:table-cell">{head.IPCSection}</TableCell>
+                            <TableCell className="hidden lg:table-cell">{head.BeginReferenceName}</TableCell>
+                            <TableCell className="hidden lg:table-cell">
+                              {head.Document && (
+                                <a href={`http://localhost:8000/uploads/${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                  View Document
+                                </a>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                          {expandedRows[index] && (
+                            <TableRow className="bg-gray-50 md:hidden">
+                              <TableCell colSpan={10}>
+                                <div className="grid grid-cols-2 gap-2 p-2">
+                                  <div><strong>Jurisdiction:</strong> {head.SpName}</div>
+                                  <div><strong>Police Station:</strong> {head.PsName}</div>
+                                  <div><strong>Case Date:</strong> {formatDate(head.CaseDate)}</div>
+                                  <div><strong>Case Type:</strong> {head.CaseType}</div>
+                                  <div><strong>Case Hearing Date:</strong> {formatDate(head.CaseHearingDate)}</div>
+                                  <div><strong>IPC Section:</strong> {head.IPCSection}</div>
+                                  <div><strong>Reference:</strong> {head.BeginReferenceName}</div>
+                                  <div>
+                                    <strong>Document:</strong>
+                                    {head.Document && (
+                                      <a href={`http://localhost:8000/uploads/${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                                        View
+                                      </a>
+                                    )}
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
                 <div className="mt-4">
                   <Pagination>
                     <PaginationContent>
@@ -173,6 +232,4 @@ const PPAllCaseList = () => {
 }
 
 export default PPAllCaseList
-
-
 
