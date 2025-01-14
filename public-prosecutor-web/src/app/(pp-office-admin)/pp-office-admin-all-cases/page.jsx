@@ -15,6 +15,7 @@ import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { Input } from '@/components/ui/input'
 import { DatePicker } from '@/components/date-picker'
 import { Badge } from '@/components/ui/badge'
+import { BASE_URL } from '@/app/constants';
 
 
 export default function CaseTable() {
@@ -57,7 +58,7 @@ export default function CaseTable() {
     try {
       setLoading(true)
       const token = sessionStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/showallCaseBetweenRange', {
+      const response = await fetch(`${BASE_URL}showallCaseBetweenRange`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
