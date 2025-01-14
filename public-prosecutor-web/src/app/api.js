@@ -473,19 +473,50 @@ export const showallCase = async (typeID) => {
 
 
 // [Office Admin] Add Case
+// export const createCaseOfficeAdmin = async (req_body) => {
+//   return new Promise(async (resolve, reject) => {
+//     try {
+//       console.log("Request body 123:", req_body); 
+      
+//       const token = sessionStorage.getItem('token');
+      
+//       const response = await fetch(`${BASE_URL}cases/create`, {
+//         method: 'POST',
+//         headers: {
+//           'Authorization': `Bearer ${token}`,
+//           'Content-Type': 'multipart/form-data',
+//         },
+//         body: JSON.stringify(req_body),
+//       });
+
+//       const result = await response.json();
+
+//       if (response.ok && result.status === 0) {
+//         resolve(result);
+//       } else {
+//         console.log("hi",result)
+//         reject(result.message || 'An error occurred 123');
+//       }
+//     } catch (error) {
+//       reject(`Fetch error: ${error.message}`);
+//     }
+//   });
+// };
+
+
 export const createCaseOfficeAdmin = async (req_body) => {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log("Request body 123:", req_body); 
+      console.log("Request body 123:", req_body);
       
       const token = sessionStorage.getItem('token');
+      
       const response = await fetch(`${BASE_URL}cases/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
         },
-        body: JSON.stringify(req_body),
+        body: req_body, 
       });
 
       const result = await response.json();
@@ -493,7 +524,7 @@ export const createCaseOfficeAdmin = async (req_body) => {
       if (response.ok && result.status === 0) {
         resolve(result);
       } else {
-        console.log("hi",result)
+        console.log("hi", result);
         reject(result.message || 'An error occurred 123');
       }
     } catch (error) {
@@ -501,7 +532,6 @@ export const createCaseOfficeAdmin = async (req_body) => {
     }
   });
 };
-
 
 // Case Type Dropdown
 export const getcasetype = async () => {

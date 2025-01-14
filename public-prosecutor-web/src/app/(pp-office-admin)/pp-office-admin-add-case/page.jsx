@@ -55,7 +55,7 @@ const AddCasePage = () => {
     hearingDate: '',
     sendTo: '',
     copyTo: '',
-    photocopycaseDiaryExist: '',
+    photocopycaseDiaryExist: '0',
     caseDocument: null,
   })
 
@@ -122,19 +122,23 @@ const AddCasePage = () => {
     }
   }, [formData.sendTo]);
 
+  // const handleSelectChange = (name, value) => {
+  //   setFormData(prevState => {
+  //     const newState = { ...prevState, [name]: value };
+  //     // if (name === 'DistrictID') {  
+  //     //   newState.sendTo = value;
+  //     //   newState.psID = '';
+  //     //   newState.copyTo = '';
+  //     // }
+  //     // if (name === 'psID') {
+  //     //   newState.copyTo = value;
+  //     // }
+  //     return newState;
+  //   });
+  // }
+
   const handleSelectChange = (name, value) => {
-    setFormData(prevState => {
-      const newState = { ...prevState, [name]: value };
-      // if (name === 'DistrictID') {  
-      //   newState.sendTo = value;
-      //   newState.psID = '';
-      //   newState.copyTo = '';
-      // }
-      // if (name === 'psID') {
-      //   newState.copyTo = value;
-      // }
-      return newState;
-    });
+    setFormData(prevState => ({ ...prevState, [name]: value }));
   }
 
 
@@ -189,47 +193,95 @@ const AddCasePage = () => {
     }
   }
 
-  const handleAddCase = () => {
-    setIsLoading(true)
-    createCaseOfficeAdmin(formData)
-      .then(async(result) => {
-          console.log(result)
-          openAlert('success', result.message || "success")
-          try{
-            const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID)
-            console.log(res);
-          }catch(err){
-            console.log(err);
+  // const handleAddCase = () => {
+  //   setIsLoading(true)
+  //   createCaseOfficeAdmin(formData)
+  //     .then(async(result) => {
+  //         console.log(result)
+  //         openAlert('success', result.message || "success")
+  //         try{
+  //           const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID)
+  //           console.log(res);
+  //         }catch(err){
+  //           console.log(err);
             
-          }
+  //         }
 
           
-          setFormData({
-            CaseNumber: '',
-            EntryUserID: '',
-            CaseDate: '',
-            DistrictID: '',
-            psID: '',
-            caseTypeID: '',
-            ref: '',
-            ipcAct: '',
-            hearingDate: '',
-            sendTo: '',
-            copyTo: '',
-            photocopycaseDiaryExist: '0',
-            caseDocument: null,
-          })
+  //         setFormData({
+  //           CaseNumber: '',
+  //           EntryUserID: '',
+  //           CaseDate: '',
+  //           DistrictID: '',
+  //           psID: '',
+  //           caseTypeID: '',
+  //           ref: '',
+  //           ipcAct: '',
+  //           hearingDate: '',
+  //           sendTo: '',
+  //           copyTo: '',
+  //           photocopycaseDiaryExist: '0',
+  //           caseDocument: null,
+  //         })
         
-      })
-      .catch((err) => {
-        console.log(err)
-        openAlert('error', err || "An unexpected error occurred")
-        setError(err || "An unexpected error occurred");
-      })
-      .finally(() => {
-        setIsLoading(false);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err)
+  //       openAlert('error', err || "An unexpected error occurred")
+  //       setError(err || "An unexpected error occurred");
+  //     })
+  //     .finally(() => {
+  //       setIsLoading(false);
+  //     });
+  // }
+
+
+  const handleAddCase = async () => {
+    setIsLoading(true);
+    try {
+      const formDataToSend = new FormData();
+      for (const key in formData) {
+        if (key === 'caseDocument') {
+          if (formData[key]) {
+            formDataToSend.append('caseDocument', formData[key]);
+          }
+        } else {
+          formDataToSend.append(key, formData[key]);
+        }
+      }
+
+      const result = await createCaseOfficeAdmin(formDataToSend);
+      console.log(result);
+      openAlert('success', result.message || "Case added successfully");
+      try {
+        const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID);
+        console.log(res);
+      } catch (err) {
+        console.log(err);
+      }
+
+      setFormData({
+        CaseNumber: '',
+        EntryUserID: user.AuthorityUserID,
+        CaseDate: '',
+        DistrictID: '',
+        psID: '',
+        caseTypeID: '',
+        ref: '',
+        ipcAct: '',
+        hearingDate: '',
+        sendTo: '',
+        copyTo: '',
+        photocopycaseDiaryExist: '0',
+        caseDocument: null,
       });
-  }
+    } catch (err) {
+      console.log(err);
+      openAlert('error', err?.message || "An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleConfirm = () => {
     closeAlert()
