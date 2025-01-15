@@ -177,8 +177,8 @@ const AddCasePage = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 200 * 1024) { // 200 KB in bytes
-        openAlert('error', 'File size should not exceed 200 KB');
+      if (file.size > 15000 * 1024) { // 15 MB in bytes
+        openAlert('error', 'File size should not exceed 215 MB');
         return;
       }
       if (!['image/jpeg', 'image/jpg', 'application/pdf'].includes(file.type)) {

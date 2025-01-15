@@ -122,6 +122,7 @@ const PPAllCaseList = () => {
                       <TableRow>
                         <TableHead className="font-bold"></TableHead>
                         <TableHead className="font-bold">Case Number</TableHead>
+                        <TableHead className="font-bold hidden sm:table-cell">Document</TableHead>
                         <TableHead className="font-bold hidden md:table-cell">Jurisdiction</TableHead>
                         <TableHead className="font-bold hidden md:table-cell">Police Station</TableHead>
                         <TableHead className="font-bold hidden md:table-cell">Case Date</TableHead>
@@ -129,7 +130,6 @@ const PPAllCaseList = () => {
                         <TableHead className="font-bold hidden lg:table-cell">Case Hearing Date</TableHead>
                         <TableHead className="font-bold hidden lg:table-cell">IPC Section</TableHead>
                         <TableHead className="font-bold hidden lg:table-cell">Reference</TableHead>
-                        <TableHead className="font-bold hidden lg:table-cell">Document</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -151,6 +151,22 @@ const PPAllCaseList = () => {
                               </Button>
                             </TableCell>
                             <TableCell>{head.CaseNumber}</TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                            {head.Document ? (
+                                  <div className="sm:hidden">
+                                    <a 
+                                      href={`http://localhost:8000/uploads/${head.Document}`} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      className="text-blue-600 hover:underline ml-1"
+                                    >
+                                      View
+                                    </a>
+                                  </div>
+                                ) : (
+                                  <div className="md:hidden"> N/A</div>
+                                )}
+                            </TableCell>
                             <TableCell className="hidden md:table-cell">{head.SpName}</TableCell>
                             <TableCell className="hidden md:table-cell">{head.PsName}</TableCell>
                             <TableCell className="hidden md:table-cell">{formatDate(head.CaseDate)}</TableCell>
@@ -158,33 +174,47 @@ const PPAllCaseList = () => {
                             <TableCell className="hidden lg:table-cell">{formatDate(head.CaseHearingDate)}</TableCell>
                             <TableCell className="hidden lg:table-cell">{head.IPCSection}</TableCell>
                             <TableCell className="hidden lg:table-cell">{head.BeginReferenceName}</TableCell>
-                            <TableCell className="hidden lg:table-cell">
-                              {head.Document && (
-                                <a href={`http://localhost:8000/uploads/${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                  View Document
-                                </a>
-                              )}
-                            </TableCell>
                           </TableRow>
                           {expandedRows[index] && (
-                            <TableRow className="bg-gray-50 md:hidden">
+                            <TableRow className="bg-gray-50 lg:hidden">
                               <TableCell colSpan={10}>
-                                <div className="grid grid-cols-2 gap-2 p-2">
-                                  <div><strong>Jurisdiction:</strong> {head.SpName}</div>
-                                  <div><strong>Police Station:</strong> {head.PsName}</div>
-                                  <div><strong>Case Date:</strong> {formatDate(head.CaseDate)}</div>
-                                  <div><strong>Case Type:</strong> {head.CaseType}</div>
-                                  <div><strong>Case Hearing Date:</strong> {formatDate(head.CaseHearingDate)}</div>
-                                  <div><strong>IPC Section:</strong> {head.IPCSection}</div>
-                                  <div><strong>Reference:</strong> {head.BeginReferenceName}</div>
-                                  <div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
+                                {head.Document ? (
+                                  <div className="sm:hidden">
                                     <strong>Document:</strong>
-                                    {head.Document && (
-                                      <a href={`http://localhost:8000/uploads/${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
-                                        View
-                                      </a>
-                                    )}
+                                    <a 
+                                      href={`http://localhost:8000/uploads/${head.Document}`} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      className="text-blue-600 hover:underline ml-1"
+                                    >
+                                      View
+                                    </a>
                                   </div>
+                                ) : (
+                                  <div className="sm:hidden"><strong>Document:</strong> N/A</div>
+                                )}
+                                {head.SpName && (
+                                  <div className="md:hidden"><strong>Jurisdiction:</strong> {head.SpName}</div>
+                                )}
+                                {head.PsName && (
+                                  <div className="md:hidden"><strong>Police Station:</strong> {head.PsName}</div>
+                                )}
+                                {head.CaseDate && (
+                                  <div className="lg:hidden"><strong>Case Date:</strong> {formatDate(head.CaseDate)}</div>
+                                )}
+                                {head.CaseType && (
+                                  <div className="lg:hidden"><strong>Case Type:</strong> {head.CaseType}</div>
+                                )}
+                                {head.CaseHearingDate && (
+                                  <div className="lg:hidden"><strong>Case Hearing Date:</strong> {formatDate(head.CaseHearingDate)}</div>
+                                )}
+                                {head.IPCSection && (
+                                  <div className="lg:hidden"><strong>IPC Section:</strong> {head.IPCSection}</div>
+                                )}
+                                {head.BeginReferenceName && (
+                                  <div className="lg:hidden"><strong>Reference:</strong> {head.BeginReferenceName}</div>
+                                )}
                                 </div>
                               </TableCell>
                             </TableRow>
