@@ -20,7 +20,7 @@ import { decrypt } from "@/utils/crypto"
 export function UserAvatarDropdown() {
   const router = useRouter()
   const encryptedUser = useSelector((state) => state.auth.user)
-  const [user, setUser] = useState({ name: '', email: '' })
+  const [user, setUser] = useState({ name: '', email: '', org: '' })
 
   useEffect(() => {
     if (encryptedUser) {
@@ -28,7 +28,8 @@ export function UserAvatarDropdown() {
         const decryptedUser = JSON.parse(decrypt(encryptedUser))
         setUser({
           name: decryptedUser.AuthorityName || 'User',
-          email: decryptedUser.EmailID || 'No email provided'
+          email: decryptedUser.EmailID || 'No email provided',
+          org: decryptedUser.BoundaryName || 'No Organisation provided'
         })
       } catch (error) {
         console.error('Error decrypting user data:', error)
@@ -55,6 +56,7 @@ export function UserAvatarDropdown() {
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.name}</p>
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            <p className="text-xs leading-none text-muted-foreground">{user.org}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

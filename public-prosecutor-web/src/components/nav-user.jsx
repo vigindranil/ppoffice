@@ -31,7 +31,7 @@ export function NavUser() {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const encryptedUser = useSelector((state) => state.auth.user);
-  const [user, setUser] = useState({ name: '', email: '' });
+  const [user, setUser] = useState({ name: '', email: '', org: '' });
 
   useEffect(() => {
     if (encryptedUser) {
@@ -39,7 +39,8 @@ export function NavUser() {
         const decryptedUser = JSON.parse(decrypt(encryptedUser));
         setUser({
           name: decryptedUser.AuthorityName || 'User',
-          email: decryptedUser.EmailID || 'No email provided'
+          email: decryptedUser.EmailID || 'No email provided',
+          org: decryptedUser.BoundaryName || 'No Organisation provided'
         });
       } catch (error) {
         console.error('Error decrypting user data:', error);
@@ -69,6 +70,7 @@ export function NavUser() {
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{user.name}</span>
                 <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate text-xs">{user.org}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -90,6 +92,7 @@ export function NavUser() {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.name}</span>
                   <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate text-xs">{user.org}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

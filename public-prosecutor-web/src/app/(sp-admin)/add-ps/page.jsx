@@ -201,7 +201,7 @@ const Page = () => {
                 </Select>
               </div>
             </div>
-          <Button type="submit" className="max-w-min bg-blue-500 hover:bg-blue-600">Add PS User</Button>
+          <Button type="submit" className="max-w-min mx-auto bg-blue-500 hover:bg-blue-600 my-5 mt-5">Add PS User</Button>
         </form>
         {message && <p className="mt-4 text-center text-red-600">{message}</p>}
       </CardContent>
