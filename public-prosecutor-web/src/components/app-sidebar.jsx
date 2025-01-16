@@ -232,7 +232,7 @@ const data = {
         },
         {
           title :" Future Hearing",
-          url:"/future-hearing"
+          url:"/future-hearing",
         }
       ],
     },

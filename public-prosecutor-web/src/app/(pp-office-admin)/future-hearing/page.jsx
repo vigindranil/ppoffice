@@ -1,13 +1,270 @@
+// 'use client'
+
+// import { useState, useEffect } from "react"
+// import { Calendar, Upload } from 'lucide-react'
+// import { Button } from "@/components/ui/button"
+// import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+// import { Label } from "@/components/ui/label"
+// import { Input } from "@/components/ui/input"
+// import { Textarea } from "@/components/ui/textarea"
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select"
+// import { motion } from "framer-motion"
+
+// export default function HearingForm() {
+//   const [formData, setFormData] = useState({
+//     hearingDate: "",
+//     description: "",
+//     requiredDocuments: "",
+//     additionalRemark: "",
+//     additionalCallSP: "",
+//     additionalCallPS: "none",
+//     courtOrder: null
+//   })
+
+//   const [showPSDropdown, setShowPSDropdown] = useState(false)
+
+//   useEffect(() => {
+//     if (formData.additionalCallSP === "none") {
+//       setFormData(prev => ({ ...prev, additionalCallPS: "none" }))
+//       setShowPSDropdown(false)
+//     } else {
+//       setShowPSDropdown(true)
+//     }
+//   }, [formData.additionalCallSP])
+
+//   const handleInputChange = (e) => {
+//     const { name, value, type, files } = e.target
+//     setFormData(prev => ({
+//       ...prev,
+//       [name]: type === 'file' ? files[0] : value
+//     }))
+//   }
+
+//   const handleSelectChange = (value, type) => {
+//     setFormData(prev => ({
+//       ...prev,
+//       [type]: value
+//     }))
+//   }
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault()
+//     console.log('Form submitted:', formData)
+//     // Handle form submission logic here
+//   }
+  
+//   return (
+//     <div className="relative min-h-screen w-full bg-gradient-to-br from-blue-900 via-blue-600 to-blue-400 p-8">
+//       <div className="absolute inset-0 bg-blue-500/10 backdrop-blur-sm"></div>
+//       <motion.div
+//         initial={{ opacity: 0, y: 20 }}
+//         animate={{ opacity: 1, y: 0 }}
+//         transition={{ duration: 0.5 }}
+//         className="relative z-10 max-w-2xl mx-auto"
+//       >
+//         <Card className="w-full backdrop-blur-md bg-white/90 shadow-xl rounded-xl border border-blue-200">
+//           <CardHeader className="bg-gradient-to-r from-blue-800 to-blue-600 text-white rounded-t-xl">
+//             <CardTitle className="text-3xl font-bold text-center">Hearing Summary</CardTitle>
+//           </CardHeader>
+//           <CardContent className="space-y-6 p-6">
+//             <form onSubmit={handleSubmit} className="space-y-4">
+//               <div className="grid grid-cols-2 gap-4">
+//                 <motion.div
+//                   whileHover={{ scale: 1.02 }}
+//                   transition={{ type: "spring", stiffness: 300 }}
+//                 >
+//                   <Label htmlFor="hearingDate" className="text-lg font-semibold text-blue-900">
+//                     Next Hearing Date
+//                   </Label>
+//                   <div className="relative mt-1">
+//                     <Input
+//                       type="date"
+//                       id="hearingDate"
+//                       name="hearingDate"
+//                       value={formData.hearingDate}
+//                       onChange={handleInputChange}
+//                       className="pl-10 pr-4 py-2 w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+//                     />
+//                     <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-blue-500" />
+//                   </div>
+//                 </motion.div>
+
+//                 <motion.div
+//                   whileHover={{ scale: 1.02 }}
+//                   transition={{ type: "spring", stiffness: 300 }}
+//                 >
+//                   <Label htmlFor="additionalCallSP" className="text-lg font-semibold text-blue-900">
+//                     Additional Call SP
+//                   </Label>
+//                   <Select
+//                     onValueChange={(value) => handleSelectChange(value, 'additionalCallSP')}
+//                     value={formData.additionalCallSP}
+//                   >
+//                     <SelectTrigger className="w-full mt-1 border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 rounded-lg">
+//                       <SelectValue placeholder="Select SP" />
+//                     </SelectTrigger>
+//                     <SelectContent>
+//                       <SelectItem value="none">None</SelectItem>
+//                       <SelectItem value="sp1">SP 1</SelectItem>
+//                       <SelectItem value="sp2">SP 2</SelectItem>
+//                       <SelectItem value="sp3">SP 3</SelectItem>
+//                     </SelectContent>
+//                   </Select>
+//                 </motion.div>
+//               </div>
+
+//               {showPSDropdown && formData.additionalCallSP !== "none" && (
+//                 <motion.div
+//                   initial={{ opacity: 0, y: -10 }}
+//                   animate={{ opacity: 1, y: 0 }}
+//                   transition={{ duration: 0.3 }}
+//                   className="space-y-2"
+//                 >
+//                   <Label htmlFor="additionalCallPS" className="text-lg font-semibold text-blue-900">
+//                     Additional Call PS
+//                   </Label>
+//                   <Select
+//                     onValueChange={(value) => handleSelectChange(value, 'additionalCallPS')}
+//                     value={formData.additionalCallPS}
+//                   >
+//                     <SelectTrigger className="w-full mt-1 border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 rounded-lg">
+//                       <SelectValue placeholder="Select PS" />
+//                     </SelectTrigger>
+//                     <SelectContent>
+//                       <SelectItem value="none">None</SelectItem>
+//                       <SelectItem value="ps1">PS 1</SelectItem>
+//                       <SelectItem value="ps2">PS 2</SelectItem>
+//                       <SelectItem value="ps3">PS 3</SelectItem>
+//                     </SelectContent>
+//                   </Select>
+//                 </motion.div>
+//               )}
+
+//               <motion.div
+//                 whileHover={{ scale: 1.02 }}
+//                 transition={{ type: "spring", stiffness: 300 }}
+//                 className="space-y-2"
+//               >
+//                 <Label htmlFor="description" className="text-lg font-semibold text-blue-900">
+//                   Description / Court Order
+//                 </Label>
+//                 <Textarea
+//                   id="description"
+//                   name="description"
+//                   value={formData.description}
+//                   onChange={handleInputChange}
+//                   placeholder="Enter description or court order details..."
+//                   className="min-h-[100px] resize-none w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+//                 />
+//               </motion.div>
+
+//               <motion.div
+//                 whileHover={{ scale: 1.02 }}
+//                 transition={{ type: "spring", stiffness: 300 }}
+//                 className="space-y-2"
+//               >
+//                 <Label htmlFor="requiredDocuments" className="text-lg font-semibold text-blue-900">
+//                   Required Documents
+//                 </Label>
+//                 <Textarea
+//                   id="requiredDocuments"
+//                   name="requiredDocuments"
+//                   value={formData.requiredDocuments}
+//                   onChange={handleInputChange}
+//                   placeholder="List required documents for next hearing..."
+//                   className="min-h-[100px] resize-none w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+//                 />
+//               </motion.div>
+
+//               <motion.div
+//                 whileHover={{ scale: 1.02 }}
+//                 transition={{ type: "spring", stiffness: 300 }}
+//                 className="space-y-2"
+//               >
+//                 <Label htmlFor="additionalRemark" className="text-lg font-semibold text-blue-900">
+//                   Additional Remark
+//                 </Label>
+//                 <Textarea
+//                   id="additionalRemark"
+//                   name="additionalRemark"
+//                   value={formData.additionalRemark}
+//                   onChange={handleInputChange}
+//                   placeholder="Optional remarks..."
+//                   className="min-h-[100px] resize-none w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+//                 />
+//               </motion.div>
+
+//               <motion.div
+//                 whileHover={{ scale: 1.02 }}
+//                 transition={{ type: "spring", stiffness: 300 }}
+//                 className="space-y-2"
+//               >
+//                 <Label htmlFor="courtOrder" className="text-lg font-semibold text-blue-900">
+//                   Upload Court Order
+//                 </Label>
+//                 <div className="relative">
+//                   <Input
+//                     id="courtOrder"
+//                     name="courtOrder"
+//                     type="file"
+//                     onChange={handleInputChange}
+//                     className="cursor-pointer opacity-0 absolute inset-0 w-full h-full"
+//                     accept=".pdf,.doc,.docx"
+//                   />
+//                   <div className="bg-blue-100 text-blue-800 rounded-lg p-4 flex items-center justify-center border-2 border-blue-300 hover:bg-blue-200 transition duration-200">
+//                     <Upload className="w-6 h-6 mr-2" />
+//                     <span>Choose file or drag and drop</span>
+//                   </div>
+//                 </div>
+//               </motion.div>
+
+//               <motion.div
+//                 whileHover={{ scale: 1.05 }}
+//                 whileTap={{ scale: 0.95 }}
+//               >
+//                 <Button 
+//                   type="submit"
+//                   className="w-full bg-gradient-to-r from-blue-700 to-blue-500 text-white text-lg py-3 rounded-lg hover:from-blue-800 hover:to-blue-600 transition duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+//                 >
+//                   Submit
+//                 </Button>
+//               </motion.div>
+//             </form>
+//           </CardContent>
+//         </Card>
+//       </motion.div>
+//     </div>
+//   )
+// }
+
+
+
 'use client'
 
-import { useState } from "react"
-import { Calendar } from 'lucide-react'
+import { useState, useEffect } from "react"
+import { Calendar, Upload } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { motion } from "framer-motion"
+
+// Import the API functions
+import { fetchAllDistricts, fetchPoliceStationsByDistrict } from '@/app/api'
 
 export default function HearingForm() {
   const [formData, setFormData] = useState({
@@ -15,17 +272,52 @@ export default function HearingForm() {
     description: "",
     requiredDocuments: "",
     additionalRemark: "",
-    sp: false,
-    ps: false,
+    additionalCallSP: "",
+    additionalCallPS: "",
     courtOrder: null
   })
 
+  const [districts, setDistricts] = useState([])
+  const [policeStations, setPoliceStations] = useState([])
+
+  useEffect(() => {
+    fetchDistricts()
+  }, [])
+
+  const fetchDistricts = async () => {
+    try {
+      const districtData = await fetchAllDistricts()
+      setDistricts(districtData)
+    } catch (error) {
+      console.error("Error fetching districts:", error)
+    }
+  }
+
+  const fetchPoliceStations = async (districtId) => {
+    try {
+      const psData = await fetchPoliceStationsByDistrict(districtId)
+      setPoliceStations(psData)
+    } catch (error) {
+      console.error("Error fetching police stations:", error)
+    }
+  }
+
   const handleInputChange = (e) => {
-    const { name, value, type, checked, files } = e.target
+    const { name, value, type, files } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : type === 'file' ? files[0] : value
+      [name]: type === 'file' ? files[0] : value
     }))
+  }
+
+  const handleSelectChange = (value, type) => {
+    setFormData(prev => ({
+      ...prev,
+      [type]: value
+    }))
+    if (type === 'additionalCallSP') {
+      fetchPoliceStations(value)
+    }
   }
 
   const handleSubmit = (e) => {
@@ -35,134 +327,184 @@ export default function HearingForm() {
   }
   
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg">
-        <CardTitle className="text-2xl font-bold">Hearing Summary</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6 p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="hearingDate" className="text-lg font-semibold">
-              Next Hearing Date
-            </Label>
-            <div className="relative">
-              <Input
-                type="date"
-                id="hearingDate"
-                name="hearingDate"
-                value={formData.hearingDate}
-                onChange={handleInputChange}
-                className="pl-10"
-              />
-              <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-lg font-semibold">
-              Description / Court Order
-            </Label>
-            <Textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Enter description or court order details..."
-              className="min-h-[100px] resize-none"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="requiredDocuments" className="text-lg font-semibold">
-              Required Documents
-            </Label>
-            <Textarea
-              id="requiredDocuments"
-              name="requiredDocuments"
-              value={formData.requiredDocuments}
-              onChange={handleInputChange}
-              placeholder="List required documents for next hearing..."
-              className="min-h-[100px] resize-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Additional Call</h3>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="sp" 
-                    name="sp"
-                    checked={formData.sp}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, sp: checked }))
-                    }
+    <div className="relative min-h-screen w-full bg-gradient-to-br from-blue-900 via-blue-600 to-blue-400 p-8">
+      <div className="absolute inset-0 bg-blue-500/10 backdrop-blur-sm"></div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 max-w-2xl mx-auto"
+      >
+        <Card className="w-full backdrop-blur-md bg-white/90 shadow-xl rounded-xl border border-blue-200">
+          <CardHeader className="bg-gradient-to-r from-blue-800 to-blue-600 text-white rounded-t-xl">
+            <CardTitle className="text-3xl font-bold text-center">Hearing Summary</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 p-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <Label htmlFor="hearingDate" className="text-lg font-semibold text-blue-900">
+                  Next Hearing Date
+                </Label>
+                <div className="relative mt-1">
+                  <Input
+                    type="date"
+                    id="hearingDate"
+                    name="hearingDate"
+                    value={formData.hearingDate}
+                    onChange={handleInputChange}
+                    className="pl-10 pr-4 py-2 w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
                   />
-                  <label
-                    htmlFor="sp"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    SP
-                  </label>
+                  <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-blue-500" />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="ps" 
-                    name="ps"
-                    checked={formData.ps}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, ps: checked }))
-                    }
-                  />
-                  <label
-                    htmlFor="ps"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              </motion.div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <Label htmlFor="additionalCallSP" className="text-lg font-semibold text-blue-900">
+                    Additional Call SP
+                  </Label>
+                  <Select
+                    onValueChange={(value) => handleSelectChange(value, 'additionalCallSP')}
+                    value={formData.additionalCallSP}
                   >
-                    PS
-                  </label>
-                </div>
+                    <SelectTrigger className="w-full mt-1 border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 rounded-lg">
+                      <SelectValue placeholder="Select SP" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {districts.map((district) => (
+                        <SelectItem key={district.districtId} value={district.districtId.toString()}>
+                          {district.districtName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <Label htmlFor="additionalCallPS" className="text-lg font-semibold text-blue-900">
+                    Additional Call PS
+                  </Label>
+                  <Select
+                    onValueChange={(value) => handleSelectChange(value, 'additionalCallPS')}
+                    value={formData.additionalCallPS}
+                    disabled={!formData.additionalCallSP}
+                  >
+                    <SelectTrigger className="w-full mt-1 border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 rounded-lg">
+                      <SelectValue placeholder="Select PS" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {policeStations.map((ps) => (
+                        <SelectItem key={ps.id} value={ps.id.toString()}>
+                          {ps.ps_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </motion.div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="additionalRemark" className="text-lg font-semibold">
-                Additional Remark
-              </Label>
-              <Textarea
-                id="additionalRemark"
-                name="additionalRemark"
-                value={formData.additionalRemark}
-                onChange={handleInputChange}
-                placeholder="Optional remarks..."
-                className="h-[80px] resize-none"
-              />
-            </div>
-          </div>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="space-y-2"
+              >
+                <Label htmlFor="description" className="text-lg font-semibold text-blue-900">
+                  Description / Court Order
+                </Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Enter description or court order details..."
+                  className="min-h-[100px] resize-none w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+                />
+              </motion.div>
 
-          <div className="space-y-2">
-            <Label htmlFor="courtOrder" className="text-lg font-semibold">
-              Upload Court Order
-            </Label>
-            <Input
-              id="courtOrder"
-              name="courtOrder"
-              type="file"
-              onChange={handleInputChange}
-              className="cursor-pointer"
-              accept=".pdf,.doc,.docx"
-            />
-          </div>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="space-y-2"
+              >
+                <Label htmlFor="requiredDocuments" className="text-lg font-semibold text-blue-900">
+                  Required Documents
+                </Label>
+                <Textarea
+                  id="requiredDocuments"
+                  name="requiredDocuments"
+                  value={formData.requiredDocuments}
+                  onChange={handleInputChange}
+                  placeholder="List required documents for next hearing..."
+                  className="min-h-[100px] resize-none w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+                />
+              </motion.div>
 
-          <Button 
-            type="submit"
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-          >
-            Submit
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="space-y-2"
+              >
+                <Label htmlFor="additionalRemark" className="text-lg font-semibold text-blue-900">
+                  Additional Remark
+                </Label>
+                <Textarea
+                  id="additionalRemark"
+                  name="additionalRemark"
+                  value={formData.additionalRemark}
+                  onChange={handleInputChange}
+                  placeholder="Optional remarks..."
+                  className="min-h-[100px] resize-none w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+                />
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="space-y-2"
+              >
+                <Label htmlFor="courtOrder" className="text-lg font-semibold text-blue-900">
+                  Upload Court Order
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="courtOrder"
+                    name="courtOrder"
+                    type="file"
+                    onChange={handleInputChange}
+                    className="cursor-pointer opacity-0 absolute inset-0 w-full h-full"
+                    accept=".pdf,.doc,.docx"
+                  />
+                  <div className="bg-blue-100 text-blue-800 rounded-lg p-4 flex items-center justify-center border-2 border-blue-300 hover:bg-blue-200 transition duration-200">
+                    <Upload className="w-6 h-6 mr-2" />
+                    <span>Choose file or drag and drop</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button 
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-700 to-blue-500 text-white text-lg py-3 rounded-lg hover:from-blue-800 hover:to-blue-600 transition duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+                >
+                  Submit
+                </Button>
+              </motion.div>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
   )
 }
-
