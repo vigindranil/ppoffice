@@ -43,10 +43,10 @@ router.get("/api/showRefferenceDetails",authMiddleware.verifyToken,CaseControlle
 router.post("/api/addCase",authMiddleware.verifyToken,CaseController.createCase); // firsttime create case by ppOffice
 router.get("/api/showallCase",authMiddleware.verifyToken,CaseController.showallCase); // firsttime create case by ppOffice
 router.post("/api/showallCaseBetweenRange",authMiddleware.verifyToken,CaseController.showallCaseBetweenRange);
-
 router.post("/api/showallCase", authMiddleware.verifyToken,CaseController.showallCaseWithDOC);
-
 router.post("/api/DashboardCount",authMiddleware.verifyToken,CaseController.getDashboardCounts);
+router.post("/api/showCaseDetail", authMiddleware.verifyToken,CaseController.showCaseDetail);
+
 // send email
 const EmailController = require("../controllers/emailController");
 router.post("/api/send-email", authMiddleware.verifyToken,EmailController.sendEmail);

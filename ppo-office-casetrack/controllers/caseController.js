@@ -384,7 +384,63 @@ class CaseController {
             });
         }
     }
+    
+    static async showCaseDetail(req, res) {
+        try {
+            // Extract is_Assigned parameter from the request body
+            const { CaseID } = req.body;
+    
+            // Stored procedure query and parameters
+            const query = "CALL sp_ShowCaseDetailSummaryById(?)";
+            const params = [CaseID];
+    
+            // Execute the stored procedure
+            const results = await new Promise((resolve, reject) => {
+                db.query(query, params, (err, rows) => {
+                    if (err) return reject(err);
+                    resolve(rows);
+                });
+            });
+    
+            // Process the results
+            const casesDetail = results[0]; // The first result set contains the data
 
+                if (!casesDetail || casesDetail.length === 0) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "No cases found.",
+                    });
+                }
+    
+                // Format the cases for response
+                const formattedCases = casesDetail.map((caseItem) => ({
+                    CaseNumber: caseItem.CaseNumber,
+                    CaseDescription : caseItem.CaseDescription,
+                    CaseRequiredDocument : caseItem.CaseRequiredDocument,
+                    SPName: caseItem.SPName,
+                    PSName: caseItem.PSName,
+                    CaseDate: caseItem.CaseDate,
+                    CaseType: caseItem.CaseType,
+                    NextHearingDate: caseItem.NextHearingDate,
+                    CaseSummaryId: caseItem.CaseSummaryId,
+                    Remarks : caseItem.Remarks,
+                    Document: caseItem?.Document ? `${basePath}${caseItem?.Document}` : null,
+                }));
+    
+                return res.status(200).json({
+                    success: 0,
+                    data: formattedCases,
+                });
+            
+        } catch (error) {
+            // Handle unexpected errors
+            return res.status(500).json({
+                success: false,
+                error: "Unexpected error occurred.",
+                details: error.message,
+            });
+        }
+    }
 
 
 
