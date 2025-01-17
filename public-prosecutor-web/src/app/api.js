@@ -587,80 +587,29 @@ export const showRefferenceDetails = async () => {
 
 
 // District Dropdown
-// export const alldistrict = async () => {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       const token = sessionStorage.getItem('token');
-//       const response = await fetch(`${BASE_URL}alldistrict`, {
-//         headers: {
-//           'Authorization': `Bearer ${token}`,
-//         }
-//       });
+export const alldistrict = async () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}alldistrict`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
 
-//       const result = await response.json();
+      const result = await response.json();
 
-//       if (response.ok && result.status === 0) {
-//         console.log(result.data)
-//         resolve(result.data);
-//       } else {
-//         reject(result.message || 'An error occurred');
-//       }
-//     } catch (error) {
-//       reject(`Fetch error: ${error.message}`);
-//     }
-//   });
-// };
-
-
-
-// export const alldistrict = async () => {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       const token = sessionStorage.getItem('token');
-//       const response = await fetch(`${BASE_URL}alldistrict`, {
-//         headers: {
-//           'Authorization': `Bearer ${token}`,
-//         }
-//       });
-
-//       const result = await response.json();
-
-//       if (response.ok && result.status === 0) {
-//         console.log(result.data);
-//         resolve(result.data);
-//       } else {
-//         reject(result.message || 'An error occurred while fetching districts');
-//       }
-//     } catch (error) {
-//       reject(`Fetch error: ${error.message}`);
-//     }
-//   });
-// };
-
-// Fetch police stations by district
-// export const showpoliceBydistrict = async (districtId) => {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       const token = sessionStorage.getItem('token');
-//       const response = await fetch(`${BASE_URL}showpoliceBydistrict?districtId=${districtId}`, {
-//         headers: {
-//           'Authorization': `Bearer ${token}`,
-//         }
-//       });
-
-//       const result = await response.json();
-
-//       if (response.ok && result.status === 0) {
-//         console.log(result.data);
-//         resolve(result.data);
-//       } else {
-//         reject(result.message || 'An error occurred while fetching police stations');
-//       }
-//     } catch (error) {
-//       reject(`Fetch error: ${error.message}`);
-//     }
-//   });
-// };
+      if (response.ok && result.status === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
 
 
 // Police Station Dropdown dependent on District
@@ -688,56 +637,6 @@ export const showpoliceBydistrict = async (districtId) => {
   });
 };
 
-
-
-export const fetchAllDistricts = async () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const token = sessionStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}alldistrict`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.status === 0) {
-        console.log(result.data);
-        resolve(result.data);
-      } else {
-        reject(result.message || 'An error occurred while fetching districts');
-      }
-    } catch (error) {
-      reject(`Fetch error: ${error.message}`);
-    }
-  });
-};
-
-// Fetch police stations by district (PS)
-export const fetchPoliceStationsByDistrict = async (districtId) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const token = sessionStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}showpoliceBydistrict?districtId=${districtId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.status === 0) {
-        console.log(result.data);
-        resolve(result.data);
-      } else {
-        reject(result.message || 'An error occurred while fetching police stations');
-      }
-    } catch (error) {
-      reject(`Fetch error: ${error.message}`);
-    }
-  });
-};
 
 // Send email-notification
 export const handleNotifyFromPPOfficeAdmin = async (CaseID) => {
@@ -874,6 +773,56 @@ export const addPPUser = async (req_body) => {
         console.log(result.message);
         
         reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+
+export const fetchAllDistricts = async () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}alldistrict`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data);
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred while fetching districts');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+// Fetch police stations by district (PS)
+export const fetchPoliceStationsByDistrict = async (districtId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}showpoliceBydistrict?districtId=${districtId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        console.log(result.data);
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred while fetching police stations');
       }
     } catch (error) {
       reject(`Fetch error: ${error.message}`);
