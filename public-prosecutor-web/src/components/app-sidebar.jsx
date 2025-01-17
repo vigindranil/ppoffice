@@ -63,10 +63,6 @@ const data = {
       type: 20,
       items: [
         {
-          title: "Add PP User",
-          url: "/add-pp-user",
-        },
-        {
           title: "PP Users",
           url: "/pp-users",
         },
@@ -242,6 +238,10 @@ const data = {
         {
           title: "Add Case",
           url: "/pp-office-admin-add-case",
+        },
+        {
+          title: "Add PP User",
+          url: "/add-pp-user",
         },
       ],
     },

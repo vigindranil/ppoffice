@@ -127,12 +127,15 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <Card className="w-full max-w-3xl mx-auto">
+    <div className="relative min-h-screen w-full">
+          <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash1.jpg')]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
+          <main className="relative flex-1 p-6 w-full min-h-screen">
+            <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
         <CardContent className="p-4 space-y-6">
           {emailDetails && emailDetails.length > 0 ? (
             <div>
-              <h3 className="text-xl font-semibold mb-4">Email Notifications</h3>
+              <h3 className="text-xl font-semibold mb-4">E-mail Notifications</h3>
               <div className="space-y-4">
                 {emailDetails.map((email) => (
                   <div
@@ -141,7 +144,7 @@ export default function ProfilePage() {
                   >
                     <div className="text-lg font-medium mb-2">
                       <div className="text-blue-600">
-                        Mail ID: <span className="font-normal text-gray-800">{email.mailId}</span> {email?.readStatus != 1 && <Badge className='h-2 w-2 p-0' variant='destructive'></Badge>}
+                        E-mail ID: <span className="font-normal text-gray-800">{email.mailId}</span> {email?.readStatus != 1 && <Badge className='h-2 w-2 p-0' variant='destructive'></Badge>}
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 mb-1">
@@ -183,6 +186,7 @@ export default function ProfilePage() {
           )}
         </CardContent>
       </Card>
+      </main>
     </div>
   );
 }

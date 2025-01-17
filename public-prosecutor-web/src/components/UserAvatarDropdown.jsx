@@ -46,7 +46,7 @@ export function UserAvatarDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/img/user-2.jpg" alt={user.name} />
+            <AvatarImage src="/img/user.png" alt={user.name} />
             <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('').toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
