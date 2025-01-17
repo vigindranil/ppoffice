@@ -10,6 +10,12 @@ class EmailTemplate {
      * @param {string} details.PPName 
      * @param {string} details.SPName 
      * @param {string} details.PSName 
+     * @param {string} details.NexthearingDate 
+     * @param {string} details.CaseDescription 
+     * @param {string} details.CaseAdditionalRemarks 
+     * @param {string} details.CaseRequiredDocument 
+
+
      */
     constructor(details) {
         this.crm = details.crm;
@@ -20,7 +26,10 @@ class EmailTemplate {
         this.ppname = details.PPName;
         this.SPName = details.SPName;
         this.PSName = details.PSName; 
-       
+        this.NexthearingDate = details.NexthearingDate;
+        this.CaseDescription = details.CaseDescription;
+        this.CaseAdditionalRemarks = details.CaseAdditionalRemarks;
+        this.CaseRequiredDocument = details.CaseRequiredDocument;
     }
 
     /**
@@ -91,6 +100,29 @@ class EmailTemplate {
             [Message ends]  
         `;
     }
+    
+    generateEmailContentForFutureCaseDetails() {
+        return `
+            To: CP/Superintendent of Police  
+            The Officer-in-Charge P.S.  
+            From: The Public Prosecutor, High Court, Calcutta.  
+    
+            P.S. Case No: ${this.psCaseNo}  
+            Case Date: ${this.dated}  
+            Case Description: ${this.CaseDescription}  
+            M/S VS: State  
+    
+            Direct the Investigating Officer of the above case to meet the Learned Advocate for the State (High Court, Calcutta) on Next HearingDate ${this.NexthearingDate}.  
+            The Investigating Officer is requested to bring:  
+              - ${this.CaseRequiredDocument}  
+    
+            Additional Information:  
+              ${this.additionalInformation}  
+    
+            [Message ends]  
+        `;
+    }
+    
 }
 
 module.exports = EmailTemplate;

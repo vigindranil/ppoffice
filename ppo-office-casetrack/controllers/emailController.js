@@ -26,7 +26,6 @@ class EmailController {
 
                 const rows = results[0];
                 const emailDetails = rows[0];
-                console.log(emailDetails);
                 if (!emailDetails) {
                     return res.status(404).json({
                         status: 1,
@@ -287,6 +286,129 @@ class EmailController {
             return res.status(500).json({
                 status: 1,
                 message: "Failed to send the email.",
+                error: error.message,
+            });
+        }
+    }
+
+
+    static async sendCaseUpdatedEmail(req, res) {
+        const { CaseSummaryId } = req.body;
+
+        // Validate required fields
+        if (!CaseSummaryId) {
+            return ResponseHelper.error(res, "CaseSummaryId is required");
+        }
+
+        try {
+            const query = "CALL sp_sendEmail_futureDetail(?)";
+
+            db.query(query, [CaseSummaryId], async (err, results) => {
+                if (err) {
+                    console.error("Error executing stored procedure:", err);
+                    return res.status(500).json({
+                        status: 1,
+                        message: "Error retrieving data from the database",
+                    });
+                }
+
+                const rows = results[0];
+                const emailDetails = rows[0];
+                if (!emailDetails) {
+                    return res.status(404).json({
+                        status: 1,
+                        message: "No email details found for the given CaseID.",
+                    });
+                }
+
+                const { receiveEmail, ccEmail, psCaseNo, dated, CaseId, NexthearingDate, CaseDescription,CaseAdditionalRemarks,sp_id,ps_id,CaseRequiredDocument  } = emailDetails;
+
+                // Generate the email content
+                const emailTemplate = new EmailTemplate({
+                    psCaseNo,
+                    dated,
+                    NexthearingDate,
+                    CaseDescription,
+                    CaseAdditionalRemarks,
+                    CaseRequiredDocument
+                });
+
+                const transporter = nodemailer.createTransport({
+                    host: "smtp.gmail.com",
+                    port: 587,
+                    secure: false,
+                    auth: {
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_PASSWORD,
+                    },
+                });
+
+                const emailContent = emailTemplate.generateEmailContentForFutureCaseDetails();
+
+                const mailOptions = {
+                    from: process.env.EMAIL_USER,
+                    to: receiveEmail,
+                    cc: ccEmail,
+                    subject: `Case Update: ${psCaseNo}`,
+                    html: `<pre>${emailContent}</pre>`,
+                };
+
+                try {
+                    const info = await transporter.sendMail(mailOptions);
+
+                    // Email sent successfully, now log the details
+                    const logQuery = "CALL sp_logFutureEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logParams = [
+                        info.messageId, // Message ID from nodemailer
+                        CaseId,
+                        CaseSummaryId,         // Case ID
+                        psCaseNo,       // Case number
+                        dated,          // Case Date
+                        CaseDescription,
+                        receiveEmail,    // Case Hearing Date
+                        ccEmail,
+                        sp_id,
+                        ps_id,
+                        NexthearingDate,
+                        CaseAdditionalRemarks,
+                        CaseRequiredDocument
+                    ];
+
+                    db.query(logQuery, logParams, (logErr) => {
+                        if (logErr) {
+                            console.error("Error logging email details:", logErr);
+                            return res.status(500).json({
+                                status: 1,
+                                message: "Email sent, but logging failed.",
+                            });
+                        }
+
+                        // Respond with success
+                        return res.status(200).json({
+                            status: 0,
+                            message: "Email sent and logged successfully.",
+                            data: {
+                                messageId: info.messageId,
+                                DistrictName :emailDetails.DistrictName,
+                                PoliceStationName: emailDetails.PoliceStationName,
+                                response: info.response,
+                            },
+                        });
+                    });
+                } catch (emailError) {
+                    console.error("Error sending email:", emailError);
+                    return res.status(500).json({
+                        status: 1,
+                        message: "Failed to send the email.",
+                        error: emailError.message,
+                    });
+                }
+            });
+        } catch (error) {
+            console.error("Error in sendEmail:", error);
+            return res.status(500).json({
+                status: 1,
+                message: "An unexpected error occurred.",
                 error: error.message,
             });
         }
