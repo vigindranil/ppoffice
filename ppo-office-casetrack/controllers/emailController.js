@@ -66,9 +66,9 @@ class EmailController {
 
                 try {
                     const info = await transporter.sendMail(mailOptions);
-
-                    // Email sent successfully, now log the details
-                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+                
+                    // Log email details as success
+                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     const logParams = [
                         info.messageId, // Message ID from nodemailer
                         CaseID,         // Case ID
@@ -83,7 +83,7 @@ class EmailController {
                         ppEmail,
                         PPId
                     ];
-
+                
                     db.query(logQuery, logParams, (logErr) => {
                         if (logErr) {
                             console.error("Error logging email details:", logErr);
@@ -92,14 +92,14 @@ class EmailController {
                                 message: "Email sent, but logging failed.",
                             });
                         }
-
+                
                         // Respond with success
                         return res.status(200).json({
                             status: 0,
                             message: "Email sent and logged successfully.",
                             data: {
                                 messageId: info.messageId,
-                                DistrictName :emailDetails.DistrictName,
+                                DistrictName: emailDetails.DistrictName,
                                 PoliceStationName: emailDetails.PoliceStationName,
                                 response: info.response,
                             },
@@ -107,12 +107,37 @@ class EmailController {
                     });
                 } catch (emailError) {
                     console.error("Error sending email:", emailError);
-                    return res.status(500).json({
-                        status: 1,
-                        message: "Failed to send the email.",
-                        error: emailError.message,
+                
+                    // Log email details as failure
+                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logParams = [
+                        null,           // No message ID since email failed
+                        CaseID,         // Case ID
+                        psCaseNo,       // Case number
+                        dated,          // Case Date
+                        ipcSection,
+                        hearingDate,    // Case Hearing Date
+                        receiveEmail,
+                        ccEmail,
+                        sp_id,
+                        ps_id,
+                        ppEmail,
+                        PPId
+                    ];
+                
+                    db.query(logQuery, logParams, (logErr) => {
+                        if (logErr) {
+                            console.error("Error logging failed email details:", logErr);
+                        }
+                        // Respond with email failure
+                        return res.status(500).json({
+                            status: 1,
+                            message: "Failed to send email.",
+                            error: emailError.message,
+                        });
                     });
                 }
+                
             });
         } catch (error) {
             console.error("Error in sendEmail:", error);
@@ -227,7 +252,7 @@ class EmailController {
                     sp_id,
                     ps_id,          // PS ID (not available in this scenario)
                     ppEmail,
-                    PPId
+                    0
 
                 ];
 
@@ -249,8 +274,8 @@ class EmailController {
                         hearingDate,    // Case Hearing Date
                         receiveEmail,
                         ccEmail,
-                        sp_id,
-                        ps_id,          // PS ID (not available in this scenario)
+                        0,
+                        0,          // PS ID (not available in this scenario)
                         ppEmail,
                         PPId
                     ];
