@@ -392,7 +392,7 @@ class EmailController {
                     const info = await transporter.sendMail(mailOptions);
 
                     // Email sent successfully, now log the details
-                    const logQuery = "CALL sp_logFutureEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logQuery = "CALL sp_logFutureEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
                     const logParams = [
                         info.messageId, // Message ID from nodemailer
                         CaseId,
@@ -406,7 +406,8 @@ class EmailController {
                         ps_id,
                         NexthearingDate,
                         CaseAdditionalRemarks,
-                        CaseRequiredDocument
+                        CaseRequiredDocument,
+                        1
                     ];
 
                     db.query(logQuery, logParams, (logErr) => {
@@ -432,11 +433,25 @@ class EmailController {
                     });
                 } catch (emailError) {
                     console.error("Error sending email:", emailError);
-                    return res.status(500).json({
-                        status: 1,
-                        message: "Failed to send the email.",
-                        error: emailError.message,
-                    });
+                
+                    // Log email details as failure
+                    const logQuery = "CALL sp_logFutureEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logParams = [
+                        null, // Message ID from nodemailer
+                        CaseId,
+                        CaseSummaryId,         // Case ID
+                        psCaseNo,       // Case number
+                        dated,          // Case Date
+                        CaseDescription,
+                        receiveEmail,    // Case Hearing Date
+                        ccEmail,
+                        sp_id,
+                        ps_id,
+                        NexthearingDate,
+                        CaseAdditionalRemarks,
+                        CaseRequiredDocument,
+                        0
+                    ];
                 }
             });
         } catch (error) {
