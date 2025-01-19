@@ -62,13 +62,19 @@ class EmailController {
                     cc: ccEmail,
                     subject: `Case Update: ${psCaseNo}`,
                     html: `<pre>${emailContent}</pre>`,
+                    dsn: {
+                        id: `dsn-${CaseID}`,
+                        return: 'headers',
+                        notify: ['failure', 'delay'],
+                        recipient: process.env.EMAIL_USER,
+                    },
                 };
 
                 try {
                     const info = await transporter.sendMail(mailOptions);
                 
                     // Log email details as success
-                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
                     const logParams = [
                         info.messageId, // Message ID from nodemailer
                         CaseID,         // Case ID
@@ -81,7 +87,8 @@ class EmailController {
                         sp_id,
                         ps_id,
                         ppEmail,
-                        PPId
+                        PPId,
+                        1
                     ];
                 
                     db.query(logQuery, logParams, (logErr) => {
@@ -109,7 +116,7 @@ class EmailController {
                     console.error("Error sending email:", emailError);
                 
                     // Log email details as failure
-                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
                     const logParams = [
                         null,           // No message ID since email failed
                         CaseID,         // Case ID
@@ -122,7 +129,8 @@ class EmailController {
                         sp_id,
                         ps_id,
                         ppEmail,
-                        PPId
+                        PPId,
+                        0
                     ];
                 
                     db.query(logQuery, logParams, (logErr) => {
@@ -239,7 +247,7 @@ class EmailController {
                 const info1 = await transporter.sendMail(mailOptions1);
                 const info2 = await transporter.sendMail(mailOptions2);
 
-                const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+                const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
                 const logParams1 = [
                     info1.messageId, // Message ID from nodemailer
                     CaseID,         // Case ID
@@ -252,7 +260,8 @@ class EmailController {
                     sp_id,
                     ps_id,          // PS ID (not available in this scenario)
                     ppEmail,
-                    0
+                    0,
+                    1
 
                 ];
 
@@ -264,7 +273,7 @@ class EmailController {
                             message: "Emails sent, but logging failed.",
                         });
                     }
-                    const logQuery2 = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+                    const logQuery2 = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
                     const logParams2 = [
                         info2.messageId, // Message ID from nodemailer
                         CaseID,         // Case ID
@@ -277,7 +286,8 @@ class EmailController {
                         0,
                         0,          // PS ID (not available in this scenario)
                         ppEmail,
-                        PPId
+                        PPId,
+                        1
                     ];
 
                     db.query(logQuery2, logParams2, (logErr2) => {
