@@ -233,6 +233,9 @@ const data = {
         {
           title :" Future Hearing",
           url:"/future-hearing",
+        },{
+          title :"Future Hearing Detail",
+          url:"/future-hearing-get",
         }
       ],
     },

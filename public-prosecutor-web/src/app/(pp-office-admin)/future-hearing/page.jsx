@@ -1,12 +1,600 @@
-'use client';
+// 'use client'
 
-import { useState, useEffect } from "react"
-import { Calendar, Upload } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
+// import React, { useState, useEffect } from 'react'
+// import { 
+//   createCaseOfficeAdminDetail , 
+//   handleNotifyFromPPOfficeAdmin , 
+//   getcasetype , 
+//   showRefferenceDetails , 
+//   alldistrict , 
+//   showpoliceBydistrict } from '@/app/api'
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Input } from "@/components/ui/input"
+// import { Button } from "@/components/ui/button"
+// import { Label } from "@/components/ui/label"
+// import { CustomAlertDialog } from "@/components/custom-alert-dialog"
+// import { useAlertDialog } from "@/hooks/useAlertDialog"
+// import { Textarea } from "@/components/ui/textarea"
+// import { DatePicker } from '@/components/date-picker'
+// import { useSelector } from 'react-redux'
+// import {
+//   Select,
+//   SelectContent,
+//   SelectGroup,
+//   SelectItem,
+//   SelectLabel,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select"
+// import { Calendar, FileText, Hash, MapPin, Bookmark, Book, Clock, Send, Copy, Image } from 'lucide-react'
+// import { decrypt } from '@/utils/crypto'
+
+// const AddCasePage = () => {
+//   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
+//   const [message, setMessage] = useState('')
+//   const [error, setError] = useState('')
+//   const [isLoading, setIsLoading] = useState(false)
+//   const [triggerAddCase, setTriggerAddCase] = useState(false)
+//   const [user, setUser] = useState(null)
+//   const encryptedUser = useSelector((state) => state.auth.user)
+//   const token = useSelector((state) => state.auth.token)
+//   const [referenceList, setReferenceList] = useState([])
+//   const [allDistrictList, setAllDistrictList] = useState([])
+//   const [allPSList, setAllPSList] = useState([])
+//   const [allSendList, setAllSendList] = useState([])
+//   const [caseTypeList, setCaseTypeList] = useState([])
+
+//   const [formData, setFormData] = useState({
+//     CaseNumber: '',
+//     EntryUserID: '',
+//     CaseDate: '',
+//     DistrictID: '',
+//     psID: '',
+//     caseTypeID: '',
+//     CaseId:'',
+//     CaseDescription:'',
+//     additionalRemarks: '',
+//     nexthearingDate :'',
+//     photocopycaseDiaryExist: '0',
+//     caseuploadDocumentPath: null,
+
+    
+
+// // CaseId:190
+// // EntryUserID:1
+// // CaseDate:2024-11-12
+// // DistrictID:7
+// // psID:35
+// // caseTypeID:1
+// // nexthearingDate:2025-1-22
+// // requiredDocument:aadharcard
+// // additionalRemarks:all thing bring it
+//   })
+
+//   useEffect(() => {
+//     const decoded_user = JSON.parse(decrypt(encryptedUser));
+//     setUser(decoded_user);
+//     setFormData(prevState => ({
+//       ...prevState,
+//       EntryUserID: decoded_user.AuthorityUserID
+//     }));
+//   }, [encryptedUser]);
+
+
+//   useEffect(() => {
+//     if (user) {
+//       getcasetype()
+//         .then((result) => {
+//           setCaseTypeList(result);
+//         })
+//         .catch((err) => {
+//           openAlert('error', err?.message || "An unexpected error occurred");
+//         });
+
+//       showRefferenceDetails()
+//         .then((result) => {
+//           setReferenceList(result);
+//         })
+//         .catch((err) => {
+//           openAlert('error', err?.message || "An unexpected error occurred");
+//         });
+
+//       alldistrict()
+//         .then((result) => {
+//           setAllDistrictList(result);
+//         })
+//         .catch((err) => {
+//           openAlert('error', err?.message || "An unexpected error occurred");
+//         });
+//     }
+//   }, [user]);
+
+
+//   useEffect(() => {
+//     if (formData.DistrictID) {
+//       showpoliceBydistrict(formData.DistrictID)
+//         .then((result) => {
+//           setAllPSList(result);
+//         })
+//         .catch((err) => {
+//           openAlert('error', err?.message || "An unexpected error occurred");
+//         });
+//     }
+//   }, [formData.DistrictID]);
+
+//   useEffect(() => {
+//     if (formData.sendTo) {
+//       showpoliceBydistrict(formData.sendTo)
+//         .then((result) => {
+//           setAllSendList(result);
+//         })
+//         .catch((err) => {
+//           openAlert('error', err?.message || "An unexpected error occurred");
+//         });
+//     }
+//   }, [formData.sendTo]);
+
+//   // const handleSelectChange = (name, value) => {
+//   //   setFormData(prevState => {
+//   //     const newState = { ...prevState, [name]: value };
+//   //     // if (name === 'DistrictID') {  
+//   //     //   newState.sendTo = value;
+//   //     //   newState.psID = '';
+//   //     //   newState.copyTo = '';
+//   //     // }
+//   //     // if (name === 'psID') {
+//   //     //   newState.copyTo = value;
+//   //     // }
+//   //     return newState;
+//   //   });
+//   // }
+
+//   const handleSelectChange = (name, value) => {
+//     setFormData(prevState => ({ ...prevState, [name]: value }));
+//   }
+
+
+//   const handleChange = (e) => {
+//     setFormData({ ...formData, [e.target.name]: e.target.value })
+//   }
+
+//   // const handleFileChange = (e) => {
+//   //   const file = e.target.files[0];
+//   //   if (file) {
+//   //     if (file.size > 200 * 1024) { // 200 KB in bytes
+//   //       openAlert('error', 'File size should not exceed 200 KB');
+//   //       return;
+//   //     }
+//   //     if (!['image/jpeg', 'image/jpg', 'application/pdf'].includes(file.type)) {
+//   //       openAlert('error', 'Only JPG, JPEG, or PDF files are allowed');
+//   //       return;
+//   //     }
+//   //     const reader = new FileReader();
+//   //     reader.onloadend = () => {
+//   //       setFormData(prevState => ({
+//   //         ...prevState,
+//   //         caseDocument: {
+//   //           name: file.name,
+//   //           type: file.type,
+//   //           size: file.size,
+//   //           data: reader.result
+//   //         },
+//   //         photocopycaseDiaryExist: '1'
+//   //       }));
+//   //     };
+//   //     reader.readAsDataURL(file);
+//   //   }
+//   // }
+
+//   const handleFileChange = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       if (file.size > 15000 * 1024) { // 15 MB in bytes
+//         openAlert('error', 'File size should not exceed 215 MB');
+//         return;
+//       }
+//       if (!['image/jpeg', 'image/jpg', 'application/pdf'].includes(file.type)) {
+//         openAlert('error', 'Only JPG, JPEG, or PDF files are allowed');
+//         return;
+//       }
+//       setFormData(prevState => ({
+//         ...prevState,
+//         caseDocument: file,
+//         photocopycaseDiaryExist: '1'
+//       }));
+//     }
+//   }
+
+//   // const handleAddCase = () => {
+//   //   setIsLoading(true)
+//   //   createCaseOfficeAdmin(formData)
+//   //     .then(async(result) => {
+//   //         console.log(result)
+//   //         openAlert('success', result.message || "success")
+//   //         try{
+//   //           const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID)
+//   //           console.log(res);
+//   //         }catch(err){
+//   //           console.log(err);
+            
+//   //         }
+
+          
+//   //         setFormData({
+//   //           CaseNumber: '',
+//   //           EntryUserID: '',
+//   //           CaseDate: '',
+//   //           DistrictID: '',
+//   //           psID: '',
+//   //           caseTypeID: '',
+//   //           ref: '',
+//   //           ipcAct: '',
+//   //           hearingDate: '',
+//   //           sendTo: '',
+//   //           copyTo: '',
+//   //           photocopycaseDiaryExist: '0',
+//   //           caseDocument: null,
+//   //         })
+        
+//   //     })
+//   //     .catch((err) => {
+//   //       console.log(err)
+//   //       openAlert('error', err || "An unexpected error occurred")
+//   //       setError(err || "An unexpected error occurred");
+//   //     })
+//   //     .finally(() => {
+//   //       setIsLoading(false);
+//   //     });
+//   // }
+
+
+//   const handleAddCases = async () => {
+//     setIsLoading(true);
+//     try {
+//       const formDataToSend = new FormData();
+//       for (const key in formData) {
+//         if (key === 'caseuploadDocumentPath') {
+//           if (formData[key]) {
+//             formDataToSend.append('caseuploadDocumentPath', formData[key]);
+//           }
+//         } else {
+//           formDataToSend.append(key, formData[key]);
+//         }
+//       }
+
+//       const result = await createCaseOfficeAdminDetail(formDataToSend);
+//       console.log(result);
+//       openAlert('success', result.message || "Case added successfully");
+//       try {
+//         const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID);
+//         console.log(res);
+//       } catch (err) {
+//         console.log(err);
+//       }
+
+//       setFormData({
+//         CaseNumber: '',
+//         EntryUserID: user.AuthorityUserID,
+//         nexthearingDate: '',
+        
+//         DistrictID: '',
+//         psID: '',
+//         caseTypeID: '',
+//         CaseId:'',
+//         requiredDocument: '',
+//         additionalRemarks: '',
+      
+//         photocopycaseDiaryExist: '0',
+//         caseuploadDocumentPath: null,
+//       });
+//     } catch (err) {
+//       console.log(err);
+//       openAlert('error', err?.message || "An unexpected error occurred");
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const handleConfirm = () => {
+//     closeAlert()
+//   }
+
+//   return (
+//     <div className="relative min-h-screen w-full">
+//           <div
+//             className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]"
+//           />
+//           <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
+//           <main className="relative flex-1 p-6 w-full min-h-screen">
+//           <CustomAlertDialog
+//                 isOpen={isOpen}
+//                 alertType={alertType}
+//                 alertMessage={alertMessage}
+//                 onClose={closeAlert}
+//                 onConfirm={handleConfirm}
+//               />
+    
+//           <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
+//         <CardHeader>
+//           <CardTitle>Add New Case</CardTitle>
+//         </CardHeader>
+//         <CardContent>
+          
+//           <div className="flex flex-col gap-4">
+//             <div className="flex space-x-4">
+//               {/* <div className="flex-1 space-y-2">
+//                 <Label className="font-bold" htmlFor="CaseNumber">Case Number</Label>
+//                 <Input
+//                   icon={Hash}
+//                   id="CaseNumber"
+//                   name="CaseNumber"
+//                   placeholder="Enter case number"
+//                   value={formData.CaseNumber}
+//                   onChange={handleChange}
+//                 />
+//               </div> */}
+//               <div className="flex-1 space-y-2">
+//                 <Label className="font-bold" htmlFor="nexthearingDate">nexthearingDate</Label>
+//                 <Input
+//                   icon={Calendar}
+//                   id="nexthearingDate"
+//                   name="nexthearingDate"
+//                   type="date"
+//                   value={formData.nexthearingDate}
+//                   onChange={handleChange}
+//                 />
+//               </div>
+//             </div>
+//             <div className="flex space-x-4">
+//               <div className="flex-1 space-y-2">
+//                 <Label className="font-bold" htmlFor="DistrictID">District</Label>
+//                 <Select onValueChange={(value) => handleSelectChange('DistrictID', value)}>
+//                   <SelectTrigger>
+//                     <SelectValue placeholder="Select District" />
+//                   </SelectTrigger>
+//                   <SelectContent>
+//                     <SelectGroup>
+//                       <SelectLabel>Additional Call SP</SelectLabel>
+//                       {allDistrictList.map((district) => (
+//                         <SelectItem key={district.districtId} value={district.districtId.toString()}>
+//                           {district.districtName}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectGroup>
+//                   </SelectContent>
+//                 </Select>
+//               </div>
+//               <div className="flex-1 space-y-2">
+//                 <Label className="font-bold" htmlFor="psID">Police Station</Label>
+//                 <Select onValueChange={(value) => handleSelectChange('psID', value)}>
+//                   <SelectTrigger>
+//                     <SelectValue placeholder="Select Police Station" />
+//                   </SelectTrigger>
+//                   <SelectContent>
+//                     <SelectGroup>
+//                       <SelectLabel>Additional Call PS</SelectLabel>
+//                       {allPSList.map((ps) => (
+//                         <SelectItem key={ps.id} value={ps.id.toString()}>
+//                           {ps.ps_name}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectGroup>
+//                   </SelectContent>
+//                 </Select>
+//               </div>
+//             </div>
+//             <div className="flex space-x-4">
+//               <div className="flex-1 space-y-2">
+//                 {/* <Label className="font-bold" htmlFor="caseTypeID">Case Type</Label>
+//                 <Select onValueChange={(value) => handleSelectChange('caseTypeID', value)}>
+//                   <SelectTrigger>
+//                     <SelectValue placeholder="Select Case Type" />
+//                   </SelectTrigger>
+//                   <SelectContent>
+//                     <SelectGroup>
+//                       <SelectLabel>Case Types</SelectLabel>
+//                       {caseTypeList.map((caseType) => (
+//                         <SelectItem key={caseType.CasetypeId} value={caseType.CasetypeId.toString()}>
+//                           {caseType.CasetypeName}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectGroup>
+//                   </SelectContent>
+//                 </Select> */}
+//               </div>
+//               {/* <div className="flex-1 space-y-2">
+//                 <Label className="font-bold" htmlFor="ref">Reference</Label>
+//                 <Select onValueChange={(value) => handleSelectChange('ref', value)}>
+//                   <SelectTrigger>
+//                     <SelectValue placeholder="Select Reference" />
+//                   </SelectTrigger>
+//                   <SelectContent className="max-h-[200px] overflow-y-auto">
+//                     <SelectGroup>
+//                       <SelectLabel>References</SelectLabel>
+//                       {referenceList.map((ref) => (
+//                         <SelectItem key={ref.refferenceId} value={ref.refferenceId.toString()}>
+//                           {ref.refferenceName}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectGroup>
+//                   </SelectContent>
+//                 </Select>
+//               </div> */}
+//             </div>
+//             <div className="flex space-x-4">
+//               <div className="flex-1 space-y-2">
+//                 <Label className="font-bold" htmlFor="requiredDocument">requiredDocumentt</Label>
+//                 <Textarea
+//                   icon={Book}
+//                   id="requiredDocument"
+//                   name="requiredDocument"
+//                   type="text"
+//                   placeholder="requiredDocument"
+//                   value={formData.requiredDocument}
+//                   onChange={handleChange}
+//                 />
+//               </div>
+//               {/* <div className="grid w-full gap-1.5">
+//       <Label htmlFor="message">Your message</Label>
+//       <Textarea placeholder="Type your message here." id="message" />
+//     </div> */}
+//               <div className="flex-1 space-y-2">
+//                 <Label className="font-bold" htmlFor="hearingDate">Additional Remarks</Label>
+//                 <Textarea
+//                   icon={Clock}
+//                   id="additionalRemarks"
+//                   name="additionalRemarks"
+//                   type="text"
+//                   value={formData.additionalRemarks}
+//                   onChange={handleChange}
+//                 />
+//               </div>
+//               <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="CaseDate">Case Date</Label>
+//                   <Input
+//                     icon={Calendar}
+//                     id="CaseDate"
+//                     name="CaseDate"
+//                     type="date"
+//                     value={formData.CaseDate}
+//                     onChange={(e) => setFormData({ ...formData, CaseDate: e.target.value })}
+//                   />
+//                 </div>
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="CaseType">Case Type</Label>
+//                   <Input
+//                     icon={FileText}
+//                     id="CaseType"
+//                     name="CaseType"
+//                     type="number"
+//                     value={formData.CaseType}
+                 
+//                   />
+//                 </div>
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="CaseType">Case Type</Label>
+//                   <Input
+//                     icon={FileText}
+//                     id="CaseType"
+//                     name="CaseType"
+//                     type="text"
+//                     value={formData.CaseType}
+                 
+//                   />
+//                 </div>
+//                 {/* Case Description */}
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="CaseDescription">Case Description</Label>
+//                   <Textarea
+//                     icon={Book}
+//                     id="CaseDescription"
+//                     name="CaseDescription"
+//                     value={formData.CaseDescription}
+//                     onChange={(e) => setFormData({ ...formData, CaseDescription: e.target.value })}
+//                     placeholder="Enter case description"
+//                   />
+//                 </div>
+//             </div>
+//             {/* <div className="flex space-x-4">
+//               <div className="flex-1 space-y-2">
+//                 <Label className="font-bold" htmlFor="sendTo">Send To</Label>
+//                 <Select onValueChange={(value) => setFormData({ ...formData, 'sendTo': value })}>
+//                   <SelectTrigger>
+//                     <SelectValue placeholder="Send To" />
+//                   </SelectTrigger>
+//                   <SelectContent>
+//                     <SelectGroup>
+//                       <SelectLabel>Send To</SelectLabel>
+//                       {allDistrictList.map((district) => (
+//                         <SelectItem key={district.districtId} value={district.districtId.toString()}>
+//                           {district.districtName}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectGroup>
+//                   </SelectContent>
+//                 </Select>
+//               </div>
+//               <div className="flex-1 space-y-2">
+//                 <Label className="font-bold" htmlFor="copyTo">Copy To</Label>
+//                 <Select onValueChange={(value) => setFormData({ ...formData, 'copyTo': value })}>
+//                   <SelectTrigger>
+//                     <SelectValue placeholder="Copy To" />
+//                   </SelectTrigger>
+//                   <SelectContent>
+//                     <SelectGroup>
+//                       <SelectLabel>Copy To</SelectLabel>
+//                       {allSendList.map((ps) => (
+//                         <SelectItem key={ps.id} value={ps.id.toString()}>
+//                           {ps.ps_name}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectGroup>
+//                   </SelectContent>
+//                 </Select>
+//               </div>
+//             </div> */}
+//             {/* <div className="flex space-x-4">
+//               <div className="w-1/2 space-y-2">
+//                 <Label className="font-bold" htmlFor="photocopycaseDiaryExist">Photocopy Case Diary Exists</Label>
+//                 <Select onValueChange={(value) => setFormData({ ...formData, 'photocopycaseDiaryExist': value })}>
+//                   <SelectTrigger>
+//                     <SelectValue placeholder="Photocopy Case Diary Exists" />
+//                   </SelectTrigger>
+//                   <SelectContent>
+//                     <SelectGroup>
+//                       <SelectLabel>Photocopy Case Diary Exists or Not</SelectLabel>
+//                       <SelectItem value="1">Yes</SelectItem>
+//                       <SelectItem value="0">No</SelectItem>
+//                     </SelectGroup>
+//                   </SelectContent>
+//                 </Select>
+//               </div>
+//             </div> */}
+//             <div className="flex space-x-4">
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="caseuploadDocumentPath">Case Document</Label>
+//                   <Input
+//                     icon={FileText}
+//                     id="caseuploadDocumentPath"
+//                     name="caseuploadDocumentPath"
+//                     type="file"
+//                     accept=".jpg,.jpeg,.pdf"
+//                     onChange={handleFileChange}
+//                   />
+//                   <p className="text-sm text-gray-500">Max file size: 200 KB. Allowed formats: JPG, JPEG, PDF</p>
+//                 </div>
+//                 <div className="flex-1 space-y-2">
+//                   <Label className="font-bold" htmlFor="photocopycaseDiaryExist">Photocopy Case Diary Exists</Label>
+//                   <Input
+//                     id="photocopycaseDiaryExist"
+//                     name="photocopycaseDiaryExist"
+//                     value={formData.photocopycaseDiaryExist === '1' ? 'Yes' : 'No'}
+//                     readOnly
+//                   />
+//                 </div>
+//               </div>
+//             <Button onClick={handleAddCases} className="max-w-min bg-blue-500 mx-auto my-5 mt-5" disabled={isLoading}>
+//               {isLoading ? 'Please Wait...' : 'Add Case'}
+//             </Button>
+//           </div>
+//         </CardContent>
+//       </Card>
+//     </main>
+//     </div>
+//   )
+// }
+
+// export default AddCasePage
+
+'use client'
+
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Calendar } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -14,251 +602,224 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { motion } from "framer-motion"
 
-// Import the API functions with updated names
-import { fetchAllDistricts, fetchPoliceStationsByDistrict } from '@/app/api'
+const initialFormData = {
+  CaseNumber: "WB/ER/RR",
+  CaseDescription: "very important",
+  CaseId: 190,
+  EntryUserID: 1,
+  CaseDate: "2024-11-12",
+  DistrictID: 7,
+  psID: 35,
+  caseTypeID: 1,
+  nexthearingDate: "2025-1-22",
+  requiredDocument: "aadharcard",
+  additionalRemarks: "all thing bring it"
+}
 
-export default function HearingForm() {
-  const [formData, setFormData] = useState({
-    hearingDate: "",
-    description: "",
-    requiredDocuments: "",
-    additionalRemark: "",
-    additionalCallSP: "",
-    additionalCallPS: "",
-    courtOrder: null
-  })
+export default function AddCaseForm() {
+  const [formData, setFormData] = useState(initialFormData)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const [districts, setDistricts] = useState([])
-  const [policeStations, setPoliceStations] = useState([])
-
-  useEffect(() => {
-    fetchDistricts()
-  }, [])
-
-  const fetchDistricts = async () => {
-    try {
-      const districtData = await fetchAllDistricts()
-      setDistricts(districtData)
-    } catch (error) {
-      console.error("Error fetching districts:", error)
-    }
-  }
-
-  const fetchPoliceStations = async (districtId) => {
-    try {
-      const psData = await fetchPoliceStationsByDistrict(districtId)
-      setPoliceStations(psData)
-    } catch (error) {
-      console.error("Error fetching police stations:", error)
-    }
-  }
-
-  const handleInputChange = (e) => {
-    const { name, value, type, files } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'file' ? files[0] : value
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
     }))
   }
 
-  const handleSelectChange = (value, type) => {
-    setFormData(prev => ({
-      ...prev,
-      [type]: value
+  const handleSelectChange = (name, value) => {
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
     }))
-    if (type === 'additionalCallSP') {
-      fetchPoliceStations(value)
-    }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Form submitted:', formData)
-    // Handle form submission logic here
+    setIsLoading(true)
+    try {
+      // Simulating API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      console.log('Form submitted:', formData)
+      alert('Case added successfully!')
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('Failed to add case. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
-  
+
   return (
-    <div className="relative min-h-screen w-full bg-gradient-to-br from-blue-900 via-blue-600 to-blue-400 p-8">
-      <div className="absolute inset-0 bg-blue-500/10 backdrop-blur-sm"></div>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 max-w-2xl mx-auto"
-      >
-        <Card className="w-full backdrop-blur-md bg-white/90 shadow-xl rounded-xl border border-blue-200">
-          <CardHeader className="bg-gradient-to-r from-blue-800 to-blue-600 text-white rounded-t-xl">
-            <CardTitle className="text-3xl font-bold text-center">Hearing Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 p-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <Label htmlFor="hearingDate" className="text-lg font-semibold text-blue-900">
-                  Next Hearing Date
-                </Label>
-                <div className="relative mt-1">
-                  <Input
-                    type="date"
-                    id="hearingDate"
-                    name="hearingDate"
-                    value={formData.hearingDate}
-                    onChange={handleInputChange}
-                    className="pl-10 pr-4 py-2 w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
-                  />
-                  <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-blue-500" />
-                </div>
-              </motion.div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <Label htmlFor="additionalCallSP" className="text-lg font-semibold text-blue-900">
-                    Additional Call SP
-                  </Label>
-                  <Select
-                    onValueChange={(value) => handleSelectChange(value, 'additionalCallSP')}
-                    value={formData.additionalCallSP}
-                  >
-                    <SelectTrigger className="w-full mt-1 border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 rounded-lg">
-                      <SelectValue placeholder="Select SP" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {districts.map((district) => (
-                        <SelectItem key={district.districtId} value={district.districtId.toString()}>
-                          {district.districtName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <Label htmlFor="additionalCallPS" className="text-lg font-semibold text-blue-900">
-                    Additional Call PS
-                  </Label>
-                  <Select
-                    onValueChange={(value) => handleSelectChange(value, 'additionalCallPS')}
-                    value={formData.additionalCallPS}
-                    disabled={!formData.additionalCallSP}
-                  >
-                    <SelectTrigger className="w-full mt-1 border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200 rounded-lg">
-                      <SelectValue placeholder="Select PS" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {policeStations.map((ps) => (
-                        <SelectItem key={ps.id} value={ps.id.toString()}>
-                          {ps.ps_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </motion.div>
+    <div className="min-h-screen bg-gray-100 p-4">
+      <Card className="max-w-4xl mx-auto">
+        <CardHeader>
+          <CardTitle>Future Hearing Form</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="CaseNumber">Case Number</Label>
+                <Input
+                  id="CaseNumber"
+                  name="CaseNumber"
+                  value={formData.CaseNumber}
+                  onChange={handleChange}
+                  required
+                />
               </div>
-
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="space-y-2"
-              >
-                <Label htmlFor="description" className="text-lg font-semibold text-blue-900">
-                  Description / Court Order
-                </Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Enter description or court order details..."
-                  className="min-h-[100px] resize-none w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+              <div className="space-y-2">
+                <Label htmlFor="CaseId">Case ID</Label>
+                <Input
+                  id="CaseId"
+                  name="CaseId"
+                  type="number"
+                  value={formData.CaseId}
+                  onChange={handleChange}
+                  required
                 />
-              </motion.div>
+              </div>
+            </div>
 
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="space-y-2"
-              >
-                <Label htmlFor="requiredDocuments" className="text-lg font-semibold text-blue-900">
-                  Required Documents
-                </Label>
-                <Textarea
-                  id="requiredDocuments"
-                  name="requiredDocuments"
-                  value={formData.requiredDocuments}
-                  onChange={handleInputChange}
-                  placeholder="List required documents for next hearing..."
-                  className="min-h-[100px] resize-none w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="EntryUserID">Entry User ID</Label>
+                <Input
+                  id="EntryUserID"
+                  name="EntryUserID"
+                  type="number"
+                  value={formData.EntryUserID}
+                  onChange={handleChange}
+                  required
                 />
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="space-y-2"
-              >
-                <Label htmlFor="additionalRemark" className="text-lg font-semibold text-blue-900">
-                  Additional Remark
-                </Label>
-                <Textarea
-                  id="additionalRemark"
-                  name="additionalRemark"
-                  value={formData.additionalRemark}
-                  onChange={handleInputChange}
-                  placeholder="Optional remarks..."
-                  className="min-h-[100px] resize-none w-full rounded-lg border-2 border-blue-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-200"
-                />
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="space-y-2"
-              >
-                <Label htmlFor="courtOrder" className="text-lg font-semibold text-blue-900">
-                  Upload Court Order
-                </Label>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="CaseDate">Case Date</Label>
                 <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
                   <Input
-                    id="courtOrder"
-                    name="courtOrder"
-                    type="file"
-                    onChange={handleInputChange}
-                    className="cursor-pointer opacity-0 absolute inset-0 w-full h-full"
-                    accept=".pdf,.doc,.docx"
+                    id="CaseDate"
+                    name="CaseDate"
+                    type="date"
+                    value={formData.CaseDate}
+                    onChange={handleChange}
+                    className="pl-10"
+                    required
                   />
-                  <div className="bg-blue-100 text-blue-800 rounded-lg p-4 flex items-center justify-center border-2 border-blue-300 hover:bg-blue-200 transition duration-200">
-                    <Upload className="w-6 h-6 mr-2" />
-                    <span>Choose file or drag and drop</span>
-                  </div>
                 </div>
-              </motion.div>
+              </div>
+            </div>
 
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button 
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-blue-700 to-blue-500 text-white text-lg py-3 rounded-lg hover:from-blue-800 hover:to-blue-600 transition duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="DistrictID">District ID</Label>
+                <Select
+                  name="DistrictID"
+                  value={formData.DistrictID.toString()}
+                  onValueChange={(value) => handleSelectChange('DistrictID', parseInt(value))}
                 >
-                  Submit
-                </Button>
-              </motion.div>
-            </form>
-          </CardContent>
-        </Card>
-      </motion.div>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select District" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">District 7</SelectItem>
+                    {/* Add more districts as needed */}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="psID">Police Station ID</Label>
+                <Select
+                  name="psID"
+                  value={formData.psID.toString()}
+                  onValueChange={(value) => handleSelectChange('psID', parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Police Station" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="35">Police Station 35</SelectItem>
+                    {/* Add more police stations as needed */}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="caseTypeID">Case Type ID</Label>
+                <Select
+                  name="caseTypeID"
+                  value={formData.caseTypeID.toString()}
+                  onValueChange={(value) => handleSelectChange('caseTypeID', parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Case Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Type 1</SelectItem>
+                    {/* Add more case types as needed */}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nexthearingDate">Next Hearing Date</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
+                  <Input
+                    id="nexthearingDate"
+                    name="nexthearingDate"
+                    type="date"
+                    value={formData.nexthearingDate}
+                    onChange={handleChange}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="CaseDescription">Case Description</Label>
+              <Textarea
+                id="CaseDescription"
+                name="CaseDescription"
+                value={formData.CaseDescription}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="requiredDocument">Required Document</Label>
+              <Input
+                id="requiredDocument"
+                name="requiredDocument"
+                value={formData.requiredDocument}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="additionalRemarks">Additional Remarks</Label>
+              <Textarea
+                id="additionalRemarks"
+                name="additionalRemarks"
+                value={formData.additionalRemarks}
+                onChange={handleChange}
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Adding Case...' : 'Add Case'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }
-

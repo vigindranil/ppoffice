@@ -532,6 +532,36 @@ export const createCaseOfficeAdmin = async (req_body) => {
     }
   });
 };
+// case detail
+export const createCaseOfficeAdminDetail = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log("Request body 123:", req_body);
+      
+      const token = sessionStorage.getItem('token');
+      
+      const response = await fetch(`${BASE_URL}cases/caseDetail`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req_body), 
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        resolve(result);
+      } else {
+        console.log("hi", result);
+        reject(result.message || 'An error occurred 123');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
 
 // Case Type Dropdown
 export const getcasetype = async () => {
@@ -829,3 +859,39 @@ export const fetchPoliceStationsByDistrict = async (districtId) => {
     }
   });
 };
+
+
+
+
+// export const createCaseOfficeAdminDetailGet = async (req_body) => {
+//   // ... (previous code remains unchanged)
+// };
+
+export async function showCaseDetailGet(caseId) {
+  try {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      return { success: false, message: 'No authorization token found.' };
+    }
+
+    const response = await fetch(`${BASE_URL}/api/showCaseDetail`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ CaseID: caseId })
+    });
+
+    const data = await response.json();
+    
+    if (data.success === 0) {
+      return { success: true, data: data.data };
+    } else {
+      return { success: false, message: 'Failed to fetch case details.' };
+    }
+  } catch (error) {
+    console.error('Error fetching case details:', error);
+    return { success: false, message: 'An error occurred while fetching case details.' };
+  }
+}
