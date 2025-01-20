@@ -1,14 +1,26 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import PPUserTable from '@/components/pp-user-table'
 
 const Page = () => {
+
   return (
-    <div className="container mx-auto py-10 px-3">
-      <h1 className="text-3xl font-bold mb-5">PP Users</h1>
-      <PPUserTable />
-    </div>
+    <div className="relative min-h-screen w-full">
+      <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
+      <main className="relative flex-1 p-6 w-full min-h-screen">
+        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Public Prosecutor List</CardTitle>
+          </CardHeader>
+          <CardContent>
+          <PPUserTable />
+          </CardContent>
+          </Card>
+        </main>
+      </div>
   )
 }
 

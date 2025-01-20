@@ -9,10 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useDispatch, useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
 import { Input } from '@/components/ui/input'
-import { ChevronDown, ChevronUp, Download, FileSpreadsheet, Search } from 'lucide-react'
+import { ChevronDown, ChevronUp, ClipboardPlus, Download, FileSpreadsheet, Search } from 'lucide-react'
 import * as XLSX from 'xlsx'
 
-const PPAllCaseList = () => {
+const PPAllCaseList = ({ caseNumber, onBack, paymentDetails }) => {
   const [allCaseList, setAllCaseList] = useState([])
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -74,11 +74,19 @@ const PPAllCaseList = () => {
     }))
   }
 
+  const addHearingSummary = () => {
+
+  }
+
   const downloadExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(filteredData)
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, "Cases")
-    XLSX.writeFile(workbook, "case_list.xlsx")
+    const currentDate = new Date();
+    const formattedDate = currentDate.toISOString().split('T')[0];
+    const fileName = `assigned_case_list_${formattedDate}.xlsx`;
+
+    XLSX.writeFile(workbook, fileName);
   }
 
   return (
@@ -123,6 +131,7 @@ const PPAllCaseList = () => {
                         <TableHead className="font-bold"></TableHead>
                         <TableHead className="font-bold">Case Number</TableHead>
                         <TableHead className="font-bold hidden sm:table-cell">Document</TableHead>
+                        <TableHead className="font-bold hidden md:table-cell">Hearing Summary</TableHead>
                         <TableHead className="font-bold hidden md:table-cell">Jurisdiction</TableHead>
                         <TableHead className="font-bold hidden md:table-cell">Police Station</TableHead>
                         <TableHead className="font-bold hidden md:table-cell">Case Date</TableHead>
@@ -153,19 +162,25 @@ const PPAllCaseList = () => {
                             <TableCell>{head.CaseNumber}</TableCell>
                             <TableCell className="hidden sm:table-cell">
                             {head.Document ? (
-                                  <div className="sm:hidden">
-                                    <a 
-                                      href={`http://localhost:8000/uploads/${head.Document}`} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
-                                      className="text-blue-600 hover:underline ml-1"
-                                    >
-                                      View
-                                    </a>
-                                  </div>
-                                ) : (
-                                  <div className="md:hidden"> N/A</div>
-                                )}
+                                <div>
+                                  <a 
+                                    href={`http://localhost:8000/uploads/${head.Document}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="text-blue-600 hover:underline ml-1"
+                                  >
+                                    View
+                                  </a>
+                                </div>
+                              ) : (
+                                <div>N/A</div>
+                              )}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              <Button onClick={addHearingSummary} className="flex items-center max-w-min">
+                                <ClipboardPlus className="h-4 w-4" />
+                                  Add
+                              </Button>
                             </TableCell>
                             <TableCell className="hidden md:table-cell">{head.SpName}</TableCell>
                             <TableCell className="hidden md:table-cell">{head.PsName}</TableCell>
@@ -194,6 +209,14 @@ const PPAllCaseList = () => {
                                 ) : (
                                   <div className="sm:hidden"><strong>Document:</strong> N/A</div>
                                 )}
+                                {
+                                  <div className="md:hidden">
+                                    <strong>Hearing Summary:</strong>
+                                    <Button onClick={addHearingSummary} className="flex items-center max-w-min">
+                                        <ClipboardPlus className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                }
                                 {head.SpName && (
                                   <div className="md:hidden"><strong>Jurisdiction:</strong> {head.SpName}</div>
                                 )}

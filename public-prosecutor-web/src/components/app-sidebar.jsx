@@ -53,6 +53,22 @@ const data = {
           title: "Dashboard",
           url: "/pp-head-dashboard",
         },
+        {
+          title: "Public Prosecutor List",
+          url: "/pp-users",
+        },
+        {
+          title: "Assigned Cases",
+          url: "/pp-head-assigned-cases",
+        },
+        {
+          title: "Pending Cases",
+          url: "/pp-head-pending-cases",
+        },
+        {
+          title: "Total Cases",
+          url: "/pp-head-total-cases",
+        },
       ],
     },
     {
@@ -63,13 +79,9 @@ const data = {
       type: 20,
       items: [
         {
-          title: "PP Users",
-          url: "/pp-users",
-        },
-        {
           title: "Assign Case",
           url: "/pp-head-pending-cases",
-        }
+        },
       ],
     },
     {

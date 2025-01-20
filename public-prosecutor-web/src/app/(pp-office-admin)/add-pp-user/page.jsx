@@ -261,7 +261,7 @@ const Page = () => {
                 </div>
               </div>
               <Button onClick={handleAddUser} className="max-w-min mx-auto mt-10 mb-5 bg-blue-500" disabled={isLoading || Object.values(formErrors).some(error => error !== '')}>
-                {isLoading ? 'Please Wait...' : 'Add Head Official'}
+                {isLoading ? 'Please Wait...' : 'Add Public Prosecutor'}
               </Button>
             </div>
           </CardContent>
