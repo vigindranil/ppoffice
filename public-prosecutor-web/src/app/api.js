@@ -779,3 +779,66 @@ export const addPPUser = async (req_body) => {
     }
   });
 };
+
+
+export const addHearingSummaryOfficeAdmin = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // console.log("Request body 123:", req_body);
+      req_body.forEach((value, key) => {
+        console.log(key, value);
+    });
+      
+      const token = sessionStorage.getItem('token');
+      
+      const response = await fetch(`${BASE_URL}cases/caseDetail`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: req_body, 
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        resolve(result);
+      } else {
+        console.log("hi", result);
+        reject(result.message || 'An error occurred 123');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+export const handleNotifyHearingPPOfficeAdmin = async (CaseSummaryId) => {
+  return new Promise(async(resolve, reject) => {
+    const token = sessionStorage.getItem('token')
+    console.log("CaseSummaryId: ",CaseSummaryId)
+    const response = await fetch(`${BASE_URL}send-email-caseDetails`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        "CaseSummaryId": CaseSummaryId
+      }),
+
+    })
+    if (!response.ok) {
+      reject('Failed to send email');
+    }
+    const result = await response.json()
+    if (result.status === 0) {
+      console.log(result.message)
+      resolve(result.message);
+      console.log('Sent email:', result.message);
+    } else {
+      reject(result.message);
+      console.log(result.message)
+    }
+  })
+}

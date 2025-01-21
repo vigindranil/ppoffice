@@ -11,8 +11,9 @@ import { decrypt } from '@/utils/crypto'
 import { Input } from '@/components/ui/input'
 import { ChevronDown, ChevronUp, ClipboardPlus, Download, FileSpreadsheet, Search } from 'lucide-react'
 import * as XLSX from 'xlsx'
+import AddHearingPage from '../add-hearing-summary/page'
 
-const PPAllCaseList = ({ caseNumber, onBack, paymentDetails }) => {
+const PPAllCaseList = () => {
   const [allCaseList, setAllCaseList] = useState([])
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -23,6 +24,8 @@ const PPAllCaseList = ({ caseNumber, onBack, paymentDetails }) => {
   const dispatch = useDispatch()
   const encryptedUser = useSelector((state) => state.auth.user)
   const [user, setUser] = useState("")
+  const [caseDetails, setCaseDetails] = useState(null);
+  const [showAddHearingSummary, setShowAddHearingSummary] = useState(false)
 
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(encryptedUser))
@@ -44,6 +47,12 @@ const PPAllCaseList = ({ caseNumber, onBack, paymentDetails }) => {
         })
     }
   }, [user])
+
+  const handleReset = () => {
+    setIsLoading(false);
+    setShowAddHearingSummary(false);
+    setCaseDetails(null);
+  };
 
   const filteredData = allCaseList?.filter((data) =>
     Object?.values(data)?.some((value) =>
@@ -74,8 +83,15 @@ const PPAllCaseList = ({ caseNumber, onBack, paymentDetails }) => {
     }))
   }
 
-  const addHearingSummary = () => {
-
+  const addHearingSummary = (head) => {
+    setCaseDetails({
+      CaseDate: head.CaseDate,
+      CaseHearingDate: head.CaseHearingDate,
+      CaseId: head.CaseId,
+      caseTypeID: head.caseTypeID,
+      CaseNumber: head.CaseNumber,
+    })
+    setShowAddHearingSummary(true)
   }
 
   const downloadExcel = () => {
@@ -87,6 +103,10 @@ const PPAllCaseList = ({ caseNumber, onBack, paymentDetails }) => {
     const fileName = `assigned_case_list_${formattedDate}.xlsx`;
 
     XLSX.writeFile(workbook, fileName);
+  }
+
+  if (showAddHearingSummary) {
+    return <AddHearingPage onBack={handleReset} caseDetails={caseDetails} />;
   }
 
   return (
@@ -177,7 +197,7 @@ const PPAllCaseList = ({ caseNumber, onBack, paymentDetails }) => {
                               )}
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
-                              <Button onClick={addHearingSummary} className="flex items-center max-w-min">
+                              <Button onClick={() => addHearingSummary(head)} className="flex items-center max-w-min">
                                 <ClipboardPlus className="h-4 w-4" />
                                   Add
                               </Button>
@@ -212,7 +232,7 @@ const PPAllCaseList = ({ caseNumber, onBack, paymentDetails }) => {
                                 {
                                   <div className="md:hidden">
                                     <strong>Hearing Summary:</strong>
-                                    <Button onClick={addHearingSummary} className="flex items-center max-w-min">
+                                    <Button onClick={() => addHearingSummary(head)} className="flex items-center max-w-min">
                                         <ClipboardPlus className="h-4 w-4" />
                                     </Button>
                                   </div>
