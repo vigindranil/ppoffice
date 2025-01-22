@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Calendar, FileText, Hash, MapPin, Bookmark, Book, Clock, Send, Copy, Image } from 'lucide-react'
+import { Calendar, FileText, Hash, MapPin, Bookmark, Book, Clock, Send, Copy, Image, Undo2 } from 'lucide-react'
 import { decrypt } from '@/utils/crypto'
 
 const AddHearingPage = ({ onBack, caseDetails }) => {
@@ -109,7 +109,7 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
       setFormData((prevState) => ({
         ...prevState,
         CaseId: caseDetails.CaseId,
-        CaseDate: caseDetails.CaseDate,
+        CaseDate: caseDetails.CaseDate.split("T")[0],
         CaseNumber: caseDetails.CaseNumber,
         caseTypeID: caseDetails.caseTypeID,
       }));
@@ -212,6 +212,7 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
         <Button onClick={onBack} className="absolute top-4 right-4">
           Back
+          <Undo2 />
         </Button>
           <CardHeader>
             <CardTitle>Add Upcoming Hearing Summary</CardTitle>
@@ -229,6 +230,7 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                     placeholder="Enter case number"
                     value={formData.CaseNumber}
                     onChange={handleChange}
+                    disabled
                   />
                 </div>
                 <div className="flex-1 space-y-2">
@@ -237,10 +239,9 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                     icon={Calendar}
                     id="CaseDate"
                     name="CaseDate"
-                    type="date"
                     value={formData.CaseDate}
                     onChange={handleChange}
-                    max={new Date().toISOString().split("T")[0]}
+                    disabled 
                   />
                 </div>
               </div>
@@ -308,12 +309,12 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                   <Input icon={Bookmark} id="caseTypeName" name="caseTypeName" value={caseTypeName} disabled />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="requiredDocument">req docs</Label>
+                  <Label className="font-bold" htmlFor="requiredDocument">Required Documents</Label>
                   <Input
                     icon={Book}
                     id="requiredDocument"
                     name="requiredDocument"
-                    placeholder="Enter resddffsd"
+                    placeholder="Enter Documents Required in Next Hearing"
                     value={formData.requiredDocument}
                     onChange={handleChange}
                   />
@@ -344,6 +345,15 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                     type="date"
                     value={formData.nexthearingDate}
                     onChange={handleChange}
+                    min={new Date().toISOString().split("T")[0]}
+                    onInput={(e) => {
+                      const selectedDate = e.target.value;
+                      const today = new Date().toISOString().split("T")[0];
+                      
+                      if (selectedDate < today) {
+                        e.target.value = today; // Reset to today if past date is entered
+                      }
+                    }}
                   />
                 </div>
               </div>

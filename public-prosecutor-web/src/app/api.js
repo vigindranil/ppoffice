@@ -842,3 +842,32 @@ export const handleNotifyHearingPPOfficeAdmin = async (CaseSummaryId) => {
     }
   })
 }
+
+export const showHearingSummaryList = async (caseID) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}showCaseDetail`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          "CaseID": caseID
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response?.ok && result?.success === 0) {
+        console.log(result.data)
+        resolve(result.data);
+      } else {
+        reject(result.message || 'An error occurred');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
