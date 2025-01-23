@@ -8,10 +8,10 @@ const router = express.Router();
 const authMiddleware = require('../middlewares/authMiddleware'); 
 
 // show all district
-const districtController = require('../controllers/districtController');
-router.get('/api/alldistrict', authMiddleware.verifyToken, districtController.show);
-router.get('/api/showallCasesBydistrictId',authMiddleware.verifyToken,districtController.showallcasesBydistrict);
-router.get('/api/count-by-ps',authMiddleware.verifyToken,districtController.getCaseCountsByPoliceStation);
+const DistrictController = require('../controllers/districtController'); // Ensure correct path
+router.get('/api/alldistrict', authMiddleware.verifyToken, DistrictController.show);
+router.get('/api/showallCasesBydistrictId',authMiddleware.verifyToken,DistrictController.showallcasesBydistrict);
+router.get('/api/count-by-ps',authMiddleware.verifyToken,DistrictController.getCaseCountsByPoliceStation);
 
 
 
