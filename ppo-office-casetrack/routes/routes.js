@@ -51,7 +51,7 @@ router.post("/api/showCaseDetail", authMiddleware.verifyToken,CaseController.sho
 const EmailController = require("../controllers/emailController");
 router.post("/api/send-email", authMiddleware.verifyToken,EmailController.sendEmail);
 router.post("/api/send-email-pp", authMiddleware.verifyToken,EmailController.sendEmailTO);
-
+router.post("/api/send-email-caseDetails", authMiddleware.verifyToken,EmailController.sendCaseUpdatedEmail)
 
 // psStaff 
 const PsController = require("../controllers/psController");

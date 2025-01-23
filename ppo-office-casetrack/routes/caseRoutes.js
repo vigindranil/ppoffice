@@ -9,4 +9,3 @@ router.post('/create', upload.single('caseDocument'), CaseController.createCaseW
 router.post('/caseDetail', upload.single('caseuploadDocumentPath'), CaseController.createCaseDetail);
 
 module.exports = router;
-

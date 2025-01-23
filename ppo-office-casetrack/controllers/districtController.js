@@ -1,82 +1,55 @@
-// controllers/showController.js
-const db = require('../config/db'); // Import the DB connection
-const ResponseHelper = require('./ResponseHelper'); // Import the helper
+const DistrictModel = require('../models/DistrictModel'); // Import the model
+const ResponseHelper = require('./ResponseHelper'); // Import the response helper
 
 class DistrictController {
-  // Handle the GET request for /show (Call stored procedure)
+  // Controller method to handle /show route
   static show(req, res) {
-    const query = 'CALL showDistrict()';  
-
-    db.query(query, (err, results) => {
+    DistrictModel.showDistrict((err, results) => {
       if (err) {
         console.error('Error executing stored procedure:', err);
-        return  ResponseHelper.error(res,"An error occurred while executing the procedure");
+        return ResponseHelper.error(res, "An error occurred while executing the procedure");
       }
 
-      
-      // Assuming your stored procedure returns data in results[0]
-      return  ResponseHelper.success_reponse(res,"Data found",results[0]);
+      // Return the results from the model
+      return ResponseHelper.success_reponse(res, "Data found", results[0]);
     });
   }
 
-  // show all casesByDistrictId
-  static async showallcasesBydistrict(req, res) {
-    try {
-      // Retrieve the district_id from the query parameters or request body
-      const districtId = req.query.districtId; 
+  // Controller method for showing all cases by district ID
+  static showAllCasesByDistrict(req, res) {
+    const districtId = req.query.districtId;
 
-      
-      if (!districtId) {
-        return ResponseHelper.error(res, "districtId is required");
+    if (!districtId) {
+      return ResponseHelper.error(res, "districtId is required");
+    }
+
+    DistrictModel.showAllCasesByDistrict(districtId, (err, results) => {
+      if (err) {
+        console.error('Error executing stored procedure:', err);
+        return ResponseHelper.error(res, "An error occurred while fetching data");
       }
 
-      // SQL query to call the stored procedure with the district_id parameter
-      const query = 'CALL sp_ShowallCaseBydistrictID(?)';
-      // Pass the districtId as an argument to the stored procedure
-      db.query(query, [districtId], (err, results) => {
-        if (err) {
-         
-          return ResponseHelper.error(res, "An error occurred while fetching data");
-        }
-
-        // Assuming your stored procedure returns data in results[0]
-        return ResponseHelper.success_reponse(res, "Data found", results[0]);
-      });
-    } catch (error) {
-     
-      return ResponseHelper.error(res, "An unexpected error occurred");
-    }
+      return ResponseHelper.success_reponse(res, "Data found", results[0]);
+    });
   }
 
-  static async getCaseCountsByPoliceStation(req, res) {
-    try {
-        // Get the districtId from the request body
-        const districtId = req.query.districtId; 
-        
-        // Validate the input
-        if (!districtId) {
-            return res.status(400).json({ error: 'District ID is required.' });
-        }
+  // Controller method to get case counts by police station
+  static getCaseCountsByPoliceStation(req, res) {
+    const districtId = req.query.districtId;
 
-        // Call the stored procedure
-        const query = "CALL sp_CountCasesByPoliceStation(?)";
-        const params = [districtId]; // Ensure districtId is an integer
+    if (!districtId) {
+      return ResponseHelper.error(res, "District ID is required.");
+    }
 
-        db.query(query, [districtId], (err, results) => {
-          if (err) {
-           
-            return ResponseHelper.error(res, "An error occurred while fetching data");
-          }
-  
-          // Assuming your stored procedure returns data in results[0]
-          return ResponseHelper.success_reponse(res, "Data found", results[0]);
-        });
-      } catch (error) {
-       
-        return ResponseHelper.error(res, "An unexpected error occurred");
+    DistrictModel.getCaseCountsByPoliceStation(districtId, (err, results) => {
+      if (err) {
+        console.error('Error executing stored procedure:', err);
+        return ResponseHelper.error(res, "An error occurred while fetching data");
       }
-} 
-  
+
+      return ResponseHelper.success_reponse(res, "Data found", results[0]);
+    });
+  }
 }
 
 module.exports = DistrictController;
