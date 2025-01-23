@@ -5,19 +5,25 @@ import {
   AudioWaveform,
   BookOpen,
   Bot,
+  CheckCheck,
   Command,
+  FolderOpen,
+  FolderPlus,
+  FolderSearch,
   Frame,
   GalleryVerticalEnd,
   Map,
+  Menu,
   PieChart,
   Settings2,
+  ShieldPlus,
   SquareTerminal,
+  UserPlus,
+  UserSearch,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
-// import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -25,37 +31,140 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useSelector } from "react-redux";
+import {  useEffect, useState } from "react";
 
-// Sample data
 const data = {
   user: {
-    name: "Super Admin",
-    email: "admin@example.com",
+    name: "USER",
+    email: "user@example.com",
     avatar: "/img/user.jpg",
   },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
+   
     {
-      title: "Add User",
+      title: "Navigation",
+      url: "#",
+      icon: Menu,
+      isActive: true,
+      type: 20,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/pp-head-dashboard",
+        },
+        {
+          title: "Public Prosecutor List",
+          url: "/pp-users",
+        },
+        {
+          title: "Assigned Cases",
+          url: "/pp-head-assigned-cases",
+        },
+        {
+          title: "Pending Cases",
+          url: "/pp-head-pending-cases",
+        },
+        {
+          title: "Total Cases",
+          url: "/pp-head-total-cases",
+        },
+      ],
+    },
+    {
+      title: "Operations",
+      url: "#",
+      icon: ShieldPlus,
+      isActive: true,
+      type: 20,
+      items: [
+        {
+          title: "Assign Case",
+          url: "/pp-head-pending-cases",
+        },
+      ],
+    },
+    {
+      title: "SP Operations",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
+      type: 30,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/sp-dashboard",
+        },
+        {
+          title: "Notifications",
+          url: "/sp-notifications",
+        },
+        {
+          title: "Add PS",
+          url: "/add-ps",
+        },
+      ],
+    },
+    {
+      title: "Ps-dashboard",
+      url: "#",
+      icon: SquareTerminal,
+      isActive: true,
+      type: 50,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/ps-case",
+        },
+        {
+          title: "Police Station Profile",
+          url: "/ps-profile",
+        },{
+          title:"Notifications",
+          url:"/ps-emails-details",
+        }
+      ],
+    },
+    {
+      title: "Navigation",
+      url: "#",
+      icon: Menu,
+      isActive: true,
+      type: 100,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/super-admin-dashboard",
+        },
+      ],
+    },
+    {
+      title: "Show User List",
+      url: "#",
+      icon: UserSearch,
+      isActive: true,
+      type: 100,
+      items: [
+        {
+          title: "Public Prosecutor Head",
+          url: "/pp-head-list",
+        },
+        {
+          title: "Office Admin",
+          url: "/pp-office-admin-list",
+        },
+        {
+          title: "Superintendent of Police",
+          url: "/sp-list",
+        },
+      ],
+    },
+    {
+      title: "Add User",
+      url: "#",
+      icon: UserPlus,
+      isActive: true,
+      type: 100,
       items: [
         {
           title: "Public Prosecutor Head",
@@ -63,140 +172,105 @@ const data = {
         },
         {
           title: "Office Admin",
-          url: "/pending",
+          url: "/add-pp-office-admin",
         },
         {
           title: "Superintendent of Police",
-          url: "/pending",
+          url: "/add-sp",
         },
       ],
     },
     {
-      title: "Show User List",
+      title: "Navigation",
       url: "#",
-      icon: SquareTerminal,
+      icon: Menu,
       isActive: true,
+      type: 60,
       items: [
         {
-          title: "History",
-          url: "/pending",
-        },
-        {
-          title: "Future",
-          url: "/pending",
-        },
-        {
-          title: "Custom",
-          url: "/pending",
+          title: "Dashboard",
+          url: "/public-prosecutor-user-dashboard",
         },
       ],
     },
-    // {
-    //   title: "Playground",
-    //   url: "#",
-    //   icon: SquareTerminal,
-    //   isActive: true,
-    //   items: [
-    //     {
-    //       title: "History",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Starred",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Settings",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Models",
-    //   url: "#",
-    //   icon: Bot,
-    //   items: [
-    //     {
-    //       title: "Genesis",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Explorer",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Quantum",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Documentation",
-    //   url: "#",
-    //   icon: BookOpen,
-    //   items: [
-    //     {
-    //       title: "Introduction",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Get Started",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Tutorials",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Changelog",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Settings",
-    //   url: "#",
-    //   icon: Settings2,
-    //   items: [
-    //     {
-    //       title: "General",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Team",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Billing",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Limits",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-  ],
-  projects: [
     {
-      name: "Design Engineering",
+      title: "Show Detailed Report",
       url: "#",
-      icon: Frame,
+      icon: FolderOpen,
+      isActive: true,
+      type: 60,
+      items: [
+        {
+          title: "My Cases",
+          url: "/show-public-prosecutor-case-details",
+        },
+      ],
     },
     {
-      name: "Sales & Marketing",
+      title: "Navigation",
       url: "#",
-      icon: PieChart,
+      icon: Menu,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/pp-office-admin-dashboard",
+        },
+      ],
     },
     {
-      name: "Travel",
+      title: "Reports",
       url: "#",
-      icon: Map,
+      icon: FolderSearch,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Assigned Cases",
+          url: "/pp-office-admin-assigned-cases",
+        },
+        {
+          title: "Unassigned Cases",
+          url: "/pp-office-admin-unassigned-cases",
+        },
+        {
+          title: "All Cases",
+          url: "/pp-office-admin-all-cases",
+        },
+      ],
+    },
+    {
+      title: "Actions",
+      url: "#",
+      icon: FolderPlus,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Add Case",
+          url: "/pp-office-admin-add-case",
+        },
+        {
+          title: "Add PP User",
+          url: "/add-pp-user",
+        },
+      ],
     },
   ],
 };
 
 export const AdminAppSidebar = (props) => {
+  const [authToken, setAuthToken] = useState("");
+  const [user, setUser] = useState("");
+  const token = useSelector((state) => state.auth.token);
+  const userDetails = useSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    setAuthToken(token);
+    setUser(userDetails);
+  }, [token, userDetails]);
+  console.log(user);
   return (
     <Sidebar
       collapsible="icon"
@@ -204,11 +278,9 @@ export const AdminAppSidebar = (props) => {
       className="mt-[64px] flex flex-col h-[calc(100vh-64px)] z-20"
     >
       <SidebarHeader>
-        {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
       <SidebarContent className="flex-grow">
         <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

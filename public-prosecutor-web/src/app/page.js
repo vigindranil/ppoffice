@@ -29,22 +29,31 @@ export default function LandingPage() {
           transition={{ duration: 1.5 }}
         /> */}
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="relative z-10 flex flex-col items-center justify-center h-full text-white px-4"
         >
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-4xl md:text-6xl font-bold text-center mb-4"
           >
-            Welcome to PPO case Tracking System
+            Public Prosecutor Office
           </motion.h1>
 
-          <motion.p 
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-4xl md:text-6xl font-bold text-center mb-4"
+          >
+           Case Tracking System
+          </motion.h1>
+
+          <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -53,16 +62,16 @@ export default function LandingPage() {
             Manage and track the case and generate notification.
           </motion.p>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
             className="flex gap-4"
           >
-            <Button asChild variant="secondary">
+            {/* <Button asChild>
               <Link href="/get-started">Get Started</Link>
-            </Button>
-            <Button asChild>
+            </Button> */}
+            <Button asChild variant="secondary">
               <Link href="/login">Login</Link>
             </Button>
           </motion.div>
@@ -73,7 +82,7 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 1 }}
             className="absolute bottom-4 text-center text-sm text-gray-300"
           >
-            © 2024 PPO case track System. All rights reserved.
+            © 2025 Public Prosecutor Office Case Tracking System. All rights reserved.
           </motion.footer>
         </motion.div>
       </div>
