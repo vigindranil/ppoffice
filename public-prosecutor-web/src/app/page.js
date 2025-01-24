@@ -19,15 +19,6 @@ export default function LandingPage() {
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent"></div>
       <div className="absolute inset-0 bg-black/50"></div>
       <div className="relative h-screen w-full overflow-hidden">
-        {/* <motion.div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat brightness-40"
-          style={{
-            backgroundImage: 'url("/img/ppoimage.jpg")'
-          }}
-          initial={{ opacity: 1, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5 }}
-        /> */}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

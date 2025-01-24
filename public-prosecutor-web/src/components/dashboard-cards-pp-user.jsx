@@ -34,7 +34,7 @@ export default function DashboardCards() {
       if (user) {
         fetchDashboardCount(user?.AuthorityUserID)
           .then((result) => {
-            console.log(result);
+            // console.log(result);
             setCaseCount(result)
           })
           .catch((err) => {

@@ -270,7 +270,7 @@ export const AdminAppSidebar = (props) => {
     setAuthToken(token);
     setUser(userDetails);
   }, [token, userDetails]);
-  console.log(user);
+  // console.log(user);
   return (
     <Sidebar
       collapsible="icon"

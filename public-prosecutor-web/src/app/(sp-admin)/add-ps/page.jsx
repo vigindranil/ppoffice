@@ -77,11 +77,11 @@ const Page = () => {
   useEffect(() => {
     user && showpoliceBydistrict(user?.BoundaryID)
             .then((result) => {
-              console.log(user?.BoundaryID)
+              // console.log(user?.BoundaryID)
               setAllPSList(result);
             })
             .catch((err) => {
-              console.log(err);
+              // console.log(err);
             });
   },[user])
 

@@ -39,7 +39,7 @@ export default function ProfilePage() {
 
       const data = await response.json();
       if (response.ok) {
-        console.log(data.data);
+        // console.log(data.data);
         
         setEmailDetails(data.data);
       } else {
@@ -60,12 +60,12 @@ export default function ProfilePage() {
 
   const handleEmailRead = async (authorityTypeId, boundaryId, mailId, caseId) => {
    
-    console.log({ 
-      "mailId": mailId,
-      "caseId": caseId,
-      "authorityTypeId": authorityTypeId,
-      "boundaryId": boundaryId
-     });
+    // console.log({ 
+    //   "mailId": mailId,
+    //   "caseId": caseId,
+    //   "authorityTypeId": authorityTypeId,
+    //   "boundaryId": boundaryId
+    //  });
     
     try {
       const token = sessionStorage.getItem("token");
@@ -85,11 +85,11 @@ export default function ProfilePage() {
 
       const data = await response.json();
       if (response.ok) {
-        console.log(data.message);
+        // console.log(data.message);
         // user && loadEmailDetails(30, 7);
         loadEmailDetails(user?.AuthorityTypeID, user?.BoundaryID);
       } else {
-        console.log(data.message);
+        // console.log(data.message);
       }
     } catch (err) {
       setError("An error occurred");

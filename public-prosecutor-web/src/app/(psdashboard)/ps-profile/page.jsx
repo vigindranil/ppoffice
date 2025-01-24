@@ -27,7 +27,7 @@ export default function ProfilePage() {
       setLoading(true)
       try {
         const userData = await fetchUserProfile(user?.AuthorityUserID)
-        console.log(userData);
+        // console.log(userData);
         
         setProfile(userData)
       } catch (err) {

@@ -32,7 +32,7 @@ const PPAllCaseList = () => {
     if (user) {
       showallCase(0)
         .then((result) => {
-          console.log(result);
+          // console.log(result);
           setAllCaseList(result);
         })
         .catch((err) => {

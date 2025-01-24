@@ -47,7 +47,7 @@ export default function PPUserTable() {
       }
       const result = await response.json()
       if (result.status === 0 && result.message === "Data found") {
-        console.log(result.data);
+        // console.log(result.data);
         
         setUsers(result.data)
       } else {
