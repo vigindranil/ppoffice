@@ -1,17 +1,51 @@
 // models/PPUserModel.js
 const db = require('../config/db');
+const bcrypt = require('bcrypt');
 
 class PPUserModel {
 
+  // static async createPPUser(params) {
+  //   const query = "CALL sp_saveCreatePPuser(?, ?, ?, ?, ?, ?, ?, @PPUserID, @ErrorCode)";
+  //   return new Promise((resolve, reject) => {
+  //     db.query(query, params, (err, results) => {
+  //       if (err) return reject("An error occurred while creating PPUser");
+  //       resolve(results);
+  //     });
+  //   });
+  // }
+
   static async createPPUser(params) {
-    const query = "CALL sp_saveCreatePPuser(?, ?, ?, ?, ?, ?, ?, @PPUserID, @ErrorCode)";
-    return new Promise((resolve, reject) => {
-      db.query(query, params, (err, results) => {
-        if (err) return reject("An error occurred while creating PPUser");
-        resolve(results);
+    const { Username, UserPassword, FullName, ContractNo, Email, LicenseNumber, EntryUserID } = params;
+
+    try {
+      // Hash the password before passing to the stored procedure
+      const hashedPassword = await bcrypt.hash(UserPassword, 10); // Hash password with 10 salt rounds
+
+      // Replace plain password with hashed password in the parameters array
+      const newParams = [
+        Username,
+        hashedPassword,  // Use hashed password here
+        FullName,
+        ContractNo,
+        Email,
+        LicenseNumber,
+        EntryUserID
+      ];
+
+      const query = "CALL sp_saveCreatePPuser(?, ?, ?, ?, ?, ?, ?, @PPUserID, @ErrorCode)";
+      return new Promise((resolve, reject) => {
+        db.query(query, newParams, (err, results) => {
+          if (err) return reject("An error occurred while creating PPUser");
+          resolve(results);
+        });
       });
-    });
+    } catch (error) {
+      return Promise.reject("Error while hashing password: " + error.message);
+    }
   }
+
+
+
 
   static async fetchOutputParams() {
     const query = "SELECT @PPUserID AS PPUserID, @ErrorCode AS ErrorCode";

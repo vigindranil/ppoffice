@@ -1,124 +1,196 @@
 const db = require('../config/db'); // Import the database connection
 const ResponseHelper = require('./ResponseHelper');
-
+const bcrypt = require('bcrypt');
 class SuperAdminController {
 
   // super Admin add PPAdmin user
-  static async createPPOfficeAdminUser(req, res) {
-    const { Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber } = req.body;
-
-    // Validate the required input fields
-    if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber) {
-        return ResponseHelper.error(res, "Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber are required", null, 400);
-    }
-
-    try {
-        // Call the stored procedure
-        const query = "CALL sp_saveCreateppofficeAdmin(?, ?, ?, ?, ?, ?, ?, @PPofficeAdminID, @ErrorCode)";
-        const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber, EntryUserID];
-
-        // Execute the stored procedure
-        await new Promise((resolve, reject) => {
-            db.query(query, params, (err, results) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(results);
-            });
-        });
-
-        // Fetch the output parameters from the procedure
-        const output = await new Promise((resolve, reject) => {
-            db.query("SELECT @PPofficeAdminID AS PPofficeAdminID, @ErrorCode AS ErrorCode", (err, results) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(results[0]);
-            });
-        });
-
-        const { PPofficeAdminID, ErrorCode } = output;
-        console.log(ErrorCode);
-
-        // Check the output error code from the stored procedure
-        if (ErrorCode === 0) {
-            return ResponseHelper.success_reponse(res, "PPOfficeAdmin user created successfully", { id: PPofficeAdminID });
-        } else if (ErrorCode === 4) {
-            return ResponseHelper.error(res, "Login user is invalid", null, 400);
-        } else if (ErrorCode === 5) {
-            return ResponseHelper.error(res, "Log in user has no permission to add user", null, 403);
-        } else {
-            return ResponseHelper.error(res, "Failed to create PPOfficeAdmin. Please check your input.", null, 400);
-        }
-    } catch (error) {
-        console.error(error); // Log error for debugging
-        return ResponseHelper.error(res, "An unexpected error occurred while creating the PPOfficeAdmin.", error, 500);
-    }
-}
 
 
 
-  static async createPPHeadUser(req, res) {
-    const { Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber } = req.body;
 
-    // Validate the required input fields
-    if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber) {
-      return ResponseHelper.error(res, "Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber are required");
-    }
+static async createPPOfficeAdminUser(req, res) {
+  const { Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber } = req.body;
 
-    try {
-      // Call the stored procedure
-      const query = "CALL sp_saveCreateppofficeHead(?, ?, ?, ?, ?, ?, ?, @PPofficeHeadID, @ErrorCode)";
-      const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber, EntryUserID];
+  // Validate the required input fields
+  if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber) {
+      return ResponseHelper.error(
+          res,
+          "Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber are required",
+          null,
+          400
+      );
+  }
+
+  try {
+      // Hash the password using bcrypt
+      const saltRounds = 10; // Recommended number of salt rounds
+      const hashedPassword = await bcrypt.hash(UserPassword, saltRounds);
+
+      // Call the stored procedure with the hashed password
+      const query = "CALL sp_saveCreateppofficeAdmin(?, ?, ?, ?, ?, ?, ?, @PPofficeAdminID, @ErrorCode)";
+      const params = [Username, hashedPassword, FullName, ContractNo, Email, LicenseNumber, EntryUserID];
 
       // Execute the stored procedure
       await new Promise((resolve, reject) => {
-        db.query(query, params, (err, results) => {
-          if (err) {
-            return ResponseHelper.error(res, "An error occurred while fetching data",err);
-          }
-          resolve(results);
-        });
+          db.query(query, params, (err, results) => {
+              if (err) {
+                  return reject(err);
+              }
+              resolve(results);
+          });
       });
 
       // Fetch the output parameters from the procedure
       const output = await new Promise((resolve, reject) => {
+          db.query("SELECT @PPofficeAdminID AS PPofficeAdminID, @ErrorCode AS ErrorCode", (err, results) => {
+              if (err) {
+                  return reject(err);
+              }
+              resolve(results[0]);
+          });
+      });
+
+      const { PPofficeAdminID, ErrorCode } = output;
+
+      // Check the output error code from the stored procedure
+      if (ErrorCode === 0) {
+          return ResponseHelper.success_reponse(
+              res,
+              "PPOfficeAdmin user created successfully",
+              { id: PPofficeAdminID }
+          );
+      } else if (ErrorCode === 4) {
+          return ResponseHelper.error(res, "Login user is invalid", null, 400);
+      } else if (ErrorCode === 5) {
+          return ResponseHelper.error(res, "Log in user has no permission to add user", null, 403);
+      } else {
+          return ResponseHelper.error(res, "Failed to create PPOfficeAdmin. Please check your input.", null, 400);
+      }
+  } catch (error) {
+      console.error(error); // Log error for debugging
+      return ResponseHelper.error(res, "An unexpected error occurred while creating the PPOfficeAdmin.", error, 500);
+  }
+}
+
+
+  // static async createPPHeadUser(req, res) {
+  //   const { Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber } = req.body;
+
+  //   // Validate the required input fields
+  //   if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber) {
+  //     return ResponseHelper.error(res, "Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber are required");
+  //   }
+
+  //   try {
+  //     // Call the stored procedure
+  //     const query = "CALL sp_saveCreateppofficeHead(?, ?, ?, ?, ?, ?, ?, @PPofficeHeadID, @ErrorCode)";
+  //     const params = [Username, UserPassword, FullName, ContractNo, Email, LicenseNumber, EntryUserID];
+
+  //     // Execute the stored procedure
+  //     await new Promise((resolve, reject) => {
+  //       db.query(query, params, (err, results) => {
+  //         if (err) {
+  //           return ResponseHelper.error(res, "An error occurred while fetching data",err);
+  //         }
+  //         resolve(results);
+  //       });
+  //     });
+
+  //     // Fetch the output parameters from the procedure
+  //     const output = await new Promise((resolve, reject) => {
+  //       db.query("SELECT @PPofficeHeadID AS PPofficeHeadID, @ErrorCode AS ErrorCode", (err, results) => {
+  //         if (err) {
+  //           return ResponseHelper.error(res, "An error occurred while fetching data",err);
+  //         }
+  //         resolve(results[0]);
+  //       });
+  //     });
+
+  //     const { PPofficeHeadID, ErrorCode } = output;
+     
+  //     // Check the output error code from the stored procedure
+
+  //     if (ErrorCode === 0) {
+
+  //       return ResponseHelper.success_reponse(res,"PPHead user created successfully",{ id: PPofficeHeadID });
+       
+  //     }
+  //     else if (ErrorCode === 4) 
+  //       {
+  //       return ResponseHelper.error(res, "Login user is invalid", null, 400);
+  //     }
+  //    else if (ErrorCode === 5) 
+  //     {
+  //       return ResponseHelper.error(res, "Log in user has no permission to add user", null, 403);
+  //     }
+  //     else {
+  //        return ResponseHelper.error(res,"Failed to create PPHead. Please check your input.",err);
+        
+  //     }
+  //   } catch (error) {
+     
+  //     return ResponseHelper.error(res,"An unexpected error occurred while creating the PPHead.",error);
+
+  //   }
+  // }
+
+  
+  static async createPPHeadUser(req, res) {
+    const { Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber } = req.body;
+  
+    // Validate the required input fields
+    if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber) {
+      return ResponseHelper.error(
+        res,
+        "Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber are required"
+      );
+    }
+  
+    try {
+      // Hash the password using bcrypt
+      const saltRounds = 10; // Recommended number of salt rounds
+      const hashedPassword = await bcrypt.hash(UserPassword, saltRounds);
+  
+      // Call the stored procedure with the hashed password
+      const query = "CALL sp_saveCreateppofficeHead(?, ?, ?, ?, ?, ?, ?, @PPofficeHeadID, @ErrorCode)";
+      const params = [Username, hashedPassword, FullName, ContractNo, Email, LicenseNumber, EntryUserID];
+  
+      // Execute the stored procedure
+      await new Promise((resolve, reject) => {
+        db.query(query, params, (err, results) => {
+          if (err) {
+            return ResponseHelper.error(res, "An error occurred while executing the stored procedure", err);
+          }
+          resolve(results);
+        });
+      });
+  
+      // Fetch the output parameters from the procedure
+      const output = await new Promise((resolve, reject) => {
         db.query("SELECT @PPofficeHeadID AS PPofficeHeadID, @ErrorCode AS ErrorCode", (err, results) => {
           if (err) {
-            return ResponseHelper.error(res, "An error occurred while fetching data",err);
+            return ResponseHelper.error(res, "An error occurred while fetching data", err);
           }
           resolve(results[0]);
         });
       });
-
+  
       const { PPofficeHeadID, ErrorCode } = output;
-     
+  
       // Check the output error code from the stored procedure
-
       if (ErrorCode === 0) {
-
-        return ResponseHelper.success_reponse(res,"PPHead user created successfully",{ id: PPofficeHeadID });
-       
-      }
-      else if (ErrorCode === 4) 
-        {
+        return ResponseHelper.success_reponse(res, "PPHead user created successfully", { id: PPofficeHeadID });
+      } else if (ErrorCode === 4) {
         return ResponseHelper.error(res, "Login user is invalid", null, 400);
-      }
-     else if (ErrorCode === 5) 
-      {
+      } else if (ErrorCode === 5) {
         return ResponseHelper.error(res, "Log in user has no permission to add user", null, 403);
-      }
-      else {
-         return ResponseHelper.error(res,"Failed to create PPHead. Please check your input.",err);
-        
+      } else {
+        return ResponseHelper.error(res, "Failed to create PPHead. Please check your input.", null, 400);
       }
     } catch (error) {
-     
-      return ResponseHelper.error(res,"An unexpected error occurred while creating the PPHead.",error);
-
+      return ResponseHelper.error(res, "An unexpected error occurred while creating the PPHead.", error);
     }
   }
-
   
   static async createSPUser(req, res) {
     const { Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber,DistrictID } = req.body;
@@ -181,6 +253,64 @@ class SuperAdminController {
 
     }
   }
+
+//   static async createSPUser(req, res) {
+//     const { Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber, DistrictID } = req.body;
+
+//     // Validate the required input fields
+//     if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber || !DistrictID) {
+//         return ResponseHelper.error(
+//             res, 
+//             "Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber, DistrictID are required"
+//         );
+//     }
+
+//     try {
+//         // Hash the password using bcrypt
+//         const saltRounds = 10; // Recommended salt rounds for security
+//         const hashedPassword = await bcrypt.hash(UserPassword, saltRounds);
+
+//         // Call the stored procedure with the hashed password
+//         const query = "CALL sp_saveCreatSpuser(?, ?, ?, ?, ?, ?, ?, ?, @SPID, @ErrorCode)";
+//         const params = [Username, hashedPassword, FullName, ContractNo, Email, LicenseNumber, EntryUserID, DistrictID];
+
+//         // Execute the stored procedure
+//         await new Promise((resolve, reject) => {
+//             db.query(query, params, (err, results) => {
+//                 if (err) {
+//                     return ResponseHelper.error(res, "An error occurred while fetching data", err);
+//                 }
+//                 resolve(results);
+//             });
+//         });
+
+//         // Fetch the output parameters from the procedure
+//         const output = await new Promise((resolve, reject) => {
+//             db.query("SELECT @SPID AS SPID, @ErrorCode AS ErrorCode", (err, results) => {
+//                 if (err) {
+//                     return ResponseHelper.error(res, "An error occurred while fetching data", err);
+//                 }
+//                 resolve(results[0]);
+//             });
+//         });
+
+//         const { SPID, ErrorCode } = output;
+//         console.log(ErrorCode);
+
+//         // Check the output error code from the stored procedure
+//         if (ErrorCode === 0) {
+//             return ResponseHelper.success_reponse(res, "SP user created successfully", { id: SPID });
+//         } else if (ErrorCode === 4) {
+//             return ResponseHelper.error(res, "Login user is invalid", null, 400);
+//         } else if (ErrorCode === 5) {
+//             return ResponseHelper.error(res, "Log in user has no permission to add user", null, 403);
+//         } else {
+//             return ResponseHelper.error(res, "Failed to create SP user. Please check your input.", null);
+//         }
+//     } catch (error) {
+//         return ResponseHelper.error(res, "An unexpected error occurred while creating the SP user.", error);
+//     }
+// }
 
   static async showppofficeAdminUser(req, res) {
     try {
