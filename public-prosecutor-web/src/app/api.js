@@ -65,8 +65,8 @@ export const handleNotifyToPPUser = async (CaseID, PPuserID) => {
     }
     const result = await response.json()
     if (result.status === 0) {
-      resolve(result.message);
-      // console.log('Sent email:', result.message);
+      resolve(result);
+      console.log('Sent email:', result.message);
     } else {
       reject(result.message);
     }
@@ -114,7 +114,7 @@ export async function fetchCases(psId) {
   export async function fetchUserProfile(PSUserId) {
     try {
       const token = sessionStorage.getItem('token');
-      // console.log('Token:', token);
+      console.log('Token:', token);
 
       const response = await fetch(`${BASE_URL}showpsUserById`, {
         method: 'POST',
@@ -133,7 +133,7 @@ export async function fetchCases(psId) {
       }
 
       const result = await response.json();
-      // console.log('API Response:', result);
+      console.log('API Response:', result);
 
       if (result.status === 0 && result.message === "Data found") {
         return result.data[0];
@@ -154,8 +154,8 @@ export async function fetchCases(psId) {
       }
 
       const url = `${BASE_URL}/emailDetails`;
-      // console.log("Request URL:", url); 
-      // console.log("Request Body:", { authorityTypeId, boundaryId });
+      console.log("Request URL:", url); // Log URL for debugging
+      console.log("Request Body:", { authorityTypeId, boundaryId });
 
       const response = await fetch(url, {
         method: 'POST',
@@ -228,7 +228,7 @@ export async function fetchCases(psId) {
         const result = await response.json();
   
         if (response.ok && result.status === 0) {
-          // console.log(result);
+          console.log(result);
           
           resolve(result.data);
         } else {
@@ -244,7 +244,7 @@ export async function fetchCases(psId) {
   export async function addPsStaff(data) {
     try {
       const token = sessionStorage.getItem('token');
-      // console.log(token);
+      console.log(token);
       if (!token) {
         return { success: false, message: 'No authorization token found.' };
       }
@@ -283,10 +283,10 @@ export const addPPOfficeAdmin = async (req_body) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
-        // console.log(result.message);
+        console.log(result.message);
         
         reject(result.message || 'An error occurred');
       }
@@ -314,7 +314,7 @@ export const showPPOfficeAdminUserList = async (req_body) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
         reject(result.message || 'An error occurred');
@@ -344,10 +344,10 @@ export const addPPHead = async (req_body) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
-        // console.log(result.message);
+        console.log(result.message);
         
         reject(result.message || 'An error occurred');
       }
@@ -375,7 +375,7 @@ export const showPPOfficeHeadUserList = async (req_body) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
         reject(result.message || 'An error occurred');
@@ -404,10 +404,10 @@ export const addSP = async (req_body) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
-        // console.log(result.message);
+        console.log(result.message);
         
         reject(result.message || 'An error occurred');
       }
@@ -434,7 +434,7 @@ export const showSPUser = async (req_body) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
         reject(result.message || 'An error occurred');
@@ -460,7 +460,7 @@ export const showallCase = async (typeID) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
         reject(result.message || 'An error occurred');
@@ -471,10 +471,43 @@ export const showallCase = async (typeID) => {
   });
 };
 
+
+// [Office Admin] Add Case
+// export const createCaseOfficeAdmin = async (req_body) => {
+//   return new Promise(async (resolve, reject) => {
+//     try {
+//       console.log("Request body 123:", req_body); 
+      
+//       const token = sessionStorage.getItem('token');
+      
+//       const response = await fetch(`${BASE_URL}cases/create`, {
+//         method: 'POST',
+//         headers: {
+//           'Authorization': `Bearer ${token}`,
+//           'Content-Type': 'multipart/form-data',
+//         },
+//         body: JSON.stringify(req_body),
+//       });
+
+//       const result = await response.json();
+
+//       if (response.ok && result.status === 0) {
+//         resolve(result);
+//       } else {
+//         console.log("hi",result)
+//         reject(result.message || 'An error occurred 123');
+//       }
+//     } catch (error) {
+//       reject(`Fetch error: ${error.message}`);
+//     }
+//   });
+// };
+
+
 export const createCaseOfficeAdmin = async (req_body) => {
   return new Promise(async (resolve, reject) => {
     try {
-      // console.log("Request body 123:", req_body);
+      console.log("Request body 123:", req_body);
       
       const token = sessionStorage.getItem('token');
       
@@ -491,7 +524,7 @@ export const createCaseOfficeAdmin = async (req_body) => {
       if (response.ok && result.status === 0) {
         resolve(result);
       } else {
-        // console.log("hi", result);
+        console.log("hi", result);
         reject(result.message || 'An error occurred 123');
       }
     } catch (error) {
@@ -514,7 +547,7 @@ export const getcasetype = async () => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
         reject(result.message || 'An error occurred');
@@ -540,7 +573,7 @@ export const showRefferenceDetails = async () => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
         reject(result.message || 'An error occurred');
@@ -567,7 +600,7 @@ export const alldistrict = async () => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
         reject(result.message || 'An error occurred');
@@ -593,7 +626,7 @@ export const showpoliceBydistrict = async (districtId) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
         reject(result.message || 'An error occurred');
@@ -609,7 +642,7 @@ export const showpoliceBydistrict = async (districtId) => {
 export const handleNotifyFromPPOfficeAdmin = async (CaseID) => {
   return new Promise(async(resolve, reject) => {
     const token = sessionStorage.getItem('token')
-    // console.log("CaseID: ",CaseID)
+    console.log("CaseID: ",CaseID)
     const response = await fetch(`${BASE_URL}send-email`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -626,12 +659,12 @@ export const handleNotifyFromPPOfficeAdmin = async (CaseID) => {
     }
     const result = await response.json()
     if (result.status === 0) {
-      // console.log(result.message)
+      console.log(result.message)
       resolve(result.message);
       console.log('Sent email:', result.message);
     } else {
       reject(result.message);
-      // console.log(result.message)
+      console.log(result.message)
     }
   })
 }
@@ -651,7 +684,7 @@ export const showCaseDetailsUser = async (userID) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
         reject(result.message || 'An error occurred');
@@ -680,7 +713,7 @@ export const fetchSuperDashboardCount = async (userID) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result);
+        console.log(result);
         
         resolve(result.data);
       } else {
@@ -691,6 +724,32 @@ export const fetchSuperDashboardCount = async (userID) => {
     }
   });
 };
+
+
+
+
+// export async function addPPUser(data) {
+//   try {
+//     const token = sessionStorage.getItem('token');
+//     console.log(token);
+//     if (!token) {
+//       return { success: false, message: 'No authorization token found.' };
+//     }
+
+//     const response = await fetch(`${BASE_URL}addppUser`, {
+//       method: 'POST',
+//       headers: {
+//         'Authorization': `Bearer ${token}`,
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(data),
+//     });
+//     return await response.json();
+//   } catch (error) {
+//     console.error('Error adding PP User:', error);
+//     throw error;
+//   }
+// }
 
 export const addPPUser = async (req_body) => {
   return new Promise(async (resolve, reject) => {
@@ -708,10 +767,10 @@ export const addPPUser = async (req_body) => {
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
-        // console.log(result.message);
+        console.log(result.message);
         
         reject(result.message || 'An error occurred');
       }
@@ -727,7 +786,7 @@ export const addHearingSummaryOfficeAdmin = async (req_body) => {
     try {
       // console.log("Request body 123:", req_body);
       req_body.forEach((value, key) => {
-        // console.log(key, value);
+        console.log(key, value);
     });
       
       const token = sessionStorage.getItem('token');
@@ -745,7 +804,7 @@ export const addHearingSummaryOfficeAdmin = async (req_body) => {
       if (response.ok && result.status === 0) {
         resolve(result);
       } else {
-        // console.log("hi", result);
+        console.log("hi", result);
         reject(result.message || 'An error occurred 123');
       }
     } catch (error) {
@@ -757,7 +816,7 @@ export const addHearingSummaryOfficeAdmin = async (req_body) => {
 export const handleNotifyHearingPPOfficeAdmin = async (CaseSummaryId) => {
   return new Promise(async(resolve, reject) => {
     const token = sessionStorage.getItem('token')
-    // console.log("CaseSummaryId: ",CaseSummaryId)
+    console.log("CaseSummaryId: ",CaseSummaryId)
     const response = await fetch(`${BASE_URL}send-email-caseDetails`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -774,12 +833,12 @@ export const handleNotifyHearingPPOfficeAdmin = async (CaseSummaryId) => {
     }
     const result = await response.json()
     if (result.status === 0) {
-      // console.log(result.message)
+      console.log(result.message)
       resolve(result.message);
-      // console.log('Sent email:', result.message);
+      console.log('Sent email:', result.message);
     } else {
       reject(result.message);
-      // console.log(result.message)
+      console.log(result.message)
     }
   })
 }
@@ -802,7 +861,7 @@ export const showHearingSummaryList = async (caseID) => {
       const result = await response.json();
 
       if (response?.ok && result?.status === 0) {
-        // console.log(result.data)
+        console.log(result.data)
         resolve(result.data);
       } else {
         reject(result.message || 'An error occurred');

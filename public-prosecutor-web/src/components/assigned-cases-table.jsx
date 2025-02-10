@@ -107,7 +107,7 @@ export default function CaseTable() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber)
 
-  const openDialog = () => {
+  const openDialog = (caseItem) => {
     setIsCaseSelected(true)
     setSelectedCase(caseItem)
   }
@@ -171,7 +171,7 @@ export default function CaseTable() {
                     <Button
                       variant="outline"
                       className=""
-                      onClick={() => openDialog()}
+                      onClick={() => openDialog(caseItem)}
                     >
                       <Eye /> More Details
                     </Button>
