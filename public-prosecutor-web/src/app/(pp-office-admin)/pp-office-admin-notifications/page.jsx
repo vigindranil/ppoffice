@@ -1,4 +1,5 @@
 "use client";
+import { BASE_URL } from '@/app/constants'; 
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,7 +30,7 @@ export default function ProfilePage() {
       setLoading(true);
       try {
         const token = sessionStorage.getItem("token");
-        const response = await fetch("http://localhost:8000/api/emailDetails", {
+        const response = await fetch(`${BASE_URL}emailDetails`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -66,7 +67,7 @@ export default function ProfilePage() {
     
     try {
       const token = sessionStorage.getItem("token");
-      const response = await fetch("http://localhost:8000/api/emailRead", {
+      const response = await fetch(`${BASE_URL}emailRead`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

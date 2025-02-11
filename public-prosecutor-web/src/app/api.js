@@ -77,7 +77,7 @@ export const handleNotifyToPPUser = async (CaseID, PPuserID) => {
 export async function fetchCases(psId) {
   try {
     // Construct the URL with the provided psId
-    const url = `http://localhost:8000/api/showallCasesBypsId?psId=${psId}`;
+    const url = `${BASE_URL}showallCasesBypsId?psId=${psId}`;
     const token = sessionStorage.getItem('token')
     // Perform the fetch operation
     const response = await fetch(url, {

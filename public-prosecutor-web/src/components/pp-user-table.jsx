@@ -1,5 +1,5 @@
 'use client'
-
+import { BASE_URL } from '@/app/constants'; 
 import { useEffect, useState } from 'react'
 import {
   Table,
@@ -39,7 +39,7 @@ export default function PPUserTable() {
   const fetchData = async () => {
     try {
       const token = sessionStorage.getItem('token')
-      const response = await fetch('http://localhost:8000/api/getppuser?EntryuserID=2', {
+      const response = await fetch(`${BASE_URL}getppuser?EntryuserID=2`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -70,7 +70,7 @@ export default function PPUserTable() {
     if (!selectedUser || !newPassword) return
     try {
       const token = sessionStorage.getItem('token')
-      const response = await fetch(`http://localhost:8000/api/changepassword`, {
+      const response = await fetch(`${BASE_URL}changepassword`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
