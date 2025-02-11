@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, ChevronUp, Search, ClipboardPlus, Key } from 'lucide-react'
+import { ChevronDown, ChevronUp, Search, ClipboardPlus, Key, EyeOff, Eye } from 'lucide-react'
 import { CustomAlertDialog } from './custom-alert-dialog'
 import { useAlertDialog } from "@/hooks/useAlertDialog"
 
@@ -33,6 +33,8 @@ export default function PPUserTable() {
   const [newPassword, setNewPassword] = useState("")
   const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = useState(false)
   const itemsPerPage = 10
+
+  const [showPassword, setShowPassword] = useState(false)
 
   const fetchData = async () => {
     try {
@@ -81,7 +83,7 @@ export default function PPUserTable() {
       })
       const result = await response.json()
       if (response.ok) {
-        al
+        openAlert('success', "Password Updated Successfully!");
       } else {
         throw new Error(result.message || 'Failed to reset password')
       }
@@ -174,13 +176,32 @@ export default function PPUserTable() {
           <DialogHeader>
             <DialogTitle>Reset Password for {selectedUser?.pp_name}</DialogTitle>
           </DialogHeader>
+          <div className="flex-1 space-y-2">
+          <div className="relative">
           <Input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Enter new password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             className="mb-4"
           />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            onMouseDown={() => setShowPassword(true)}
+            onMouseUp={() => setShowPassword(false)}
+            onMouseLeave={() => setShowPassword(false)}
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </Button>
+          </div>
+          </div>
           <Button className="w-full" onClick={handleResetPassword}>
             Reset Password
           </Button>

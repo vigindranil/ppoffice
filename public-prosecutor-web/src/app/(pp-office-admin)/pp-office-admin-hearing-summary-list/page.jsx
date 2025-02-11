@@ -2,7 +2,7 @@
 
 
 import React, { useState, useEffect } from 'react'
-import { showHearingSummaryList , getcasetype } from '@/app/api'
+import { showHearingSummaryList, getcasetype } from '@/app/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { ChevronDown, ChevronUp, ClipboardPlus, Download, FileSpreadsheet, Search, Undo2 } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import AddHearingPage from '../add-hearing-summary/page'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const HearingListPage = ({ onBack, caseDetails }) => {
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
@@ -59,20 +60,20 @@ const HearingListPage = ({ onBack, caseDetails }) => {
   }, [caseDetails, caseTypeList])
 
   useEffect(() => {
-      if (user) {
-        showHearingSummaryList(caseDetails.CaseId)
-          .then((result) => {
-            // console.log(result)
-            setAllHearingList(result)
-          })
-          .catch((err) => {
-            setMessage(err?.message || "An unexpected error occurred")
-          })
-          .finally(() => {
-            setIsLoading(false)
-          })
-      }
-    }, [user])
+    if (user && caseDetails?.CaseId) {
+      showHearingSummaryList(caseDetails.CaseId)
+        .then((result) => {
+          console.log("API Response: ", result);
+          setAllHearingList(result || []);
+        })
+        .catch((err) => {
+          // setMessage(err?.message || "An unexpected error occurred");
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [user, caseDetails]); 
 
   const filteredData = allHearingList?.filter((data) =>
     Object?.values(data)?.some((value) =>
@@ -151,33 +152,26 @@ const HearingListPage = ({ onBack, caseDetails }) => {
             </Button>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <p className="text-center">Loading...</p>
-            ) : message ? (
-              <p className="text-red-600 mb-4 text-center">{message}</p>
-            ) : allHearingList.length === 0 ? (
-              <p className="text-center">No hearing summary data available.</p>
-            ) : (
-              <div className="container mx-auto py-10">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      type="text"
-                      placeholder="Search Hearings..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8"
-                    />
-                  </div>
-                  <div>
-                    <span className="mr-2 text-xs">Total number of records: {filteredData.length}</span>
-                  </div>
+            <div className="container mx-auto py-10">
+              <div className="flex justify-between items-center mb-4">
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    type="text"
+                    placeholder="Search Hearings..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8"
+                  />
                 </div>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
+                <div>
+                  <span className="mr-2 text-xs">Total number of records: {filteredData.length}</span>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
                       <TableHead className="font-bold"></TableHead>
                       <TableHead className="font-bold">Case Summary ID</TableHead>
                       <TableHead className="font-bold hidden sm:table-cell">Document</TableHead>
@@ -190,123 +184,149 @@ const HearingListPage = ({ onBack, caseDetails }) => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {currentAllHearingList?.map((head, index) => (
-                        <React.Fragment key={index}>
-                          <TableRow>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="p-0"
-                                onClick={() => toggleRowExpansion(index)}
-                              >
-                                {expandedRows[index] ? (
-                                  <ChevronUp className="h-4 w-4" />
-                                ) : (
-                                  <ChevronDown className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TableCell>
-                            <TableCell>{head.CaseSummaryId}</TableCell>
-                            <TableCell className="hidden sm:table-cell">
-                            {head.Document ? (
-                                <div>
-                                  <a
-                                    href={`http://localhost:8000/uploads/${head.Document.split("\\").pop()}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline"
-                                  >
-                                    View
-                                  </a>
-                                </div>
+                    {isLoading ? (
+                      [...Array(5)].map((_, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-40" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-24" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-32" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-28" />
+                          </TableCell>
+                          <TableCell className="flex space-x-2">
+                            <Skeleton className="bg-slate-300 h-8 w-16" />
+                            <Skeleton className="bg-slate-300 h-8 w-16" />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : currentAllHearingList?.length > 0 ? (
+                      currentAllHearingList?.map((head, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="p-0"
+                              onClick={() => toggleRowExpansion(index)}
+                            >
+                              {expandedRows[index] ? (
+                                <ChevronUp className="h-4 w-4" />
                               ) : (
-                                <div>N/A</div>
+                                <ChevronDown className="h-4 w-4" />
                               )}
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">{head.CaseDescription}</TableCell>
-                            <TableCell className="hidden md:table-cell">{head.CaseRequiredDocument}</TableCell>
-                            <TableCell className="hidden md:table-cell">{head.SPName}</TableCell>
-                            <TableCell className="hidden md:table-cell">{head.PSName}</TableCell>
-                            <TableCell className="hidden lg:table-cell">{formatDate(head.NextHearingDate)}</TableCell>
-                            <TableCell className="hidden lg:table-cell">{head.Remarks}</TableCell>
-                          </TableRow>
-                          {expandedRows[index] && (
-                            <TableRow className="bg-gray-50 lg:hidden">
-                              <TableCell colSpan={10}>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
-                                {head.Document ? (
-                                  <div className="sm:hidden">
-                                    <strong>Document:</strong>
-                                    <a
-                                      href={`http://localhost:8000/uploads/${head.Document.split("\\").pop()}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:underline"
-                                    >
-                                      View
-                                    </a>
-                                  </div>
-                                ) : (
-                                  <div className="sm:hidden"><strong>Document:</strong> N/A</div>
-                                )}
-                                {head.CaseDescription && (
-                                  <div className="md:hidden"><strong>Description:</strong> {head.CaseDescription}</div>
-                                )}
-                                {head.CaseRequiredDocument && (
-                                  <div className="md:hidden"><strong>Required Documents:</strong> {head.CaseRequiredDocument}</div>
-                                )}
-                                {head.SPName && (
-                                  <div className="md:hidden"><strong>SP Name:</strong> {head.SPName}</div>
-                                )}
-                                {head.PSName && (
-                                  <div className="md:hidden"><strong>PS Name:</strong> {head.PSName}</div>
-                                )}
-                                {head.NextHearingDate && (
-                                  <div className="lg:hidden"><strong>Hearing Date:</strong> {formatDate(head.NextHearingDate)}</div>
-                                )}
-                                {head.Remarks && (
-                                  <div className="lg:hidden"><strong>Remarks:</strong> {head.Remarks}</div>
-                                )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                <div className="mt-4">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => paginate(Math.max(1, currentPage - 1))}
-                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-                      {[...Array(totalPages || 0)].map((_, index) => (
-                        <PaginationItem key={index}>
-                          <PaginationLink
-                            onClick={() => paginate(index + 1)}
-                            isActive={currentPage === index + 1}
-                          >
-                            {index + 1}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+                            </Button>
+                          </TableCell>
+                          <TableCell>{head.CaseSummaryId}</TableCell>
+                          <TableCell className="hidden sm:table-cell">
+                            {head.Document ? (
+                              <div>
+                                <a
+                                  href={`http://localhost:8000/uploads/${head.Document.split("\\").pop()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  View
+                                </a>
+                              </div>
+                            ) : (
+                              <div>N/A</div>
+                            )}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">{head.CaseDescription}</TableCell>
+                          <TableCell className="hidden md:table-cell">{head.CaseRequiredDocument}</TableCell>
+                          <TableCell className="hidden md:table-cell">{head.SPName}</TableCell>
+                          <TableCell className="hidden md:table-cell">{head.PSName}</TableCell>
+                          <TableCell className="hidden lg:table-cell">{formatDate(head.NextHearingDate)}</TableCell>
+                          <TableCell className="hidden lg:table-cell">{head.Remarks}</TableCell>
+                        </TableRow>
+                        // {expandedRows[index] && (
+                        //   <TableRow className="bg-gray-50 lg:hidden">
+                        //     <TableCell colSpan={10}>
+                        //       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
+                        //         {head.Document ? (
+                        //           <div className="sm:hidden">
+                        //             <strong>Document:</strong>
+                        //             <a
+                        //               href={`http://localhost:8000/uploads/${head.Document.split("\\").pop()}`}
+                        //               target="_blank"
+                        //               rel="noopener noreferrer"
+                        //               className="text-blue-600 hover:underline"
+                        //             >
+                        //               View
+                        //             </a>
+                        //           </div>
+                        //         ) : (
+                        //           <div className="sm:hidden"><strong>Document:</strong> N/A</div>
+                        //         )}
+                        //         {head.CaseDescription && (
+                        //           <div className="md:hidden"><strong>Description:</strong> {head.CaseDescription}</div>
+                        //         )}
+                        //         {head.CaseRequiredDocument && (
+                        //           <div className="md:hidden"><strong>Required Documents:</strong> {head.CaseRequiredDocument}</div>
+                        //         )}
+                        //         {head.SPName && (
+                        //           <div className="md:hidden"><strong>SP Name:</strong> {head.SPName}</div>
+                        //         )}
+                        //         {head.PSName && (
+                        //           <div className="md:hidden"><strong>PS Name:</strong> {head.PSName}</div>
+                        //         )}
+                        //         {head.NextHearingDate && (
+                        //           <div className="lg:hidden"><strong>Hearing Date:</strong> {formatDate(head.NextHearingDate)}</div>
+                        //         )}
+                        //         {head.Remarks && (
+                        //           <div className="lg:hidden"><strong>Remarks:</strong> {head.Remarks}</div>
+                        //         )}
+                        //       </div>
+                        //     </TableCell>
+                        //   </TableRow>
+                        // )}
+                      ))
+                      ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center">
+                        No hearing summary data available.
+                      </TableCell>
+                    </TableRow>
+                        )}
+                  </TableBody>
+                </Table>
               </div>
-            )}
+              <div className="mt-4">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => paginate(Math.max(1, currentPage - 1))}
+                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                    {[...Array(totalPages || 0)].map((_, index) => (
+                      <PaginationItem key={index}>
+                        <PaginationLink
+                          onClick={() => paginate(index + 1)}
+                          isActive={currentPage === index + 1}
+                        >
+                          {index + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </main>

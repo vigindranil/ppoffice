@@ -12,6 +12,7 @@ import {
   FolderSearch,
   Frame,
   GalleryVerticalEnd,
+  List,
   Map,
   Menu,
   PieChart,
@@ -52,10 +53,6 @@ const data = {
         {
           title: "Dashboard",
           url: "/pp-head-dashboard",
-        },
-        {
-          title: "Public Prosecutor List",
-          url: "/pp-users",
         },
         {
           title: "Assigned Cases",
@@ -254,6 +251,19 @@ const data = {
         {
           title: "Add PP User",
           url: "/add-pp-user",
+        },
+      ],
+    },
+    {
+      title: "Lists",
+      url: "#",
+      icon: List,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Public Prosecutor List",
+          url: "/pp-users",
         },
       ],
     },

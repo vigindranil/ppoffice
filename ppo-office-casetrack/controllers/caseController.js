@@ -406,8 +406,8 @@ class CaseController {
             const casesDetail = results[0]; // The first result set contains the data
 
                 if (!casesDetail || casesDetail.length === 0) {
-                    return res.status(200).json({
-                        status: true,
+                    return res.status(404).json({
+                        success: false,
                         message: "No cases found.",
                     });
                 }

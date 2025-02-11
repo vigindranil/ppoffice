@@ -1,34 +1,25 @@
 "use client";
 import React, { Suspense, useEffect, useState } from "react";
+import AuthorizationWrapper from "@/components/AuthorizationWrapper";
 import Loading from "./loading";
 import AdminSidebarLayout from "@/components/sidebar-layout";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import { useSelector } from "react-redux";
-import AuthorizationWrapper from "@/components/AuthorizationWrapper";
-import { decrypt } from "@/utils/crypto";
 
 const Layout = ({ children }) => {
-  const [user, setUser] = useState("");
-  const token = useSelector((state) => state.auth.token);
-  const userDetails = useSelector((state) => state.auth.user);
-
-  useEffect(() => {
-    if(userDetails)
-      {const decryptedUser = JSON.parse(decrypt(userDetails))
-    setUser(decryptedUser);}
-  }, [userDetails]); 
+  
 
   const breadcrumb = [
     { name: "Office Admin" },
     { href: "/pp-office-admin-dashboard", name: "Dashboard" },
-    { href: "/add-pp-user", name: "Add PP User" },
+    { name: "User List" },
   ];
 
   return (
     <>
-
       <Header />
+
+      {/* Main Content */}
       <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
         <AuthorizationWrapper

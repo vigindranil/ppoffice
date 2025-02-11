@@ -860,7 +860,7 @@ export const showHearingSummaryList = async (caseID) => {
 
       const result = await response.json();
 
-      if (response?.ok && result?.status === 0) {
+      if (response?.ok && result?.success === 0) {
         console.log(result.data)
         resolve(result.data);
       } else {

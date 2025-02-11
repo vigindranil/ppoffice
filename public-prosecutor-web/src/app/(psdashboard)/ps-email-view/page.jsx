@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+
 
 export default function EmailDetailsComponent({ emailDetails }) {
   const [selectedEmail, setSelectedEmail] = useState(null);
