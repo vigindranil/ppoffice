@@ -158,13 +158,13 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
       }
 
       const result = await addHearingSummaryOfficeAdmin(formDataToSend)
-      console.log(result)
+      // console.log(result)
       openAlert("success", result.message || "Hearing Summary added successfully")
       try {
         const res = await handleNotifyHearingPPOfficeAdmin(result?.data?.CaseSummaryID)
-        console.log(res)
+        // console.log(res)
       } catch (err) {
-        console.log(err)
+        // console.log(err)
       }
 
       setFormData({
@@ -183,7 +183,7 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
       })
       onBack()
     } catch (err) {
-      console.log(err)
+      // console.log(err)
       openAlert("error", err?.message || "An unexpected error occurred")
     } finally {
       setIsLoading(false)

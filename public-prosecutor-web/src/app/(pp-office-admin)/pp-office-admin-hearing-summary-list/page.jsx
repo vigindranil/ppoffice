@@ -58,29 +58,11 @@ const HearingListPage = ({ onBack, caseDetails }) => {
     }
   }, [caseDetails, caseTypeList])
 
-  // useEffect(() => {
-  //   if (user && caseDetails) {
-  //     if (user) {
-  //       showHearingSummaryList(caseDetails.CaseId)
-  //         .then((result) => {
-  //           console.log("dfgdrgf",result)
-  //           setAllHearingList(result)
-  //         })
-  //         .catch((err) => {
-  //           setMessage(err?.message || "An unexpected error occurred")
-  //         })
-  //         .finally(() => {
-  //           setIsLoading(false)
-  //         })
-  //     }
-  //   }
-  // }, [user, caseDetails])
-
   useEffect(() => {
       if (user) {
         showHearingSummaryList(caseDetails.CaseId)
           .then((result) => {
-            console.log(result)
+            // console.log(result)
             setAllHearingList(result)
           })
           .catch((err) => {

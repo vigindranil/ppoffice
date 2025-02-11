@@ -52,7 +52,7 @@ export default function DashboardCards() {
       if (user) {
         fetchSuperDashboardCount(user?.AuthorityUserID)
           .then((result) => {
-            console.log(result);
+            // console.log(result);
             setUserCount(result)
           })
           .catch((err) => {

@@ -88,7 +88,7 @@ export default function CaseTable() {
 
   const showallCaseBetweenRange = async (ps_id) => {
     try {
-      console.log(ps_id)
+      // console.log(ps_id)
       const token = sessionStorage.getItem('token');
       const response = await fetch(`http://localhost:8000/api/showallCasesBypsId?psId=${ps_id}`, {
         headers: {
@@ -100,7 +100,7 @@ export default function CaseTable() {
       }
       const result = await response.json()
       if (result.status === 0) {
-        console.log(result);
+        // console.log(result);
         
         setAllCases(result.data)
       } else {

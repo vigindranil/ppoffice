@@ -104,7 +104,7 @@ const Page = () => {
     setIsLoading(true)
     addPPHead(formData)
       .then(async (result) => {
-        console.log(result)
+        // console.log(result)
         openAlert('success', `Head User Added Successfully!
             Username: ${formData.Username}
             Password: ${formData.UserPassword}`);
@@ -120,7 +120,7 @@ const Page = () => {
 
       })
       .catch((err) => {
-        console.log(err)
+        // console.log(err)
         openAlert('error', err || "An unexpected error occurred")
         setError(err || "An unexpected error occurred");
       })

@@ -51,35 +51,43 @@ export default function CaseTable() {
 
   const handleAssignCasetoPPUser = async () => {
     try {
-      setAssignCaseLoading(true)
-      const token = sessionStorage.getItem('token')
-      const response = await fetch('http://localhost:8000/api/assigncase', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        method: 'POST',
-        body: JSON.stringify({
-          "PPUserID": selectedPPUser,
-          "EntryUserID": user?.AuthorityUserID,
-          "CaseID": selectedCase?.CaseId
-        }),
+        setAssignCaseLoading(true);
+        const token = sessionStorage.getItem('token');
+        const response = await fetch('http://localhost:8000/api/assigncase', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            method: 'POST',
+            body: JSON.stringify({
+                "PPUserID": selectedPPUser,
+                "EntryUserID": user?.AuthorityUserID,
+                "CaseID": selectedCase?.CaseId
+            }),
+        });
 
-      })
-      if (!response.ok) {
-        throw new Error('Failed to assign case')
-      }
-      const result = await response.json()
-      if (result.status === 0) {
-        await handleNotifyToPPUser(selectedCase?.CaseId, selectedPPUser);
-        openAlert('success', 'PP User has been assigned to Case and email sent successfully')
-      } else {
-        throw new Error(result.message)
-      }
+        if (!response.ok) {
+            throw new Error('Failed to assign case');
+        }
+
+        const result = await response.json();
+
+        if (result.status === 0) {
+            const emailResult = await handleNotifyToPPUser(selectedCase?.CaseId, selectedPPUser);
+
+            const { PPUserName, DistrictName, PoliceStationName } = emailResult.data;
+
+            openAlert(
+                'success',
+                `${PPUserName} has been assigned to Case and email sent successfully to ${DistrictName}, ${PoliceStationName} PS`
+            );
+        } else {
+            throw new Error(result.message);
+        }
     } catch (err) {
-      openAlert('error', err?.message)
+        openAlert('error', err?.message);
     } finally {
-      setAssignCaseLoading(false)
+        setAssignCaseLoading(false);
     }
   }
 

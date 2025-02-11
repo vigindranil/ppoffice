@@ -65,7 +65,7 @@ export const handleNotifyToPPUser = async (CaseID, PPuserID) => {
     }
     const result = await response.json()
     if (result.status === 0) {
-      resolve(result.message);
+      resolve(result);
       console.log('Sent email:', result.message);
     } else {
       reject(result.message);

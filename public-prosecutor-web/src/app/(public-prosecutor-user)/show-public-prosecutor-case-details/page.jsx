@@ -32,7 +32,7 @@ const PPAllCaseList = () => {
     if (user) {
       showCaseDetailsUser(user?.AuthorityUserID)
         .then((result) => {
-          console.log(result);
+          // console.log(result);
           setAllCaseList(result);
         })
         .catch((err) => {

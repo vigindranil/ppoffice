@@ -49,7 +49,7 @@ export function NavUser() {
   }, [encryptedUser]);
 
   const handleLogout = async () => {
-    router.push('/login');
+    router.push('/logout');
   };
 
   return (
@@ -108,4 +108,3 @@ export function NavUser() {
     </SidebarMenu>
   );
 }
-

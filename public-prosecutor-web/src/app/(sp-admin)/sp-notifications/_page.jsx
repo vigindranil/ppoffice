@@ -70,7 +70,7 @@ export default function ProfilePage() {
       if (response.ok) {
         loadEmailDetails(user?.AuthorityTypeID, user?.BoundaryID)
       } else {
-        console.log(data.message)
+        // console.log(data.message)
       }
     } catch (err) {
       setError("An error occurred")

@@ -44,7 +44,7 @@ export default function LoginPage() {
         localStorage.setItem('authToken', response.data.access_token);
         dispatch(setToken(userData?.access_token));
         dispatch(setUser(JSON.stringify(userData?.data[0])));
-        console.log((userData?.data[0].AuthorityTypeID));
+        // console.log((userData?.data[0].AuthorityTypeID));
         
 
         switch (parseInt(userData?.data[0].AuthorityTypeID)) {
@@ -67,7 +67,7 @@ export default function LoginPage() {
             router.push("/super-admin-dashboard");
             break;
           default:
-            console.log("Unknown AuthorityTypeID:", userData.AuthorityTypeID);
+            // console.log("Unknown AuthorityTypeID:", userData.AuthorityTypeID);
             router.push("/login");
         }
       } else {

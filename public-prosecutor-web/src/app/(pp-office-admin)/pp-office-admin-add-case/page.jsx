@@ -193,49 +193,6 @@ const AddCasePage = () => {
     }
   }
 
-  // const handleAddCase = () => {
-  //   setIsLoading(true)
-  //   createCaseOfficeAdmin(formData)
-  //     .then(async(result) => {
-  //         console.log(result)
-  //         openAlert('success', result.message || "success")
-  //         try{
-  //           const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID)
-  //           console.log(res);
-  //         }catch(err){
-  //           console.log(err);
-            
-  //         }
-
-          
-  //         setFormData({
-  //           CaseNumber: '',
-  //           EntryUserID: '',
-  //           CaseDate: '',
-  //           DistrictID: '',
-  //           psID: '',
-  //           caseTypeID: '',
-  //           ref: '',
-  //           ipcAct: '',
-  //           hearingDate: '',
-  //           sendTo: '',
-  //           copyTo: '',
-  //           photocopycaseDiaryExist: '0',
-  //           caseDocument: null,
-  //         })
-        
-  //     })
-  //     .catch((err) => {
-  //       console.log(err)
-  //       openAlert('error', err || "An unexpected error occurred")
-  //       setError(err || "An unexpected error occurred");
-  //     })
-  //     .finally(() => {
-  //       setIsLoading(false);
-  //     });
-  // }
-
-
   const handleAddCase = async () => {
     setIsLoading(true);
     try {
@@ -251,13 +208,13 @@ const AddCasePage = () => {
       }
 
       const result = await createCaseOfficeAdmin(formDataToSend);
-      console.log(result);
+      // console.log(result);
       openAlert('success', result.message || "Case added successfully");
       try {
         const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID);
-        console.log(res);
+        // console.log(res);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
 
       setFormData({
@@ -276,7 +233,7 @@ const AddCasePage = () => {
         caseDocument: null,
       });
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       openAlert('error', err?.message || "An unexpected error occurred");
     } finally {
       setIsLoading(false);
