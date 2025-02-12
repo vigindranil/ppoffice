@@ -1,6 +1,6 @@
 "use client"
 
-
+import { PORT_URL } from '@/app/constants'; 
 import React, { useState, useEffect } from 'react'
 import { showHearingSummaryList, getcasetype } from '@/app/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -188,26 +188,41 @@ const HearingListPage = ({ onBack, caseDetails }) => {
                       [...Array(5)].map((_, index) => (
                         <TableRow key={index}>
                           <TableCell>
-                            <Skeleton className="bg-slate-300 h-4 w-40" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="bg-slate-300 h-4 w-24" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="bg-slate-300 h-4 w-32" />
+                            <Skeleton className="bg-slate-300 h-4 w-8" />
                           </TableCell>
                           <TableCell>
                             <Skeleton className="bg-slate-300 h-4 w-28" />
                           </TableCell>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-24" />
+                          </TableCell>
                           <TableCell className="flex space-x-2">
                             <Skeleton className="bg-slate-300 h-8 w-16" />
-                            <Skeleton className="bg-slate-300 h-8 w-16" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-20" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-20" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-20" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-20" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-20" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="bg-slate-300 h-4 w-20" />
                           </TableCell>
                         </TableRow>
                       ))
                     ) : currentAllHearingList?.length > 0 ? (
                       currentAllHearingList?.map((head, index) => (
-                        <TableRow key={index}>
+                        <React.Fragment key={index}>
+                        <TableRow>
                           <TableCell>
                             <Button
                               variant="ghost"
@@ -227,7 +242,7 @@ const HearingListPage = ({ onBack, caseDetails }) => {
                             {head.Document ? (
                               <div>
                                 <a
-                                  href={`http://localhost:8000/uploads/${head.Document.split("\\").pop()}`}
+                                  href={`${PORT_URL}uploads/${head.Document.split("\\").pop()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-blue-600 hover:underline"
@@ -246,47 +261,49 @@ const HearingListPage = ({ onBack, caseDetails }) => {
                           <TableCell className="hidden lg:table-cell">{formatDate(head.NextHearingDate)}</TableCell>
                           <TableCell className="hidden lg:table-cell">{head.Remarks}</TableCell>
                         </TableRow>
-                        // {expandedRows[index] && (
-                        //   <TableRow className="bg-gray-50 lg:hidden">
-                        //     <TableCell colSpan={10}>
-                        //       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
-                        //         {head.Document ? (
-                        //           <div className="sm:hidden">
-                        //             <strong>Document:</strong>
-                        //             <a
-                        //               href={`http://localhost:8000/uploads/${head.Document.split("\\").pop()}`}
-                        //               target="_blank"
-                        //               rel="noopener noreferrer"
-                        //               className="text-blue-600 hover:underline"
-                        //             >
-                        //               View
-                        //             </a>
-                        //           </div>
-                        //         ) : (
-                        //           <div className="sm:hidden"><strong>Document:</strong> N/A</div>
-                        //         )}
-                        //         {head.CaseDescription && (
-                        //           <div className="md:hidden"><strong>Description:</strong> {head.CaseDescription}</div>
-                        //         )}
-                        //         {head.CaseRequiredDocument && (
-                        //           <div className="md:hidden"><strong>Required Documents:</strong> {head.CaseRequiredDocument}</div>
-                        //         )}
-                        //         {head.SPName && (
-                        //           <div className="md:hidden"><strong>SP Name:</strong> {head.SPName}</div>
-                        //         )}
-                        //         {head.PSName && (
-                        //           <div className="md:hidden"><strong>PS Name:</strong> {head.PSName}</div>
-                        //         )}
-                        //         {head.NextHearingDate && (
-                        //           <div className="lg:hidden"><strong>Hearing Date:</strong> {formatDate(head.NextHearingDate)}</div>
-                        //         )}
-                        //         {head.Remarks && (
-                        //           <div className="lg:hidden"><strong>Remarks:</strong> {head.Remarks}</div>
-                        //         )}
-                        //       </div>
-                        //     </TableCell>
-                        //   </TableRow>
-                        // )}
+                        {expandedRows[index] && (
+                          <TableRow className="bg-gray-50 lg:hidden">
+                            <TableCell colSpan={10}>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
+                                {head.Document ? (
+                                  <div className="sm:hidden">
+                                    <strong>Document:</strong>
+                                    <a
+                                      href={`${PORT_URL}uploads/${head.Document.split("\\").pop()}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline"
+                                    >
+                                      View
+                                    </a>
+                                  </div>
+                                ) : (
+                                  <div className="sm:hidden"><strong>Document:</strong> N/A</div>
+                                )}
+                                {head.CaseDescription && (
+                                  <div className="md:hidden"><strong>Description:</strong> {head.CaseDescription}</div>
+                                )}
+                                {head.CaseRequiredDocument && (
+                                  <div className="md:hidden"><strong>Required Documents:</strong> {head.CaseRequiredDocument}</div>
+                                )}
+                                {head.SPName && (
+                                  <div className="md:hidden"><strong>SP Name:</strong> {head.SPName}</div>
+                                )}
+                                {head.PSName && (
+                                  <div className="md:hidden"><strong>PS Name:</strong> {head.PSName}</div>
+                                )}
+                                {head.NextHearingDate && (
+                                  <div className="lg:hidden"><strong>Hearing Date:</strong> {formatDate(head.NextHearingDate)}</div>
+                                )}
+                                {head.Remarks && (
+                                  <div className="lg:hidden"><strong>Remarks:</strong> {head.Remarks}</div>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      
+                      </React.Fragment>
                       ))
                       ) : (
                     <TableRow>

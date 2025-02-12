@@ -1,5 +1,5 @@
 'use client'
-
+import { PORT_URL } from '@/app/constants'; 
 import React, { useState, useEffect } from 'react'
 import { showallCase } from '@/app/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -128,7 +128,7 @@ const PPAllCaseList = () => {
                         <TableCell>{head.BeginReferenceName}</TableCell>
                         <TableCell>
                           {head.Document && (
-                            <a href={`http://localhost:8000/${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            <a href={`${PORT_URL}${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                               View Document
                             </a>
                           )}
