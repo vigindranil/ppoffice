@@ -1,58 +1,78 @@
-'use client'
-import { PORT_URL } from '@/app/constants';
-import React, { useState, useEffect } from 'react'
-import { showallCase } from '@/app/api'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { Button } from "@/components/ui/button"
-import { CustomAlertDialog } from "@/components/custom-alert-dialog"
-import { useAlertDialog } from "@/hooks/useAlertDialog"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useDispatch, useSelector } from 'react-redux'
-import { decrypt } from '@/utils/crypto'
-import { Input } from '@/components/ui/input'
-import { ChevronDown, ChevronUp, ClipboardPlus, Download, Eye, FileSpreadsheet, Search } from 'lucide-react'
-import * as XLSX from 'xlsx'
-import AddHearingPage from '../add-hearing-summary/page'
-import HearingListPage from '../pp-office-admin-hearing-summary-list/page'
-import { Skeleton } from '@/components/ui/skeleton';
+"use client";
+import { PORT_URL } from "@/app/constants";
+import React, { useState, useEffect } from "react";
+import { showallCase } from "@/app/api";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { CustomAlertDialog } from "@/components/custom-alert-dialog";
+import { useAlertDialog } from "@/hooks/useAlertDialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDispatch, useSelector } from "react-redux";
+import { decrypt } from "@/utils/crypto";
+import { Input } from "@/components/ui/input";
+import { ClipboardPlus, Eye, FileSpreadsheet, Search } from "lucide-react";
+import * as XLSX from "xlsx";
+import AddHearingPage from "../add-hearing-summary/page";
+import HearingListPage from "../pp-office-admin-hearing-summary-list/page";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const PPAllCaseList = () => {
-  const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
-  const [allCaseList, setAllCaseList] = useState([])
-  const [message, setMessage] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [expandedRows, setExpandedRows] = useState({})
-  const itemsPerPage = 10
-  const dispatch = useDispatch()
-  const encryptedUser = useSelector((state) => state.auth.user)
-  const [user, setUser] = useState("")
+  const { isOpen, alertType, alertMessage, closeAlert } = useAlertDialog();
+  const [allCaseList, setAllCaseList] = useState([]);
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const dispatch = useDispatch();
+  const encryptedUser = useSelector((state) => state.auth.user);
+  const [user, setUser] = useState("");
   const [caseDetails, setCaseDetails] = useState(null);
-  const [showAddHearingSummary, setShowAddHearingSummary] = useState(false)
-  const [showHearingSummaryList, setShowHearingSummaryList] = useState(false)
+  const [showAddHearingSummary, setShowAddHearingSummary] = useState(false);
+  const [showHearingSummaryList, setShowHearingSummaryList] = useState(false);
 
   useEffect(() => {
-    const decoded_user = JSON.parse(decrypt(encryptedUser))
-    setUser(decoded_user)
-  }, [encryptedUser])
+    const decoded_user = JSON.parse(decrypt(encryptedUser));
+    setUser(decoded_user);
+  }, [encryptedUser]);
 
   useEffect(() => {
     if (user) {
       showallCase(1)
         .then((result) => {
-          // console.log(result)
-          setAllCaseList(result)
+          setAllCaseList(result);
         })
         .catch((err) => {
-          setMessage(err?.message || "An unexpected error occurred")
+          setMessage(err?.message || "An unexpected error occurred");
         })
         .finally(() => {
-          setIsLoading(false)
-        })
+          setIsLoading(false);
+        });
     }
-  }, [user])
+  }, [user]);
 
   const handleReset = () => {
     setIsLoading(false);
@@ -62,33 +82,28 @@ const PPAllCaseList = () => {
   };
 
   const filteredData = allCaseList?.filter((data) =>
-    Object?.values(data)?.some((value) =>
+    Object.values(data).some((value) =>
       value?.toString()?.toLowerCase()?.includes(searchTerm?.toLowerCase())
     )
-  )
+  );
 
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentAllCaseList = filteredData?.slice(indexOfFirstItem, indexOfLastItem)
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentAllCaseList = filteredData?.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
 
-  const totalPages = Math.ceil(filteredData?.length / itemsPerPage)
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber)
+  const totalPages = Math.ceil(filteredData?.length / itemsPerPage);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
-  const toggleRowExpansion = (index) => {
-    setExpandedRows(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }))
-  }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   const addHearingSummary = (head) => {
     setCaseDetails({
@@ -97,9 +112,9 @@ const PPAllCaseList = () => {
       CaseId: head.CaseId,
       caseTypeID: head.caseTypeID,
       CaseNumber: head.CaseNumber,
-    })
-    setShowAddHearingSummary(true)
-  }
+    });
+    setShowAddHearingSummary(true);
+  };
 
   const viewHearingSummary = (head) => {
     setCaseDetails({
@@ -108,20 +123,19 @@ const PPAllCaseList = () => {
       CaseId: head.CaseId,
       caseTypeID: head.caseTypeID,
       CaseNumber: head.CaseNumber,
-    })
-    setShowHearingSummaryList(true)
-  }
+    });
+    setShowHearingSummaryList(true);
+  };
 
   const downloadExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredData)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Cases")
+    const worksheet = XLSX.utils.json_to_sheet(filteredData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Cases");
     const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split('T')[0];
+    const formattedDate = currentDate.toISOString().split("T")[0];
     const fileName = `assigned_case_list_${formattedDate}.xlsx`;
-
     XLSX.writeFile(workbook, fileName);
-  }
+  };
 
   if (showAddHearingSummary) {
     return <AddHearingPage onBack={handleReset} caseDetails={caseDetails} />;
@@ -132,8 +146,8 @@ const PPAllCaseList = () => {
   }
 
   const handleConfirm = () => {
-    closeAlert()
-  }
+    closeAlert();
+  };
 
   return (
     <div className="relative min-h-screen w-full">
@@ -169,24 +183,46 @@ const PPAllCaseList = () => {
                   />
                 </div>
                 <div>
-                  <span className="mr-2 text-xs">Total number of records: {filteredData.length}</span>
+                  <span className="mr-2 text-xs">
+                    Total number of records: {filteredData.length}
+                  </span>
                 </div>
               </div>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="font-bold"></TableHead>
                       <TableHead className="font-bold">Case Number</TableHead>
-                      <TableHead className="font-bold hidden sm:table-cell">Document</TableHead>
-                      <TableHead className="font-bold hidden md:table-cell">Hearing Summary</TableHead>
-                      <TableHead className="font-bold hidden md:table-cell">Jurisdiction</TableHead>
-                      <TableHead className="font-bold hidden md:table-cell">Police Station</TableHead>
-                      <TableHead className="font-bold hidden md:table-cell">Case Date</TableHead>
-                      <TableHead className="font-bold hidden lg:table-cell">Case Type</TableHead>
-                      <TableHead className="font-bold hidden lg:table-cell">Case Hearing Date</TableHead>
-                      <TableHead className="font-bold hidden lg:table-cell">IPC Section</TableHead>
-                      <TableHead className="font-bold hidden lg:table-cell">Reference</TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        Document
+                      </TableHead>
+                      <TableHead className=" hidden md:table-cellfont-bold">
+                        Hearing Summary
+                      </TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        Jurisdiction
+                      </TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        Police Station
+                      </TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        Case Date
+                      </TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        Case Type
+                      </TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        Case Hearing Date
+                      </TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        IPC Section
+                      </TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        Reference
+                      </TableHead>
+                      <TableHead className="font-bold md:hidden">
+                        Details
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -194,153 +230,148 @@ const PPAllCaseList = () => {
                       [...Array(5)].map((_, index) => (
                         <TableRow key={index}>
                           <TableCell>
-                            <Skeleton className="bg-slate-300 h-4 w-8" />
-                          </TableCell>
-                          <TableCell>
                             <Skeleton className="bg-slate-300 h-4 w-28" />
                           </TableCell>
                           <TableCell>
                             <Skeleton className="bg-slate-300 h-4 w-24" />
                           </TableCell>
-                          <TableCell className="flex space-x-2">
-                            <Skeleton className="bg-slate-300 h-8 w-16" />
-                          </TableCell>
                           <TableCell>
+                            <Skeleton className="bg-slate-300 h-8 w-32" />
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
                             <Skeleton className="bg-slate-300 h-4 w-20" />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden md:table-cell">
                             <Skeleton className="bg-slate-300 h-4 w-20" />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden md:table-cell">
                             <Skeleton className="bg-slate-300 h-4 w-20" />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden md:table-cell">
                             <Skeleton className="bg-slate-300 h-4 w-20" />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden md:table-cell">
                             <Skeleton className="bg-slate-300 h-4 w-20" />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden md:table-cell">
                             <Skeleton className="bg-slate-300 h-4 w-20" />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            <Skeleton className="bg-slate-300 h-4 w-20" />
+                          </TableCell>
+                          <TableCell className="md:hidden">
                             <Skeleton className="bg-slate-300 h-4 w-20" />
                           </TableCell>
                         </TableRow>
                       ))
                     ) : currentAllCaseList?.length > 0 ? (
-                       currentAllCaseList?.map((head, index) => (
-                        <React.Fragment key={index}>
-                          <TableRow>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="p-0"
-                                onClick={() => toggleRowExpansion(index)}
+                      currentAllCaseList.map((head, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{head.CaseNumber}</TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {head.Document ? (
+                              <a
+                                href={`${PORT_URL}${head.Document}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
                               >
-                                {expandedRows[index] ? (
-                                  <ChevronUp className="h-4 w-4" />
-                                ) : (
-                                  <ChevronDown className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TableCell>
-                            <TableCell>{head.CaseNumber}</TableCell>
-                            <TableCell className="hidden sm:table-cell">
-                              {head.Document ? (
-                                <div>
-                                  <a
-                                    href={`${PORT_URL}${head.Document}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline ml-1"
-                                  >
-                                    View
-                                  </a>
-                                </div>
-                              ) : (
-                                <div>N/A</div>
-                              )}
-                            </TableCell>
-                            <TableCell className="md:flex hidden gap-2 mt-4">
-                              <Button onClick={() => addHearingSummary(head)} className="max-w-min">
-                                <ClipboardPlus className="h-4 w-4" />
-                                Add
-                              </Button>
-                              <Button onClick={() => viewHearingSummary(head)} className="max-w-min">
-                                <Eye className="h-4 w-4" />
                                 View
-                              </Button>
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">{head.SpName}</TableCell>
-                            <TableCell className="hidden md:table-cell">{head.PsName}</TableCell>
-                            <TableCell className="hidden md:table-cell">{formatDate(head.CaseDate)}</TableCell>
-                            <TableCell className="hidden lg:table-cell">{head.CaseType}</TableCell>
-                            <TableCell className="hidden lg:table-cell">{formatDate(head.CaseHearingDate)}</TableCell>
-                            <TableCell className="hidden lg:table-cell">{head.IPCSection}</TableCell>
-                            <TableCell className="hidden lg:table-cell">{head.BeginReferenceName}</TableCell>
-                          </TableRow>
-                          {expandedRows[index] && (
-                            <TableRow className="bg-gray-50 lg:hidden">
-                              <TableCell colSpan={10}>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
-                                  {head.Document ? (
-                                    <div className="sm:hidden">
-                                      <strong>Document:</strong>
+                              </a>
+                            ) : (
+                              "N/A"
+                            )}
+                          </TableCell>
+                          <TableCell className="flex hidden md:table-cell gap-2">
+                            <Button onClick={() => addHearingSummary(head)}>
+                              <ClipboardPlus className="h-4 w-4" />
+                              Add
+                            </Button>
+                            <Button onClick={() => viewHearingSummary(head)}>
+                              <Eye className="h-4 w-4" />
+                              View
+                            </Button>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {head.SpName}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {head.PsName}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {formatDate(head.CaseDate)}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {head.CaseType}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {formatDate(head.CaseHearingDate)}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {head.IPCSection}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {head.BeginReferenceName}
+                          </TableCell>
+                          <TableCell className="md:hidden">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  View
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Case Details</DialogTitle>
+                                  <DialogDescription className="text-left">
+                                    Jurisdiction: {head.SpName} <br />
+                                    Police Station: {head.PsName} <br />
+                                    Case Date: {formatDate(head.CaseDate)}{" "}
+                                    <br />
+                                    Case Type: {head.CaseType} <br />
+                                    Case Hearing Date:{" "}
+                                    {formatDate(head.CaseHearingDate)} <br />
+                                    IPC Section: {head.IPCSection} <br />
+                                    Reference: {head.BeginReferenceName} <br />
+                                    Document:{" "}
+                                    {head.Document ? (
                                       <a
                                         href={`${PORT_URL}${head.Document}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-blue-600 hover:underline ml-1"
+                                        className="text-blue-600 hover:underline"
                                       >
-                                        View
+                                        View Document
                                       </a>
-                                    </div>
-                                  ) : (
-                                    <div className="sm:hidden"><strong>Document:</strong> N/A</div>
-                                  )}
-                                  {
-                                    <div className="md:hidden flex items-center gap-2">
-                                      <strong>Hearing Summary:</strong>
-                                      <Button onClick={() => addHearingSummary(head)} className="flex items-center max-w-min">
-                                        <ClipboardPlus className="h-4 w-4" />
-                                      </Button>
-                                      <Button onClick={() => viewHearingSummary(head)} className="flex items-center max-w-min">
-                                        <Eye className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  }
-                                  {head.SpName && (
-                                    <div className="md:hidden"><strong>Jurisdiction:</strong> {head.SpName}</div>
-                                  )}
-                                  {head.PsName && (
-                                    <div className="md:hidden"><strong>Police Station:</strong> {head.PsName}</div>
-                                  )}
-                                  {head.CaseDate && (
-                                    <div className="lg:hidden"><strong>Case Date:</strong> {formatDate(head.CaseDate)}</div>
-                                  )}
-                                  {head.CaseType && (
-                                    <div className="lg:hidden"><strong>Case Type:</strong> {head.CaseType}</div>
-                                  )}
-                                  {head.CaseHearingDate && (
-                                    <div className="lg:hidden"><strong>Case Hearing Date:</strong> {formatDate(head.CaseHearingDate)}</div>
-                                  )}
-                                  {head.IPCSection && (
-                                    <div className="lg:hidden"><strong>IPC Section:</strong> {head.IPCSection}</div>
-                                  )}
-                                  {head.BeginReferenceName && (
-                                    <div className="lg:hidden"><strong>Reference:</strong> {head.BeginReferenceName}</div>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </React.Fragment>
+                                    ) : (
+                                      "N/A"
+                                    )}
+                                    <br />
+                                    Hearing Summary: <br />
+                                    <Button
+                                      onClick={() => addHearingSummary(head)}
+                                      className="inline-flex items-center gap-1"
+                                    >
+                                      <ClipboardPlus className="h-4 w-4" />
+                                      Add
+                                    </Button>
+                                    <Button
+                                      onClick={() => viewHearingSummary(head)}
+                                      className="inline-flex items-center gap-1 ml-2"
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                      View
+                                    </Button>
+                                  </DialogDescription>
+                                </DialogHeader>
+                              </DialogContent>
+                            </Dialog>
+                          </TableCell>
+                        </TableRow>
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center">
+                        <TableCell colSpan={11} className="text-center">
                           No Assigned Cases available.
                         </TableCell>
                       </TableRow>
@@ -354,7 +385,11 @@ const PPAllCaseList = () => {
                     <PaginationItem>
                       <PaginationPrevious
                         onClick={() => paginate(Math.max(1, currentPage - 1))}
-                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                        className={
+                          currentPage === 1
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                        }
                       />
                     </PaginationItem>
                     {[...Array(totalPages || 0)].map((_, index) => (
@@ -369,8 +404,14 @@ const PPAllCaseList = () => {
                     ))}
                     <PaginationItem>
                       <PaginationNext
-                        onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                        onClick={() =>
+                          paginate(Math.min(totalPages, currentPage + 1))
+                        }
+                        className={
+                          currentPage === totalPages
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                        }
                       />
                     </PaginationItem>
                   </PaginationContent>
@@ -381,8 +422,7 @@ const PPAllCaseList = () => {
         </Card>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default PPAllCaseList
-
+export default PPAllCaseList;
