@@ -1,5 +1,5 @@
 'use client'
-
+import { BASE_URL } from '@/app/constants'; 
 import { useEffect, useState } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -57,7 +57,7 @@ export default function CaseTable() {
     try {
       setLoading(true)
       const token = sessionStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/showallCaseBetweenRange', {
+      const response = await fetch(`${BASE_URL}showallCaseBetweenRange`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

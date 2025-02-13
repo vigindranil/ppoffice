@@ -1,5 +1,5 @@
 'use client'
-
+import { BASE_URL } from '@/app/constants'; 
 import { useEffect, useState } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -53,7 +53,7 @@ export default function CaseTable({ps}) {
     try {
       setAssignCaseLoading(true)
       const token = sessionStorage.getItem('token')
-      const response = await fetch('http://localhost:8000/api/assigncase', {
+      const response = await fetch(`${BASE_URL}assigncase`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -95,7 +95,7 @@ export default function CaseTable({ps}) {
     try {
       // console.log(ps_id)
       const token = sessionStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/showallCasesBypsId?psId=${ps_id}`, {
+      const response = await fetch(`${BASE_URL}showallCasesBypsId?psId=${ps_id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         },

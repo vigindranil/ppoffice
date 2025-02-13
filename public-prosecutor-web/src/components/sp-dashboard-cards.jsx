@@ -18,7 +18,7 @@
 //   const fetchPsDetails = async () => {
 //     try {
 //       const token = sessionStorage.getItem('token')
-//       const response = await fetch(`http://localhost:8000/api/count-by-ps?districtId=${user?.BoundaryID}`, {
+//       const response = await fetch(`${BASE_URL}count-by-ps?districtId=${user?.BoundaryID}`, {
 //         headers: {
 //           'Authorization': `Bearer ${token}`
 //         }
@@ -83,7 +83,7 @@
 
 
 'use client'
-
+import { BASE_URL } from '@/app/constants'; 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -119,7 +119,7 @@ export default function DashboardCards() {
   const fetchPsDetails = async () => {
     try {
       const token = sessionStorage.getItem('token')
-      const response = await fetch(`http://localhost:8000/api/count-by-ps?districtId=${user?.BoundaryID}`, {
+      const response = await fetch(`${BASE_URL}count-by-ps?districtId=${user?.BoundaryID}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

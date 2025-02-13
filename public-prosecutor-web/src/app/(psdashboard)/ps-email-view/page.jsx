@@ -1,4 +1,5 @@
 "use client";
+import { BASE_URL } from '@/app/constants'; 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -23,7 +24,7 @@ export default function EmailDetailsComponent({ emailDetails }) {
 
     try {
         const token = sessionStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/emailRead', {
+      const response = await fetch(`${BASE_URL}emailRead`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
