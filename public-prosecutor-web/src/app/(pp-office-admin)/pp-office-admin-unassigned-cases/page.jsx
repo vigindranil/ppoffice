@@ -1,27 +1,51 @@
-'use client'
-import { PORT_URL } from '@/app/constants'; 
-import React, { useState, useEffect } from 'react'
-import { showallCase } from '@/app/api'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { ClipboardPlus, LoaderCircle, Search } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useDispatch, useSelector } from 'react-redux'
-import { decrypt } from '@/utils/crypto'
-import { Input } from '@/components/ui/input'
+"use client";
+import { PORT_URL } from "@/app/constants";
+import React, { useState, useEffect } from "react";
+import { showallCase } from "@/app/api";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { ClipboardPlus, LoaderCircle, Search } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDispatch, useSelector } from "react-redux";
+import { decrypt } from "@/utils/crypto";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 const PPAllCaseList = () => {
-  const [allCaseList, setAllCaseList] = useState([])
-  const [message, setMessage] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
-  const dispatch = useDispatch()
-  const encryptedUser = useSelector((state) => state.auth.user)
-  const token = useSelector((state) => state.auth.token)
+  const [allCaseList, setAllCaseList] = useState([]);
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const dispatch = useDispatch();
+  const encryptedUser = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
   const [user, setUser] = useState("");
-
 
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(encryptedUser));
@@ -40,39 +64,38 @@ const PPAllCaseList = () => {
         })
         .finally(() => {
           setIsLoading(false);
-        })
-
+        });
     }
-  }, [user])
+  }, [user]);
 
   const filteredData = allCaseList?.filter((data) =>
     Object?.values(data)?.some((value) =>
       value?.toString()?.toLowerCase()?.includes(searchTerm?.toLowerCase())
     )
-  )
+  );
 
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentAllCaseList = filteredData?.slice(indexOfFirstItem, indexOfLastItem)
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentAllCaseList = filteredData?.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
 
-  const totalPages = Math.ceil(filteredData?.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredData?.length / itemsPerPage);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber)
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   return (
     <div className="relative min-h-screen w-full">
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]"
-      />
+      <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
@@ -81,7 +104,66 @@ const PPAllCaseList = () => {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-center">Loading...</p>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="font-bold">Case Number</TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        Jurisdiction
+                      </TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        Police Station
+                      </TableHead>
+                      <TableHead className="font-bold">Case Date</TableHead>
+                      <TableHead className="font-bold">Case Type</TableHead>
+                      <TableHead className="font-bold">
+                        Case Hearing Date
+                      </TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        IPC Section
+                      </TableHead>
+                      <TableHead className="font-bold hidden md:table-cell">
+                        Reference
+                      </TableHead>
+                      <TableHead className="font-bold">Document</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {[...Array(5)].map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Skeleton className="bg-slate-300 h-4 w-28" />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Skeleton className="bg-slate-300 h-4 w-24" />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Skeleton className="bg-slate-300 h-4 w-24" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="bg-slate-300 h-4 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="bg-slate-300 h-4 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="bg-slate-300 h-4 w-20" />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Skeleton className="bg-slate-300 h-4 w-20" />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Skeleton className="bg-slate-300 h-4 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="bg-slate-300 h-4 w-20" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             ) : message ? (
               <p className="text-red-600 mb-4 text-center">{message}</p>
             ) : (
@@ -98,52 +180,165 @@ const PPAllCaseList = () => {
                     />
                   </div>
                   <div>
-                    <span className="mr-2 text-xs">Total number of records: {filteredData.length}</span>
+                    <span className="mr-2 text-xs">
+                      Total number of records: {filteredData.length}
+                    </span>
                   </div>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="font-bold">Case Number</TableHead>
-                      <TableHead className="font-bold">Jurisdiction</TableHead>
-                      <TableHead className="font-bold">Police Station</TableHead>
-                      <TableHead className="font-bold">Case Date</TableHead>
-                      <TableHead className="font-bold">Case Type</TableHead>
-                      <TableHead className="font-bold">Case Hearing Date</TableHead>
-                      <TableHead className="font-bold">IPC Section</TableHead>
-                      <TableHead className="font-bold">Reference</TableHead>
-                      <TableHead className="font-bold">Document</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {currentAllCaseList?.map((head, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{head.CaseNumber}</TableCell>
-                        <TableCell>{head.SpName}</TableCell>
-                        <TableCell>{head.PsName}</TableCell>
-                        <TableCell>{formatDate(head.CaseDate)}</TableCell>
-                        <TableCell>{head.CaseType}</TableCell>
-                        <TableCell>{formatDate(head.CaseHearingDate)}</TableCell>
-                        <TableCell>{head.IPCSection}</TableCell>
-                        <TableCell>{head.BeginReferenceName}</TableCell>
-                        <TableCell>
-                          {head.Document && (
-                            <a href={`${PORT_URL}${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              View Document
-                            </a>
-                          )}
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="font-bold">Case Number</TableHead>
+                        <TableHead className="font-bold hidden md:table-cell">
+                          Jurisdiction
+                        </TableHead>
+                        <TableHead className="font-bold hidden md:table-cell">
+                          Police Station
+                        </TableHead>
+                        <TableHead className="font-bold hidden">
+                          Case Date
+                        </TableHead>
+                        <TableHead className="font-bold hidden">
+                          Case Type
+                        </TableHead>
+                        <TableHead className="font-bold hidden">
+                          Case Hearing Date
+                        </TableHead>
+                        <TableHead className="font-bold hidden md:table-cell">
+                          IPC Section
+                        </TableHead>
+                        <TableHead className="font-bold hidden md:table-cell">
+                          Reference
+                        </TableHead>
+                        <TableHead className="font-bold hidden">
+                          Document
+                        </TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {currentAllCaseList?.map((head, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{head.CaseNumber}</TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {head.SpName}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {head.PsName}
+                          </TableCell>
+                          <TableCell className="hidden">
+                            {formatDate(head.CaseDate)}
+                          </TableCell>
+                          <TableCell className="hidden">
+                            {head.CaseType}
+                          </TableCell>
+                          <TableCell className="hidden">
+                            {formatDate(head.CaseHearingDate)}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {head.IPCSection}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {head.BeginReferenceName}
+                          </TableCell>
+                          <TableCell>
+                            {head.Document && (
+                              <a
+                                href={`${PORT_URL}${head.Document}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                View Document
+                              </a>
+                            )}
+                          </TableCell>
+                          {/* Mobile-only dialog button */}
+                          <TableCell className="md:hidden">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  View
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto p-4">
+                                <DialogHeader>
+                                  <DialogTitle>Case Details</DialogTitle>
+                                  <DialogDescription className="text-left">
+                                    <strong>Jurisdiction: </strong>
+                                    <span className="text-black">
+                                      {head.SpName}
+                                    </span>
+                                    <br />
+                                    <strong>Police Station: </strong>
+                                    <span className="text-black">
+                                      {head.PsName}
+                                    </span>
+                                    <br />
+                                    <strong>Case Date: </strong>
+                                    <span className="text-black">
+                                      {formatDate(head.CaseDate)}
+                                    </span>
+                                    <br />
+                                    <strong>Case Type: </strong>
+                                    <span className="text-black">
+                                      {head.CaseType}
+                                    </span>
+                                    <br />
+                                    <strong>Case Hearing Date: </strong>
+                                    <span className="text-black">
+                                      {formatDate(head.CaseHearingDate)}
+                                    </span>
+                                    <br />
+                                    <strong>IPC Section: </strong>
+                                    <span className="text-black">
+                                      {head.IPCSection}
+                                    </span>
+                                    <br />
+                                    <strong>Reference: </strong>
+                                    <span className="text-black">
+                                      {head.BeginReferenceName}
+                                    </span>
+                                    <br />
+                                    <strong>Document: </strong>
+                                    <span className="text-black">
+                                      {head.Document ? (
+                                        <a
+                                          href={`${PORT_URL}${head.Document}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 hover:underline"
+                                        >
+                                          View Document
+                                        </a>
+                                      ) : (
+                                        "N/A"
+                                      )}
+                                    </span>
+                                    <br />
+                                    <strong>Hearing Summary: </strong>
+                                    <br />
+                                  </DialogDescription>
+                                </DialogHeader>
+                              </DialogContent>
+                            </Dialog>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
                 <div className="mt-4">
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious
                           onClick={() => paginate(Math.max(1, currentPage - 1))}
-                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                          className={
+                            currentPage === 1
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
                         />
                       </PaginationItem>
                       {[...Array(totalPages || 0)].map((_, index) => (
@@ -158,8 +353,14 @@ const PPAllCaseList = () => {
                       ))}
                       <PaginationItem>
                         <PaginationNext
-                          onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                          onClick={() =>
+                            paginate(Math.min(totalPages, currentPage + 1))
+                          }
+                          className={
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>
@@ -171,10 +372,7 @@ const PPAllCaseList = () => {
         </Card>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default PPAllCaseList
-
-
-
+export default PPAllCaseList;

@@ -282,15 +282,20 @@ const PPAllCaseList = () => {
                               "N/A"
                             )}
                           </TableCell>
-                          <TableCell className="flex hidden md:table-cell gap-2">
-                            <Button onClick={() => addHearingSummary(head)}>
-                              <ClipboardPlus className="h-4 w-4" />
-                              Add
-                            </Button>
-                            <Button onClick={() => viewHearingSummary(head)}>
-                              <Eye className="h-4 w-4" />
-                              View
-                            </Button>
+                          <TableCell className="hidden md:table-cell">
+                            <div className="flex justify-center items-center gap-2">
+                              <Button
+                                variant="outline"
+                                onClick={() => addHearingSummary(head)}
+                              >
+                                <ClipboardPlus className="h-4 w-4" />
+                                Add
+                              </Button>
+                              <Button onClick={() => viewHearingSummary(head)}>
+                                <Eye className="h-4 w-4" />
+                                View
+                              </Button>
+                            </div>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
                             {head.SpName}
@@ -324,30 +329,59 @@ const PPAllCaseList = () => {
                                 <DialogHeader>
                                   <DialogTitle>Case Details</DialogTitle>
                                   <DialogDescription className="text-left">
-                                    Jurisdiction: {head.SpName} <br />
-                                    Police Station: {head.PsName} <br />
-                                    Case Date: {formatDate(head.CaseDate)}{" "}
+                                    <strong>Jurisdiction: </strong>
+                                    <span className="text-black">
+                                      {head.SpName}
+                                    </span>{" "}
                                     <br />
-                                    Case Type: {head.CaseType} <br />
-                                    Case Hearing Date:{" "}
-                                    {formatDate(head.CaseHearingDate)} <br />
-                                    IPC Section: {head.IPCSection} <br />
-                                    Reference: {head.BeginReferenceName} <br />
-                                    Document:{" "}
-                                    {head.Document ? (
-                                      <a
-                                        href={`${PORT_URL}${head.Document}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:underline"
-                                      >
-                                        View Document
-                                      </a>
-                                    ) : (
-                                      "N/A"
-                                    )}
+                                    <strong>Police Station: </strong>
+                                    <span className="text-black">
+                                      {head.PsName}
+                                    </span>{" "}
                                     <br />
-                                    Hearing Summary: <br />
+                                    <strong>Case Date: </strong>
+                                    <span className="text-black">
+                                      {formatDate(head.CaseDate)}
+                                    </span>{" "}
+                                    <br />
+                                    <strong>Case Type: </strong>
+                                    <span className="text-black">
+                                      {head.CaseType}
+                                    </span>{" "}
+                                    <br />
+                                    <strong>Case Hearing Date: </strong>
+                                    <span className="text-black">
+                                      {formatDate(head.CaseHearingDate)}
+                                    </span>{" "}
+                                    <br />
+                                    <strong>IPC Section: </strong>
+                                    <span className="text-black">
+                                      {head.IPCSection}
+                                    </span>{" "}
+                                    <br />
+                                    <strong>Reference: </strong>
+                                    <span className="text-black">
+                                      {head.BeginReferenceName}
+                                    </span>{" "}
+                                    <br />
+                                    <strong>Document: </strong>
+                                    <span className="text-black">
+                                      {head.Document ? (
+                                        <a
+                                          href={`${PORT_URL}${head.Document}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 hover:underline"
+                                        >
+                                          View Document
+                                        </a>
+                                      ) : (
+                                        "N/A"
+                                      )}
+                                    </span>
+                                    <br />
+                                    <strong>Hearing Summary: </strong>
+                                    <br />
                                     <Button
                                       onClick={() => addHearingSummary(head)}
                                       className="inline-flex items-center gap-1"
@@ -357,7 +391,7 @@ const PPAllCaseList = () => {
                                     </Button>
                                     <Button
                                       onClick={() => viewHearingSummary(head)}
-                                      className="inline-flex items-center gap-1 ml-2"
+                                      className="inline-flex items-center gap-1"
                                     >
                                       <Eye className="h-4 w-4" />
                                       View
