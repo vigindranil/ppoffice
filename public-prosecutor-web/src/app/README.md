@@ -12,4 +12,7 @@
 # added toast notif on logging out
 # added toast notif on loggin in
 # login page bg modified
+# changed Add case section-
+## added bns to IPC convertor
+
 
