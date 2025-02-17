@@ -3,6 +3,7 @@ const cors = require('cors');
 const app = express();
 const bodyParser = require('body-parser');
 const caseRoutes = require('./routes/caseRoutes');
+const myRoutes = require('./routes/myRoutes');
 const path = require('path');
 require('dotenv').config();
 
@@ -24,6 +25,8 @@ app.use('/api/cases', caseRoutes);
 const routes = require('./routes/routes');
 
 app.use('/', routes);
+
+app.use('/', myRoutes);
 
 // Start the server
 app.listen(port, () => {
