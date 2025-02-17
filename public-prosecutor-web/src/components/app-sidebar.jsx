@@ -265,6 +265,10 @@ const data = {
           title: "Public Prosecutor List",
           url: "/pp-users",
         },
+        {
+          title: "Search",
+          url: "/pp-office-section-search",
+        },
       ],
     },
   ],
