@@ -13,13 +13,20 @@ export default function LandingPage() {
     }
   }, [])
 
-  return (
-    <div className="relative bg-cover bg-center bg-[url('/img/ppoimage.jpg?height=1080&width=1920')]">
-      {/* Gradient and Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent"></div>
-      <div className="absolute inset-0 bg-black/50"></div>
-      <div className="relative h-screen w-full overflow-hidden">
 
+  return (
+    <div className="relative">
+      {/* Background image div with opacity */}
+      <div 
+        className="fixed inset-0 opacity-10 bg-cover bg-center bg-[url('/img/ppoimage.jpg?height=1080&width=1920')]"
+        style={{ zIndex: 1 }}
+      ></div>
+
+      {/* Gradient and Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50"></div>
+      <div className="absolute inset-0 bg-black/60"></div>
+      
+      <div className="relative h-screen w-full overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -59,11 +66,8 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="flex gap-4"
           >
-            {/* <Button asChild>
-              <Link href="/get-started">Get Started</Link>
-            </Button> */}
             <Button asChild variant="secondary">
-              <Link href="/login">Login</Link>
+            <Link href="/login">Login</Link>
             </Button>
           </motion.div>
 

@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { setToken, setUser } from "@/redux/slices/authSlice";
 import { useDispatch } from "react-redux";
-import {BASE_URL} from '@/app/constants';
+import { BASE_URL } from "@/app/constants";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
+  const { toast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,24 +30,25 @@ export default function LoginPage() {
     setErrorMessage("");
 
     try {
-      const response = await axios.post(
-        `${BASE_URL}authenticate`,
-        {
-          username: formData.username,
-          password: formData.password,
-        }
-      );
+      const response = await axios.post(`${BASE_URL}authenticate`, {
+        username: formData.username,
+        password: formData.password,
+      });
 
       if (
         response.data.status === 0 &&
         response.data.message === "Data found"
       ) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back! Redirecting to dashboard...",
+          duration: 1000,
+        });
         const userData = response.data;
-        localStorage.setItem('authToken', response.data.access_token);
+        localStorage.setItem("authToken", response.data.access_token);
         dispatch(setToken(userData?.access_token));
         dispatch(setUser(JSON.stringify(userData?.data[0])));
         // console.log((userData?.data[0].AuthorityTypeID));
-        
 
         switch (parseInt(userData?.data[0].AuthorityTypeID)) {
           case 20:
@@ -71,9 +74,21 @@ export default function LoginPage() {
             router.push("/login");
         }
       } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid credentials. Please try again.",
+          variant: "destructive",
+          duration: 3000,
+        });
         setErrorMessage("Invalid credentials. Please try again.");
       }
     } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred during login. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
       console.error("Login error:", error);
       setErrorMessage("An error occurred. Please try again.");
     } finally {

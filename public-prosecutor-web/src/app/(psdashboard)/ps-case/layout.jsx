@@ -19,7 +19,7 @@ const Layout = ({ children }) => {
 
   const breadcrumb = [
     { href: "#", name: "PS Admin" },
-    { href: "/ps-case", name: "Dashboard" }
+    { href: "/ps-case", name: "Dashboard" },
   ];
 
   return (

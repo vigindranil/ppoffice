@@ -217,114 +217,122 @@ const PPAllCaseList = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {currentAllCaseList?.map((head, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{head.CaseNumber}</TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            {head.SpName}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            {head.PsName}
-                          </TableCell>
-                          <TableCell className="hidden">
-                            {formatDate(head.CaseDate)}
-                          </TableCell>
-                          <TableCell className="hidden">
-                            {head.CaseType}
-                          </TableCell>
-                          <TableCell className="hidden">
-                            {formatDate(head.CaseHearingDate)}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            {head.IPCSection}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            {head.BeginReferenceName}
-                          </TableCell>
-                          <TableCell>
-                            {head.Document && (
-                              <a
-                                href={`${PORT_URL}${head.Document}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline"
-                              >
-                                View Document
-                              </a>
-                            )}
-                          </TableCell>
-                          {/* Mobile-only dialog button */}
-                          <TableCell className="md:hidden">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  View
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto p-4">
-                                <DialogHeader>
-                                  <DialogTitle>Case Details</DialogTitle>
-                                  <DialogDescription className="text-left">
-                                    <strong>Jurisdiction: </strong>
-                                    <span className="text-black">
-                                      {head.SpName}
-                                    </span>
-                                    <br />
-                                    <strong>Police Station: </strong>
-                                    <span className="text-black">
-                                      {head.PsName}
-                                    </span>
-                                    <br />
-                                    <strong>Case Date: </strong>
-                                    <span className="text-black">
-                                      {formatDate(head.CaseDate)}
-                                    </span>
-                                    <br />
-                                    <strong>Case Type: </strong>
-                                    <span className="text-black">
-                                      {head.CaseType}
-                                    </span>
-                                    <br />
-                                    <strong>Case Hearing Date: </strong>
-                                    <span className="text-black">
-                                      {formatDate(head.CaseHearingDate)}
-                                    </span>
-                                    <br />
-                                    <strong>IPC Section: </strong>
-                                    <span className="text-black">
-                                      {head.IPCSection}
-                                    </span>
-                                    <br />
-                                    <strong>Reference: </strong>
-                                    <span className="text-black">
-                                      {head.BeginReferenceName}
-                                    </span>
-                                    <br />
-                                    <strong>Document: </strong>
-                                    <span className="text-black">
-                                      {head.Document ? (
-                                        <a
-                                          href={`${PORT_URL}${head.Document}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 hover:underline"
-                                        >
-                                          View Document
-                                        </a>
-                                      ) : (
-                                        "N/A"
-                                      )}
-                                    </span>
-                                    <br />
-                                    <strong>Hearing Summary: </strong>
-                                    <br />
-                                  </DialogDescription>
-                                </DialogHeader>
-                              </DialogContent>
-                            </Dialog>
+                      {currentAllCaseList?.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan="9" className="text-center">
+                            No records found
                           </TableCell>
                         </TableRow>
-                      ))}
+                      ) : (
+                        currentAllCaseList?.map((head, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{head.CaseNumber}</TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {head.SpName}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {head.PsName}
+                            </TableCell>
+                            <TableCell className="hidden">
+                              {formatDate(head.CaseDate)}
+                            </TableCell>
+                            <TableCell className="hidden">
+                              {head.CaseType}
+                            </TableCell>
+                            <TableCell className="hidden">
+                              {formatDate(head.CaseHearingDate)}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {head.IPCSection}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {head.BeginReferenceName}
+                            </TableCell>
+                            <TableCell>
+                              {head.Document && (
+                                <a
+                                  href={`${PORT_URL}${head.Document}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  View Document
+                                </a>
+                              )}
+                            </TableCell>
+                            {/* Mobile-only dialog button */}
+                            <TableCell className="md:hidden">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    View
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-y-auto p-4">
+                                  <DialogHeader>
+                                    <DialogTitle>Case Details</DialogTitle>
+                                    <DialogDescription className="text-left">
+                                      <strong>Jurisdiction: </strong>
+                                      <span className="text-black">
+                                        {head.SpName}
+                                      </span>
+                                      <br />
+                                      <strong>Police Station: </strong>
+                                      <span className="text-black">
+                                        {head.PsName}
+                                      </span>
+                                      <br />
+                                      <strong>Case Date: </strong>
+                                      <span className="text-black">
+                                        {formatDate(head.CaseDate)}
+                                      </span>
+                                      <br />
+                                      <strong>Case Type: </strong>
+                                      <span className="text-black">
+                                        {head.CaseType}
+                                      </span>
+                                      <br />
+                                      <strong>Case Hearing Date: </strong>
+                                      <span className="text-black">
+                                        {formatDate(head.CaseHearingDate)}
+                                      </span>
+                                      <br />
+                                      <strong>IPC Section: </strong>
+                                      <span className="text-black">
+                                        {head.IPCSection}
+                                      </span>
+                                      <br />
+                                      <strong>Reference: </strong>
+                                      <span className="text-black">
+                                        {head.BeginReferenceName}
+                                      </span>
+                                      <br />
+                                      <strong>Document: </strong>
+                                      <span className="text-black">
+                                        {head.Document ? (
+                                          <a
+                                            href={`${PORT_URL}${head.Document}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:underline"
+                                          >
+                                            View Document
+                                          </a>
+                                        ) : (
+                                          "N/A"
+                                        )}
+                                      </span>
+                                      <br />
+                                      <strong>Hearing Summary: </strong>
+                                      <br />
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                </DialogContent>
+                              </Dialog>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>

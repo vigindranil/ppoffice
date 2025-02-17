@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from 'next/navigation'
-import { useSelector } from 'react-redux'
-import { LogOut, ChevronsUpDown } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { LogOut, ChevronsUpDown } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,32 +14,33 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { decrypt } from "@/utils/crypto"
+} from "@/components/ui/dropdown-menu";
+import { decrypt } from "@/utils/crypto";
+import { useToast } from "@/hooks/use-toast";
 
 export function UserAvatarDropdown() {
-  const router = useRouter()
-  const encryptedUser = useSelector((state) => state.auth.user)
-  const [user, setUser] = useState({ name: '', email: '', org: '' })
+  const router = useRouter();
+  const encryptedUser = useSelector((state) => state.auth.user);
+  const [user, setUser] = useState({ name: "", email: "", org: "" });
+  const { toast } = useToast();
 
   useEffect(() => {
     if (encryptedUser) {
       try {
-        const decryptedUser = JSON.parse(decrypt(encryptedUser))
+        const decryptedUser = JSON.parse(decrypt(encryptedUser));
         setUser({
-          name: decryptedUser.AuthorityName || 'User',
-          email: decryptedUser.EmailID || 'No email provided',
-          org: decryptedUser.BoundaryName || 'No Organisation provided'
-        })
+          name: decryptedUser.AuthorityName || "User",
+          email: decryptedUser.EmailID || "No email provided",
+          org: decryptedUser.BoundaryName || "No Organisation provided",
+        });
       } catch (error) {
-        console.error('Error decrypting user data:', error)
+        console.error("Error decrypting user data:", error);
       }
     }
-  }, [encryptedUser])
-
+  }, [encryptedUser]);
   const handleLogout = () => {
-    router.push('/logout')
-  }
+    router.push("/logout");
+  };
 
   return (
     <DropdownMenu>
@@ -47,7 +48,13 @@ export function UserAvatarDropdown() {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             <AvatarImage src="/img/user.png" alt={user.name} />
-            <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('').toUpperCase()}</AvatarFallback>
+            <AvatarFallback>
+              {user.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -55,8 +62,12 @@ export function UserAvatarDropdown() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user.org}</p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.email}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.org}
+            </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -66,6 +77,5 @@ export function UserAvatarDropdown() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
-

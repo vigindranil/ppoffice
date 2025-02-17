@@ -1,13 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { BadgeCheck, ChevronsUpDown, LogOut } from 'lucide-react';
+import { BadgeCheck, ChevronsUpDown, LogOut } from "lucide-react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,33 +19,39 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useRouter } from 'next/navigation';
-import { useSelector } from 'react-redux';
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 import { decrypt } from "@/utils/crypto";
+import { useToast } from "@/hooks/use-toast";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const encryptedUser = useSelector((state) => state.auth.user);
-  const [user, setUser] = useState({ name: '', email: '', org: '' });
+  const [user, setUser] = useState({ name: "", email: "", org: "" });
+  const { toast } = useToast();
 
   useEffect(() => {
     if (encryptedUser) {
       try {
         const decryptedUser = JSON.parse(decrypt(encryptedUser));
         setUser({
-          name: decryptedUser.AuthorityName || 'User',
-          email: decryptedUser.EmailID || 'No email provided',
-          org: decryptedUser.BoundaryName || 'No Organisation provided'
+          name: decryptedUser.AuthorityName || "User",
+          email: decryptedUser.EmailID || "No email provided",
+          org: decryptedUser.BoundaryName || "No Organisation provided",
         });
       } catch (error) {
-        console.error('Error decrypting user data:', error);
+        console.error("Error decrypting user data:", error);
       }
     }
   }, [encryptedUser]);
 
   const handleLogout = async () => {
-    router.push('/logout');
+    toast({
+      title: "Scheduled: Catch up",
+      description: "Friday, February 10, 2023 at 5:57 PM",
+    });
+    router.push("/logout");
   };
 
   return (
@@ -64,7 +66,11 @@ export function NavUser() {
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src="/img/user.png" alt={user.name} />
                 <AvatarFallback className="rounded-lg">
-                  {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  {user.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -86,7 +92,11 @@ export function NavUser() {
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src="/img/user.jpg" alt={user.name} />
                   <AvatarFallback className="rounded-lg">
-                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    {user.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -97,7 +107,7 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-           
+
             <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
               <LogOut />
               Log out
