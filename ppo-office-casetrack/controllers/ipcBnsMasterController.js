@@ -18,6 +18,21 @@ class ipcBnsMasterController {
     }
   }
 
+  static async showIpcSection(req, res) {
+    try {
+      const [results] = await db.promise().query('CALL sp_showIpcSection()'); 
+
+      if (!results || results.length === 0) { 
+        return ResponseHelper.success_reponse(res,"No Data found",[]);
+      }
+
+      return ResponseHelper.success_reponse(res, "Data found", results[0]);
+    } catch (error) {
+      console.error('Error in showIpcSection:', error); 
+      return ResponseHelper.error(res, "An error occurred while fetching data");
+    }
+  }
+
   static async showIbsByBnsId(req, res) {
     try {
       const {bnsId} = req.body; 
@@ -52,13 +67,13 @@ class ipcBnsMasterController {
                 query = `CALL sp_BnsSearch(?)`;
                 break;
             case 'ipcSection':
-                query = `CALL showIpcSection(?)`; 
+                query = `CALL sp_IpcSearch(?)`; 
                 break;
             case 'subject':
                 query = `CALL sp_IbsSubjectSearch(?)`;
                 break;
             case 'summary':
-                query = `CALL showIbsSummary(?)`; 
+                query = `CALL sp_IbsSummarySearch(?)`; 
                 break;
             default:
                 return ResponseHelper.error(res, "Invalid search type", 400);
