@@ -52,9 +52,8 @@ const AddCasePage = () => {
     caseTypeID: '',
     ref: '',
     ipcAct: '',
+    bnsNumber: '',
     hearingDate: '',
-    sendTo: '',
-    copyTo: '',
     photocopycaseDiaryExist: '0',
     caseDocument: null,
   })
@@ -226,9 +225,8 @@ const AddCasePage = () => {
         caseTypeID: '',
         ref: '',
         ipcAct: '',
+        bnsNumber: '',
         hearingDate: '',
-        sendTo: '',
-        copyTo: '',
         photocopycaseDiaryExist: '0',
         caseDocument: null,
       });
@@ -392,61 +390,6 @@ const AddCasePage = () => {
               </div>
             </div>
             <div className="flex space-x-4">
-              <div className="flex-1 space-y-2">
-                <Label className="font-bold" htmlFor="sendTo">Send To</Label>
-                <Select onValueChange={(value) => setFormData({ ...formData, 'sendTo': value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Send To" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Send To</SelectLabel>
-                      {allDistrictList.map((district) => (
-                        <SelectItem key={district.districtId} value={district.districtId.toString()}>
-                          {district.districtName}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1 space-y-2">
-                <Label className="font-bold" htmlFor="copyTo">Copy To</Label>
-                <Select onValueChange={(value) => setFormData({ ...formData, 'copyTo': value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Copy To" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Copy To</SelectLabel>
-                      {allSendList.map((ps) => (
-                        <SelectItem key={ps.id} value={ps.id.toString()}>
-                          {ps.ps_name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {/* <div className="flex space-x-4">
-              <div className="w-1/2 space-y-2">
-                <Label className="font-bold" htmlFor="photocopycaseDiaryExist">Photocopy Case Diary Exists</Label>
-                <Select onValueChange={(value) => setFormData({ ...formData, 'photocopycaseDiaryExist': value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Photocopy Case Diary Exists" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Photocopy Case Diary Exists or Not</SelectLabel>
-                      <SelectItem value="1">Yes</SelectItem>
-                      <SelectItem value="0">No</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div> */}
-            <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
                   <Label className="font-bold" htmlFor="caseDocument">Case Document</Label>
                   <Input
@@ -466,6 +409,19 @@ const AddCasePage = () => {
                     name="photocopycaseDiaryExist"
                     value={formData.photocopycaseDiaryExist === '1' ? 'Yes' : 'No'}
                     readOnly
+                  />
+                </div>
+              </div>
+              <div className="flex space-x-4">
+                <div className="flex-1 space-y-2">
+                  <Label className="font-bold" htmlFor="bnsNumber">BNS Section</Label>
+                  <Input
+                    icon={Book}
+                    id="bnsNumber"
+                    name="bnsNumber"
+                    placeholder="Enter BNS Section"
+                    value={formData.bnsNumber}
+                    onChange={handleChange}
                   />
                 </div>
               </div>
