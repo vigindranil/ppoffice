@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import {
   createCaseOfficeAdmin,
-  handleNotifyFromPPOfficeAdmin,
+  // handleNotifyFromPPOfficeAdmin,
   getcasetype,
   showRefferenceDetails,
   alldistrict,
@@ -17,7 +17,13 @@ import { CustomAlertDialog } from "@/components/custom-alert-dialog";
 import { useAlertDialog } from "@/hooks/useAlertDialog";
 import { DatePicker } from "@/components/date-picker";
 import { useSelector } from "react-redux";
-import { fetchBnsSections, fetchBnsSectionDetails } from "./api";
+import {
+  fetchBnsSections,
+  fetchBnsIdFromBnsSection,
+  fetchBnsIdFromIpcSection,
+  fetchIpcSections,
+  fetchIbsByBnsId, // New import
+} from "./api";
 import {
   Select,
   SelectContent,
@@ -41,6 +47,21 @@ import {
   CloudCog,
 } from "lucide-react";
 import { decrypt } from "@/utils/crypto";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { BnsSectionComboBox } from "./bnsSectionCombo";
 
 const AddCasePage = () => {
@@ -60,8 +81,15 @@ const AddCasePage = () => {
   const [caseTypeList, setCaseTypeList] = useState([]);
   const [bnsSections, setBnsSections] = useState([]);
   const [IPCSection, setIPCSection] = useState("");
-  const [subject, setSubject] = useState("");
-  const [summary, setSummary] = useState("");
+  const [ipcSections, setIpcSections] = useState([]);
+  const [correspondingBnsSection, setCorrespondingBnsSection] = useState("");
+  const [correspondingIpcSection, setCorrespondingIpcSection] = useState("");
+  const [ibsData, setIbsData] = useState({
+    BnsSection: "",
+    IpcSection: "",
+    IbsSubject: "",
+    IbsSummary: "",
+  });
   const [formData, setFormData] = useState({
     CaseNumber: "",
     EntryUserID: "",
@@ -71,6 +99,7 @@ const AddCasePage = () => {
     caseTypeID: "",
     ref: "",
     bnsSection: "",
+    sectionType: "ipc", // <-- Added default value here
     hearingDate: "",
     sendTo: "",
     copyTo: "",
@@ -106,6 +135,15 @@ const AddCasePage = () => {
           openAlert("error", err?.message || "An unexpected error occurred");
         });
 
+      fetchIpcSections(token)
+        .then((result) => {
+          setIpcSections(result);
+          console.log("Fetched IPC sections:", result);
+        })
+        .catch((err) => {
+          openAlert("error", err?.message || "Error fetching IPC sections");
+        });
+
       showRefferenceDetails()
         .then((result) => {
           setReferenceList(result);
@@ -125,24 +163,56 @@ const AddCasePage = () => {
   }, [user]);
 
   useEffect(() => {
-    if (formData.bnsSection) {
-      fetchBnsSectionDetails(formData.bnsSection, token)
-        .then((response) => {
-          console.log("IPC section :", response.data[0].IpcSection);
-
-          setIPCSection(response.data[0].IpcSection);
-          setSubject(response.data[0].IbsSubject);
-          setSummary(response.data[0].IbsSummary);
+    if (formData.sectionType === "ipc" && formData.ipcSection) {
+      // For IPC: get BnsId from IPC selection first
+      fetchBnsIdFromIpcSection(formData.ipcSection, token)
+        .then((bnsId) => {
+          return fetchIbsByBnsId(bnsId, token);
+        })
+        .then((data) => {
+          setIbsData(data);
+          console.log("Fetched IBS data for IPC section:", data);
         })
         .catch((error) => {
-          console.error("Error fetching BNS Section Details:", error);
-          openAlert(
-            "error",
-            error?.message || "Error fetching BNS Section Details"
-          );
+          console.error("Error fetching IBS data for IPC section:", error);
+          openAlert("error", error?.message || "Error fetching IBS data");
+          setIbsData({
+            BnsSection: "",
+            IpcSection: "",
+            IbsSubject: "",
+            IbsSummary: "",
+          });
         });
+    } else if (formData.sectionType === "bns" && formData.bnsSection) {
+      // For BNS: get BnsId from BNS selection first
+      fetchBnsIdFromBnsSection(formData.bnsSection, token)
+        .then((bnsId) => {
+          return fetchIbsByBnsId(bnsId, token);
+        })
+        .then((data) => {
+          setIbsData(data);
+          console.log("Fetched IBS data for BNS section:", data);
+        })
+        .catch((error) => {
+          console.error("Error fetching IBS data for BNS section:", error);
+          openAlert("error", error?.message || "Error fetching IBS data");
+          setIbsData({
+            BnsSection: "",
+            IpcSection: "",
+            IbsSubject: "",
+            IbsSummary: "",
+          });
+        });
+    } else {
+      // Reset IBS data if no valid selection exists
+      setIbsData({
+        BnsSection: "",
+        IpcSection: "",
+        IbsSubject: "",
+        IbsSummary: "",
+      });
     }
-  }, [formData.bnsSection, token]);
+  }, [formData.ipcSection, formData.bnsSection, formData.sectionType, token]);
 
   useEffect(() => {
     if (formData.DistrictID) {
@@ -219,6 +289,24 @@ const AddCasePage = () => {
   //   }
   // }
 
+  const getCorrespondingSection = (section, type) => {
+    // This is a mock implementation - replace with your actual mapping logic
+    const mapping = {
+      "IPC 302": "BNS 45",
+      "IPC 304": "BNS 47",
+      // Add more mappings as needed
+    };
+
+    if (type === "ipc") {
+      return (
+        Object.entries(mapping).find(([ipc]) => ipc === section)?.[1] || ""
+      );
+    }
+    return (
+      Object.entries(mapping).find(([_, bns]) => bns === section)?.[0] || ""
+    );
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -257,7 +345,7 @@ const AddCasePage = () => {
       // console.log(result);
       openAlert("success", result.message || "Case added successfully");
       try {
-        const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID);
+        // const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID);
         // console.log(res);
       } catch (err) {
         // console.log(err);
@@ -449,21 +537,6 @@ const AddCasePage = () => {
               </div>
               <div className="flex gap-4">
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="bnsAct">
-                    BNS Act
-                  </Label>
-                  <BnsSectionComboBox
-                    bnsSections={bnsSections}
-                    onSelect={(selectedBnsId) =>
-                      setFormData((prevState) => ({
-                        ...prevState,
-                        bnsSection: selectedBnsId,
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="flex-1 space-y-2">
                   <Label className="font-bold" htmlFor="hearingDate">
                     Hearing Date
                   </Label>
@@ -478,113 +551,136 @@ const AddCasePage = () => {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="font-bold" htmlFor="readonly1">
-                    IPC Section
-                  </Label>
-                  <Input
-                    id="readonly1"
-                    name="readonly1"
-                    value={IPCSection || "Default Value 1"}
-                    readOnly
-                    className="w-full"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold" htmlFor="readonly2">
-                    BNS Subject
-                  </Label>
-                  <Input
-                    id="readonly2"
-                    name="readonly2"
-                    value={subject || "Default Value 2"}
-                    readOnly
-                    className="w-full"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold" htmlFor="readonly3">
-                    Summary of Comparison
-                  </Label>
-                  <textarea
-                    id="summaryBox"
-                    value={summary || "Default Value 3"}
-                    readOnly
-                    className="w-full h-24 text-sm p-2 border rounded"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label className="font-bold">Section Type</Label>
+                <RadioGroup
+                  defaultValue="ipc"
+                  onValueChange={(value) =>
+                    handleSelectChange("sectionType", value)
+                  }
+                  className="flex space-x-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="ipc" id="ipc" />
+                    <Label htmlFor="ipc">IPC Section</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="bns" id="bns" />
+                    <Label htmlFor="bns">BNS Section</Label>
+                  </div>
+                </RadioGroup>
               </div>
+
+              {/* Dynamic Section Fields */}
               <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="sendTo">
-                    Send To
-                  </Label>
-                  <Select
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, sendTo: value })
+                  <Label
+                    className="font-bold"
+                    htmlFor={
+                      formData.sectionType === "ipc"
+                        ? "ipcSection"
+                        : "bnsSection"
                     }
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Send To" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Send To</SelectLabel>
-                        {allDistrictList.map((district) => (
-                          <SelectItem
-                            key={district.districtId}
-                            value={district.districtId.toString()}
-                          >
-                            {district.districtName}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                    {formData.sectionType === "ipc"
+                      ? "IPC Section"
+                      : "BNS Section"}
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between"
+                      >
+                        {formData.sectionType === "ipc"
+                          ? formData.ipcSection
+                            ? ipcSections.find(
+                                (item) =>
+                                  item.ipcSection === formData.ipcSection
+                              )?.ipcSection
+                            : `Select IPC SECTION`
+                          : formData.bnsSection
+                          ? bnsSections.find(
+                              (section) =>
+                                section.bnsSection === formData.bnsSection
+                            )?.bnsSection
+                          : `Select BNS SECTION`}
+
+                        <ChevronsUpDown className="opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput
+                          placeholder="Search section..."
+                          className="h-9"
+                        />
+                        <CommandList>
+                          <CommandEmpty>No section found.</CommandEmpty>
+                          <CommandGroup>
+                            {formData.sectionType === "bns"
+                              ? bnsSections.map((section) => (
+                                  <CommandItem
+                                    key={section.bnsId}
+                                    onSelect={() =>
+                                      handleSelectChange(
+                                        "bnsSection",
+                                        section.bnsSection
+                                      )
+                                    }
+                                  >
+                                    {section.bnsSection}
+                                    {formData.bnsSection ===
+                                      section.bnsSection && (
+                                      <Check className="ml-auto opacity-100" />
+                                    )}
+                                  </CommandItem>
+                                ))
+                              : ipcSections.map((item) => (
+                                  <CommandItem
+                                    key={item.bnsId}
+                                    onSelect={() =>
+                                      handleSelectChange(
+                                        "ipcSection",
+                                        item.ipcSection
+                                      )
+                                    }
+                                  >
+                                    {item.ipcSection}
+                                    {formData.ipcSection ===
+                                      item.ipcSection && (
+                                      <Check className="ml-auto opacity-100" />
+                                    )}
+                                  </CommandItem>
+                                ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
+                {/* Read Only Field for the corresponding section */}
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="copyTo">
-                    Copy To
+                  <Label className="font-bold" htmlFor="correspondingSection">
+                    {formData.sectionType === "ipc"
+                      ? "BNS Section"
+                      : "IPC Section"}{" "}
+                    (Read Only)
                   </Label>
-                  <Select
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, copyTo: value })
+                  <Input
+                    id="correspondingSection"
+                    value={
+                      formData.sectionType === "ipc"
+                        ? ibsData?.BnsSection
+                        : ibsData?.IpcSection
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Copy To" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Copy To</SelectLabel>
-                        {allSendList.map((ps) => (
-                          <SelectItem key={ps.id} value={ps.id.toString()}>
-                            {ps.ps_name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                    readOnly
+                    className="bg-gray-300 border-black"
+                  />
                 </div>
               </div>
-              {/* <div className="flex space-x-4">
-              <div className="w-1/2 space-y-2">
-                <Label className="font-bold" htmlFor="photocopycaseDiaryExist">Photocopy Case Diary Exists</Label>
-                <Select onValueChange={(value) => setFormData({ ...formData, 'photocopycaseDiaryExist': value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Photocopy Case Diary Exists" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Photocopy Case Diary Exists or Not</SelectLabel>
-                      <SelectItem value="1">Yes</SelectItem>
-                      <SelectItem value="0">No</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div> */}
+
               <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
                   <Label className="font-bold" htmlFor="caseDocument">
