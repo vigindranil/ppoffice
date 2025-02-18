@@ -7,7 +7,9 @@ const authMiddleware = require('../middlewares/authMiddleware');
 // show all bns section
 const ipcBnsMasterController = require('../controllers/ipcBnsMasterController');
 router.post('/api/showBnsSection', authMiddleware.verifyToken, ipcBnsMasterController.showBnsSection);
-router.post('/api/showIpcByBns', authMiddleware.verifyToken, ipcBnsMasterController.showIpcByBns);
+router.post('/api/showIpcSection', authMiddleware.verifyToken, ipcBnsMasterController.showIpcSection);
+router.post('/api/showIbsByBnsId', authMiddleware.verifyToken, ipcBnsMasterController.showIbsByBnsId);
+router.post('/api/search', authMiddleware.verifyToken, ipcBnsMasterController.search);
 
 
 module.exports = router;
