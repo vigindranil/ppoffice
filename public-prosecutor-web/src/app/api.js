@@ -667,33 +667,40 @@ export const handleNotifyFromPPOfficeAdmin = async (CaseID) => {
       console.log(result.message)
     }
   })
-}
+} 
 
 
 // fetch case details for public prosecutor user
 export const showCaseDetailsUser = async (userID) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const token = sessionStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}caseDetailsByPPuserId?ppuserID=${userID}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
+  try {
+    const token = sessionStorage.getItem('token');
+    const response = await fetch(`${BASE_URL}caseDetailsByPPuserId?ppuserID=${userID}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    // Optionally check for response.ok before parsing JSON
+    // if (!response.ok) {
+    //   return { success: false, message: 'No Case details Found' };
+    // }
 
-      const result = await response.json();
+   
+    const result = await response.json();
 
-      if (response.ok && result.status === 0) {
-        console.log(result.data)
-        resolve(result.data);
-      } else {
-        reject(result.message || 'An error occurred');
-      }
-    } catch (error) {
-      reject(`Fetch error: ${error.message}`);
-    }
-  });
+
+    console.log(result)
+    // if (result.status !== 0) {
+    //   return { success: false, message: 'No Case details Found' };
+    // }
+
+    console.log(result.data);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Fetch error: ${error.message}`);
+  }
 };
+
 
 
 //fetch user count for dashboard

@@ -92,24 +92,26 @@ class PPuserController {
   // PP user can see their assigned cases
   static caseDetailsByPPuserId(req, res) {
     const ppuserID = req.query.ppuserID;
-
+  
     if (!ppuserID) {
       return ResponseHelper.error(res, "ppuserID is required");
     }
-
+  
     const query = 'CALL sp_getCaseDetailsByPPUserId(?)';
     db.query(query, [ppuserID], (err, results) => {
       if (err) {
         return ResponseHelper.error(res, "An error occurred while fetching the case details.");
       }
-
+  
       if (results[0] && results[0].length > 0) {
         return ResponseHelper.success_reponse(res, "Data found", results[0]);
       } else {
-        return ResponseHelper.error(res, "No data found");
+        // Even if no data is returned, send a success response with status 0.
+        return ResponseHelper.success_reponse(res, "No Data Found, please check", []);
       }
     });
   }
+  
 
   // Assign a case to a PPUser by PP head
   static assignCasetoppuser(req, res) {

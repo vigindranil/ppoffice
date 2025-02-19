@@ -1,21 +1,21 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from "react";
 import {
   addHearingSummaryOfficeAdmin,
   handleNotifyHearingPPOfficeAdmin,
-  getcasetype ,
+  getcasetype,
   alldistrict,
-  showpoliceBydistrict
-} from '@/app/api'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { CustomAlertDialog } from "@/components/custom-alert-dialog"
-import { useAlertDialog } from "@/hooks/useAlertDialog"
-import { DatePicker } from '@/components/date-picker'
-import { useSelector } from 'react-redux'
+  showpoliceBydistrict,
+} from "@/app/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { CustomAlertDialog } from "@/components/custom-alert-dialog";
+import { useAlertDialog } from "@/hooks/useAlertDialog";
+import { DatePicker } from "@/components/date-picker";
+import { useSelector } from "react-redux";
 import {
   Select,
   SelectContent,
@@ -24,24 +24,37 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Calendar, FileText, Hash, MapPin, Bookmark, Book, Clock, Send, Copy, Image, Undo2 } from 'lucide-react'
-import { decrypt } from '@/utils/crypto'
+} from "@/components/ui/select";
+import {
+  Calendar,
+  FileText,
+  Hash,
+  MapPin,
+  Bookmark,
+  Book,
+  Clock,
+  Send,
+  Copy,
+  Image,
+  Undo2,
+} from "lucide-react";
+import { decrypt } from "@/utils/crypto";
 
 const AddHearingPage = ({ onBack, caseDetails }) => {
-  const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [triggerAddCase, setTriggerAddCase] = useState(false)
-  const [user, setUser] = useState(null)
-  const encryptedUser = useSelector((state) => state.auth.user)
-  const token = useSelector((state) => state.auth.token)
-  const [referenceList, setReferenceList] = useState([])
-  const [allDistrictList, setAllDistrictList] = useState([])
-  const [allPSList, setAllPSList] = useState([])
-  const [caseTypeList, setCaseTypeList] = useState([])
-  const [caseTypeName, setCaseTypeName] = useState('');
+  const { isOpen, alertType, alertMessage, openAlert, closeAlert } =
+    useAlertDialog();
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [triggerAddCase, setTriggerAddCase] = useState(false);
+  const [user, setUser] = useState(null);
+  const encryptedUser = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
+  const [referenceList, setReferenceList] = useState([]);
+  const [allDistrictList, setAllDistrictList] = useState([]);
+  const [allPSList, setAllPSList] = useState([]);
+  const [caseTypeList, setCaseTypeList] = useState([]);
+  const [caseTypeName, setCaseTypeName] = useState("");
 
   const [formData, setFormData] = useState({
     CaseNumber: "",
@@ -56,26 +69,25 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
     requiredDocument: "",
     caseuploadDocumentPath: "",
     additionalRemarks: "",
-  })
+  });
 
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(encryptedUser));
     setUser(decoded_user);
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      EntryUserID: decoded_user.AuthorityUserID
+      EntryUserID: decoded_user.AuthorityUserID,
     }));
   }, [encryptedUser]);
 
   useEffect(() => {
     if (user) {
-
       getcasetype()
         .then((result) => {
           setCaseTypeList(result);
         })
         .catch((err) => {
-          openAlert('error', err?.message || "An unexpected error occurred");
+          openAlert("error", err?.message || "An unexpected error occurred");
         });
 
       alldistrict()
@@ -83,11 +95,10 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
           setAllDistrictList(result);
         })
         .catch((err) => {
-          openAlert('error', err?.message || "An unexpected error occurred");
+          openAlert("error", err?.message || "An unexpected error occurred");
         });
     }
   }, [user]);
-
 
   useEffect(() => {
     if (formData.DistrictID) {
@@ -96,7 +107,7 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
           setAllPSList(result);
         })
         .catch((err) => {
-          openAlert('error', err?.message || "An unexpected error occurred");
+          openAlert("error", err?.message || "An unexpected error occurred");
         });
     }
   }, [formData.DistrictID]);
@@ -104,8 +115,9 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
   useEffect(() => {
     if (caseDetails && caseTypeList.length > 0) {
       const selectedCaseType = caseTypeList.find(
-        (caseType) => caseType.CasetypeId.toString() === caseDetails.caseTypeID.toString(),
-      )
+        (caseType) =>
+          caseType.CasetypeId.toString() === caseDetails.caseTypeID.toString()
+      );
       setFormData((prevState) => ({
         ...prevState,
         CaseId: caseDetails.CaseId,
@@ -115,53 +127,58 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
       }));
       setCaseTypeName(selectedCaseType ? selectedCaseType.CasetypeName : "");
     }
-  }, [caseDetails, caseTypeList])
+  }, [caseDetails, caseTypeList]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
   const handleSelectChange = (name, value) => {
-    setFormData(prevState => ({ ...prevState, [name]: value }));
-  }
+    setFormData((prevState) => ({ ...prevState, [name]: value }));
+  };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
       if (file.size > 15000 * 1024) {
         // 15 MB in bytes
-        openAlert("error", "File size should not exceed 15 MB")
-        return
+        openAlert("error", "File size should not exceed 15 MB");
+        return;
       }
       if (!["image/jpeg", "image/jpg", "application/pdf"].includes(file.type)) {
-        openAlert("error", "Only JPG, JPEG, or PDF files are allowed")
-        return
+        openAlert("error", "Only JPG, JPEG, or PDF files are allowed");
+        return;
       }
       setFormData((prevState) => ({
         ...prevState,
         caseuploadDocumentPath: file,
-      }))
+      }));
     }
-  }
+  };
 
   const handleAddSummary = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const formDataToSend = new FormData()
+      const formDataToSend = new FormData();
       for (const key in formData) {
         if (key === "caseuploadDocumentPath") {
           if (formData[key]) {
-            formDataToSend.append("caseuploadDocumentPath", formData[key])
+            formDataToSend.append("caseuploadDocumentPath", formData[key]);
           }
         } else {
-          formDataToSend.append(key, formData[key])
+          formDataToSend.append(key, formData[key]);
         }
       }
 
-      const result = await addHearingSummaryOfficeAdmin(formDataToSend)
+      const result = await addHearingSummaryOfficeAdmin(formDataToSend);
       // console.log(result)
-      openAlert("success", result.message || "Hearing Summary added successfully")
+      openAlert(
+        "success",
+        result.message || "Hearing Summary added successfully"
+      );
       try {
-        const res = await handleNotifyHearingPPOfficeAdmin(result?.data?.CaseSummaryID)
+        const res = await handleNotifyHearingPPOfficeAdmin(
+          result?.data?.CaseSummaryID
+        );
         // console.log(res)
       } catch (err) {
         // console.log(err)
@@ -180,25 +197,23 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
         requiredDocument: "",
         caseuploadDocumentPath: "",
         additionalRemarks: "",
-      })
-      onBack()
+      });
+      onBack();
     } catch (err) {
       // console.log(err)
-      openAlert("error", err?.message || "An unexpected error occurred")
+      openAlert("error", err?.message || "An unexpected error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleConfirm = () => {
-    closeAlert()
-  }
+    closeAlert();
+  };
 
   return (
     <div className="relative min-h-screen w-full">
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]"
-      />
+      <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
         <CustomAlertDialog
@@ -210,19 +225,20 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
         />
 
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
-        <Button onClick={onBack} className="absolute top-4 right-4">
-          Back
-          <Undo2 />
-        </Button>
-          <CardHeader>
+          <Button onClick={onBack} className="absolute top-4 right-4">
+            Back
+            <Undo2 />
+          </Button>
+          <CardHeader className="mb-5 bg-green-600 p-4 text-xl text-white">
             <CardTitle>Add Upcoming Hearing Summary</CardTitle>
           </CardHeader>
           <CardContent>
-
             <div className="flex flex-col gap-4">
               <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="CaseNumber">Case Number</Label>
+                  <Label className="font-bold" htmlFor="CaseNumber">
+                    Case Number
+                  </Label>
                   <Input
                     icon={Hash}
                     id="CaseNumber"
@@ -234,21 +250,29 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                   />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="CaseDate">Case Date</Label>
+                  <Label className="font-bold" htmlFor="CaseDate">
+                    Case Date
+                  </Label>
                   <Input
                     icon={Calendar}
                     id="CaseDate"
                     name="CaseDate"
                     value={formData.CaseDate}
                     onChange={handleChange}
-                    disabled 
+                    disabled
                   />
                 </div>
               </div>
               <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="DistrictID">District</Label>
-                  <Select onValueChange={(value) => handleSelectChange('DistrictID', value)}>
+                  <Label className="font-bold" htmlFor="DistrictID">
+                    District
+                  </Label>
+                  <Select
+                    onValueChange={(value) =>
+                      handleSelectChange("DistrictID", value)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select District" />
                     </SelectTrigger>
@@ -256,7 +280,10 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                       <SelectGroup>
                         <SelectLabel>Districts</SelectLabel>
                         {allDistrictList.map((district) => (
-                          <SelectItem key={district.districtId} value={district.districtId.toString()}>
+                          <SelectItem
+                            key={district.districtId}
+                            value={district.districtId.toString()}
+                          >
                             {district.districtName}
                           </SelectItem>
                         ))}
@@ -265,8 +292,12 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                   </Select>
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="psID">Police Station</Label>
-                  <Select onValueChange={(value) => handleSelectChange('psID', value)}>
+                  <Label className="font-bold" htmlFor="psID">
+                    Police Station
+                  </Label>
+                  <Select
+                    onValueChange={(value) => handleSelectChange("psID", value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Police Station" />
                     </SelectTrigger>
@@ -306,10 +337,18 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                   <label className="font-bold" htmlFor="caseTypeName">
                     Case Type
                   </label>
-                  <Input icon={Bookmark} id="caseTypeName" name="caseTypeName" value={caseTypeName} disabled />
+                  <Input
+                    icon={Bookmark}
+                    id="caseTypeName"
+                    name="caseTypeName"
+                    value={caseTypeName}
+                    disabled
+                  />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="requiredDocument">Required Documents</Label>
+                  <Label className="font-bold" htmlFor="requiredDocument">
+                    Required Documents
+                  </Label>
                   <Input
                     icon={Book}
                     id="requiredDocument"
@@ -320,12 +359,19 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                   />
                 </div>
 
-                <input type="hidden" id="CaseId" name="CaseId" value={formData.CaseId} />
+                <input
+                  type="hidden"
+                  id="CaseId"
+                  name="CaseId"
+                  value={formData.CaseId}
+                />
               </div>
 
               <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="caseuploadDocumentPath">Case Document</Label>
+                  <Label className="font-bold" htmlFor="caseuploadDocumentPath">
+                    Case Document
+                  </Label>
                   <Input
                     icon={FileText}
                     id="caseuploadDocumentPath"
@@ -334,10 +380,14 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                     accept=".jpg,.jpeg,.pdf"
                     onChange={handleFileChange}
                   />
-                  <p className="text-sm text-gray-500">Max file size: 15 MB. Allowed formats: JPG, JPEG, PDF</p>
+                  <p className="text-sm text-gray-500">
+                    Max file size: 15 MB. Allowed formats: JPG, JPEG, PDF
+                  </p>
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="nexthearingDate">Next Hearing Date</Label>
+                  <Label className="font-bold" htmlFor="nexthearingDate">
+                    Next Hearing Date
+                  </Label>
                   <Input
                     icon={Clock}
                     id="nexthearingDate"
@@ -349,7 +399,7 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                     onInput={(e) => {
                       const selectedDate = e.target.value;
                       const today = new Date().toISOString().split("T")[0];
-                      
+
                       if (selectedDate < today) {
                         e.target.value = today; // Reset to today if past date is entered
                       }
@@ -359,7 +409,9 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
               </div>
               <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="CaseDescription">Case Description</Label>
+                  <Label className="font-bold" htmlFor="CaseDescription">
+                    Case Description
+                  </Label>
                   <Input
                     icon={Book}
                     id="CaseDescription"
@@ -370,7 +422,9 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                   />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="additionalRemarks">Additional Remarks</Label>
+                  <Label className="font-bold" htmlFor="additionalRemarks">
+                    Additional Remarks
+                  </Label>
                   <Input
                     icon={Book}
                     id="additionalRemarks"
@@ -381,16 +435,19 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                   />
                 </div>
               </div>
-              <Button onClick={handleAddSummary} className="max-w-min bg-blue-500 mx-auto my-5 mt-5" disabled={isLoading}>
-                {isLoading ? 'Please Wait...' : 'Add Case'}
+              <Button
+                onClick={handleAddSummary}
+                className="max-w-min bg-blue-500 mx-auto my-5 mt-5"
+                disabled={isLoading}
+              >
+                {isLoading ? "Please Wait..." : "Add Case"}
               </Button>
             </div>
           </CardContent>
         </Card>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default AddHearingPage
-
+export default AddHearingPage;

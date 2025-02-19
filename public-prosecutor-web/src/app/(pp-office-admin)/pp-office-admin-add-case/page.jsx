@@ -103,6 +103,8 @@ const AddCasePage = () => {
     photocopycaseDiaryExist: "0",
     caseDocument: null,
   });
+  const [selectedReferenceName, setSelectedReferenceName] = useState("");
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -253,6 +255,13 @@ const AddCasePage = () => {
 
   const handleSelectChange = (name, value) => {
     setFormData((prevState) => ({ ...prevState, [name]: value }));
+
+    if (name === "ref") {
+      const selectedRef = referenceList.find(
+        (ref) => ref.refferenceId.toString() === value
+      );
+      setSelectedReferenceName(selectedRef ? selectedRef.refferenceName : "");
+    }
   };
 
   const handleChange = (e) => {
@@ -370,6 +379,13 @@ const AddCasePage = () => {
     closeAlert();
   };
 
+  const getTruncatedReferenceName = () => {
+    if (selectedReferenceName.length > 60) {
+      return selectedReferenceName.substring(0, 60) + "...";
+    }
+    return selectedReferenceName;
+  };
+
   return (
     <div className="relative min-h-screen w-full">
       <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]" />
@@ -384,7 +400,7 @@ const AddCasePage = () => {
         />
 
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
-          <CardHeader>
+          <CardHeader className="mb-5 bg-green-600 p-4 text-xl text-white">
             <CardTitle>Add New Case</CardTitle>
           </CardHeader>
           <CardContent>
@@ -429,7 +445,11 @@ const AddCasePage = () => {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select District" />
+                      <SelectValue placeholder="Select District">
+                        {allDistrictList.find(
+                          (d) => d.districtId.toString() === formData.DistrictID
+                        )?.districtName || "Select District"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -505,7 +525,9 @@ const AddCasePage = () => {
                     onValueChange={(value) => handleSelectChange("ref", value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Reference" />
+                      <SelectValue placeholder="Select Reference">
+                        {getTruncatedReferenceName()}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="max-h-[200px] overflow-y-auto">
                       <SelectGroup>

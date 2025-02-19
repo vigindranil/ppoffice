@@ -11,8 +11,8 @@ const Page = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Public Prosecutor List</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between mb-5 bg-green-600 p-4 text-xl text-white">
+            <CardTitle className="">Public Prosecutor List</CardTitle>
           </CardHeader>
           <CardContent>
             <PPUserTable />

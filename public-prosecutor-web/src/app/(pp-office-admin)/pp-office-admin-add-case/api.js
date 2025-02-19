@@ -1,6 +1,5 @@
 import { BASE_URL } from '@/app/constants';
 import axios from 'axios';
-import { el } from 'date-fns/locale';
 
 
 
@@ -14,7 +13,7 @@ export async function fetchBnsSections(token) {
     });
     
     if (response.data.status === 0 && response.data.data) {
-      console.log("Full response data:", response.data.data);
+     
       return response.data.data; 
     } else {
       throw new Error('Failed to fetch BNS sections');
@@ -36,7 +35,7 @@ export async function fetchIpcSections(token) {
       },
     });
     if (response.data.status === 0 && response.data.data) {
-      return response.data.data; // [{ bnsId, ipcSection }, ...]
+      return response.data.data; 
     } else {
       throw new Error("Failed to fetch IPC sections");
     }
@@ -71,7 +70,7 @@ export async function fetchBnsIdFromBnsSection(selectedBnsSection, token) {
       const sections = response.data.data;
       const matched = sections.find(item => item.bnsSection === selectedBnsSection);
       if (matched) {
-        console.log("Fetched BNS ID:", matched.bnsId);
+        
         return matched.bnsId;
       } else {
         throw new Error('BNS section not found');

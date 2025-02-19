@@ -1,6 +1,6 @@
-'use client'
-import { BASE_URL } from '@/app/constants'; 
-import { useEffect, useState } from 'react'
+"use client";
+import { BASE_URL } from "@/app/constants";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,121 +8,132 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ChevronDown, ChevronUp, Search, ClipboardPlus, Key, EyeOff, Eye } from 'lucide-react'
-import { CustomAlertDialog } from './custom-alert-dialog'
-import { useAlertDialog } from "@/hooks/useAlertDialog"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  ChevronDown,
+  ChevronUp,
+  Search,
+  ClipboardPlus,
+  Key,
+  EyeOff,
+  Eye,
+} from "lucide-react";
+import { CustomAlertDialog } from "./custom-alert-dialog";
+import { useAlertDialog } from "@/hooks/useAlertDialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PPUserTable() {
-  const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedUser, setSelectedUser] = useState(null)
-  const [newPassword, setNewPassword] = useState("")
-  const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = useState(false)
-  const itemsPerPage = 10
+  const { isOpen, alertType, alertMessage, openAlert, closeAlert } =
+    useAlertDialog();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] =
+    useState(false);
+  const itemsPerPage = 10;
 
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
 
   const fetchData = async () => {
     try {
-      const token = sessionStorage.getItem('token')
+      const token = sessionStorage.getItem("token");
       const response = await fetch(`${BASE_URL}getppuser?EntryuserID=2`, {
         headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      })
+          Authorization: "Bearer " + token,
+        },
+      });
       if (!response.ok) {
-        throw new Error('Failed to fetch data')
+        throw new Error("Failed to fetch data");
       }
-      const result = await response.json()
+      const result = await response.json();
       if (result.status === 0 && result.message === "Data found") {
         // console.log(result.data);
-        
-        setUsers(result.data)
+
+        setUsers(result.data);
       } else {
-        throw new Error(result.message || 'Failed to fetch data')
+        throw new Error(result.message || "Failed to fetch data");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const handleResetPassword = async () => {
-    if (!selectedUser || !newPassword) return
+    if (!selectedUser || !newPassword) return;
     try {
-      const token = sessionStorage.getItem('token')
+      const token = sessionStorage.getItem("token");
       const response = await fetch(`${BASE_URL}changepassword`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
         },
         body: JSON.stringify({
           userId: selectedUser.pp_id,
-          newPassword
-        })
-      })
-      const result = await response.json()
+          newPassword,
+        }),
+      });
+      const result = await response.json();
       if (response.ok) {
-        openAlert('success', "Password Updated Successfully!");
+        openAlert("success", "Password Updated Successfully!");
       } else {
-        throw new Error(result.message || 'Failed to reset password')
+        throw new Error(result.message || "Failed to reset password");
       }
     } catch (error) {
-      alert(error.message)
+      alert(error.message);
     }
-  }
+  };
 
   const filteredUsers = users.filter((user) =>
     Object.values(user).some((value) =>
       value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
-  )
+  );
 
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  )
+  );
 
   const handleConfirm = () => {
-    closeAlert()
-    setIsPasswordResetDialogOpen(false)
-    setNewPassword('')
-    setSelectedUser(null)
+    closeAlert();
+    setIsPasswordResetDialogOpen(false);
+    setNewPassword("");
+    setSelectedUser(null);
     fetchData();
-  }
+  };
 
-  if (loading) return <div className="text-center py-10">Loading...</div>
-  if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>
+  if (error)
+    return <div className="text-center py-10 text-red-500">Error: {error}</div>;
 
   return (
     <div className="container mx-auto py-10">
       <CustomAlertDialog
-              isOpen={isOpen}
-              alertType={alertType}
-              alertMessage={alertMessage}
-              onClose={closeAlert}
-              onConfirm={handleConfirm}
-            />
+        isOpen={isOpen}
+        alertType={alertType}
+        alertMessage={alertMessage}
+        onClose={closeAlert}
+        onConfirm={handleConfirm}
+      />
       <div className="flex justify-between items-center mb-4">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -135,7 +146,9 @@ export default function PPUserTable() {
           />
         </div>
         <div>
-          <span className="mr-2 text-xs">Total Users: {filteredUsers.length}</span>
+          <span className="mr-2 text-xs">
+            Total Users: {filteredUsers.length}
+          </span>
         </div>
       </div>
       <div className="rounded-md border">
@@ -149,58 +162,80 @@ export default function PPUserTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedUsers.map((user) => (
-              <TableRow key={user.pp_id}>
-                <TableCell>{user.pp_name}</TableCell>
-                <TableCell>{user.pp_username}</TableCell>
-                <TableCell>{user.pp_email}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="outline"
-                    className="mr-2"
-                    onClick={() => {
-                      setSelectedUser(user)
-                      setIsPasswordResetDialogOpen(true)
-                    }}
-                  >
-                    <Key /> Reset Password
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {loading
+              ? [...Array(5)].map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="md:table-cell p-2">
+                      <Skeleton className="bg-slate-300 h-4 w-28" />
+                    </TableCell>
+                    <TableCell className="md:table-cell hidden p-2">
+                      <Skeleton className="bg-slate-300 h-4 w-24" />
+                    </TableCell>
+                    <TableCell className="md:table-cell hidden p-2">
+                      <Skeleton className="bg-slate-300 h-4 w-24" />
+                    </TableCell>
+                    <TableCell className="md:table-cell hidden p-2">
+                      <Skeleton className="bg-slate-300 h-4 w-20" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              : paginatedUsers.map((user) => (
+                  <TableRow key={user.pp_id}>
+                    <TableCell>{user.pp_name}</TableCell>
+                    <TableCell>{user.pp_username}</TableCell>
+                    <TableCell>{user.pp_email}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        className="mr-2"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsPasswordResetDialogOpen(true);
+                        }}
+                      >
+                        <Key /> Reset Password
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </div>
-      <Dialog open={isPasswordResetDialogOpen} onOpenChange={setIsPasswordResetDialogOpen}>
+      <Dialog
+        open={isPasswordResetDialogOpen}
+        onOpenChange={setIsPasswordResetDialogOpen}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reset Password for {selectedUser?.pp_name}</DialogTitle>
+            <DialogTitle>
+              Reset Password for {selectedUser?.pp_name}
+            </DialogTitle>
           </DialogHeader>
           <div className="flex-1 space-y-2">
-          <div className="relative">
-          <Input
-            type={showPassword ? "text" : "password"}
-            placeholder="Enter new password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="mb-4"
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-            onMouseDown={() => setShowPassword(true)}
-            onMouseUp={() => setShowPassword(false)}
-            onMouseLeave={() => setShowPassword(false)}
-          >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </Button>
-          </div>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter new password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="mb-4"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onMouseDown={() => setShowPassword(true)}
+                onMouseUp={() => setShowPassword(false)}
+                onMouseLeave={() => setShowPassword(false)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
           <Button className="w-full" onClick={handleResetPassword}>
             Reset Password
@@ -208,5 +243,5 @@ export default function PPUserTable() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

@@ -42,7 +42,8 @@ export default function LoginPage() {
         toast({
           title: "Login Successful",
           description: "Welcome back! Redirecting to dashboard...",
-          duration: 1000,
+          variant: "success",
+          duration: 2000,
         });
         const userData = response.data;
         localStorage.setItem("authToken", response.data.access_token);

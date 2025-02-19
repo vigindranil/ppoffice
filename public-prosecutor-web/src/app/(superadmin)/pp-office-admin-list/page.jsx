@@ -94,9 +94,11 @@ const PPOfficeAdminList = () => {
       <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
-        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
-          <CardHeader>
-            <CardTitle>Public Prosecutor Office Admin List</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className=" text-white bg-green-600 text-xl">
+            <CardTitle className="">
+              Public Prosecutor Office Admin List
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {message ? (
