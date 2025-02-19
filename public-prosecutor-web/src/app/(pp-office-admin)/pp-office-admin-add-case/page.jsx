@@ -62,7 +62,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { BnsSectionComboBox } from "./bnsSectionCombo";
+import { useToast } from "@/hooks/use-toast";
 
 const AddCasePage = () => {
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } =
@@ -80,10 +80,7 @@ const AddCasePage = () => {
   const [allSendList, setAllSendList] = useState([]);
   const [caseTypeList, setCaseTypeList] = useState([]);
   const [bnsSections, setBnsSections] = useState([]);
-  const [IPCSection, setIPCSection] = useState("");
   const [ipcSections, setIpcSections] = useState([]);
-  const [correspondingBnsSection, setCorrespondingBnsSection] = useState("");
-  const [correspondingIpcSection, setCorrespondingIpcSection] = useState("");
   const [ibsData, setIbsData] = useState({
     BnsSection: "",
     IpcSection: "",
@@ -106,6 +103,7 @@ const AddCasePage = () => {
     photocopycaseDiaryExist: "0",
     caseDocument: null,
   });
+  const { toast } = useToast();
 
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(encryptedUser));
@@ -289,24 +287,6 @@ const AddCasePage = () => {
   //   }
   // }
 
-  const getCorrespondingSection = (section, type) => {
-    // This is a mock implementation - replace with your actual mapping logic
-    const mapping = {
-      "IPC 302": "BNS 45",
-      "IPC 304": "BNS 47",
-      // Add more mappings as needed
-    };
-
-    if (type === "ipc") {
-      return (
-        Object.entries(mapping).find(([ipc]) => ipc === section)?.[1] || ""
-      );
-    }
-    return (
-      Object.entries(mapping).find(([_, bns]) => bns === section)?.[0] || ""
-    );
-  };
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -343,6 +323,12 @@ const AddCasePage = () => {
 
       const result = await createCaseOfficeAdmin(formDataToSend);
       // console.log(result);
+
+      toast({
+        title: "Adding Cases",
+        description: "Case added successfully",
+        duration: 2000,
+      });
       openAlert("success", result.message || "Case added successfully");
       try {
         // const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID);
@@ -368,6 +354,12 @@ const AddCasePage = () => {
       });
     } catch (err) {
       // console.log(err);
+      toast({
+        title: "Failed in Adding Cases",
+        description: "Something went wrong",
+        duration: 2000,
+        variant: "destructive",
+      });
       openAlert("error", err?.message || "An unexpected error occurred");
     } finally {
       setIsLoading(false);
@@ -676,7 +668,7 @@ const AddCasePage = () => {
                         : ibsData?.IpcSection
                     }
                     readOnly
-                    className="bg-gray-300 border-black"
+                    className="bg-gray-300"
                   />
                 </div>
               </div>
