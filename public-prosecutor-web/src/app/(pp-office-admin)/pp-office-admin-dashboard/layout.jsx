@@ -25,7 +25,6 @@ const Layout = ({children}) => {
 
   return (
     <>
-      
       <Header />
       <div className="flex flex-col h-screen">
         <AdminSidebarLayout breadcrumb={breadcrumb}>

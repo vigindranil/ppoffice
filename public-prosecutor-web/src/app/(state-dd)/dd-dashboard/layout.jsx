@@ -5,8 +5,8 @@ import AdminSidebarLayout from "@/components/sidebar-layout";
 import { useSelector } from "react-redux";
 import Footer from '@/components/Footer';
 import Header from "@/components/Header";
-import { decrypt } from "@/utils/crypto";
 import AuthorizationWrapper from "@/components/AuthorizationWrapper";
+import { decrypt } from "@/utils/crypto";
 
 const Layout = ({children}) => {
   const [user, setUser] = useState("");
@@ -14,26 +14,23 @@ const Layout = ({children}) => {
   const userDetails = useSelector((state) => state.auth.user);
 
   useEffect(() => {
-      if(userDetails)
-        {const decryptedUser = JSON.parse(decrypt(userDetails))
-      setUser(decryptedUser);}
-    }, [userDetails]); 
+    if(userDetails)
+      {const decryptedUser = JSON.parse(decrypt(userDetails))
+    setUser(decryptedUser);}
+  }, [userDetails]); 
 
   const breadcrumb = [
-    { name: "Advocate" },{ href: "/public-prosecutor-user-dashboard", name: "Dashboard" },{ name: "Advocate Case Details" },
+    { name: "Detective Department" },{ name: "Dashboard" },
   ];
 
   return (
     <>
-      
       <Header />
-
-      {/* Main Content */}
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-screen">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
         <AuthorizationWrapper
-          authorizedUserTypes={[60]}
-          redirectPath="/super-admin-dashboard"
+          authorizedUserTypes={[40]}
+          redirectPath="/dd-dashboard"
         ></AuthorizationWrapper>
           <div className="flex flex-1">
             <Suspense fallback={<Loading />}>

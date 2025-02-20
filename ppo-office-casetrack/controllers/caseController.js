@@ -226,17 +226,15 @@ class CaseController {
                 caseTypeID,
                 ref,
                 ipcAct,
+                bnsNumber,
                 hearingDate,
-                sendTo,
-                copyTo,
                 photocopycaseDiaryExist
             } = req.body;
 
             // Validate required fields
             if (
                 !CaseNumber || !EntryUserID || !CaseDate || !DistrictID || !psID || !caseTypeID ||
-                !ref || !ipcAct || !hearingDate || sendTo === undefined || copyTo === undefined ||
-                photocopycaseDiaryExist === undefined
+                !ref || !ipcAct || !bnsNumber || !hearingDate || photocopycaseDiaryExist === undefined
             ) {
                 return res.status(400).json({ error: 'All required fields must be provided' });
             }
@@ -245,21 +243,20 @@ class CaseController {
             const caseDocumentPath = req.file ? req.file.path : null;
 
             // Stored procedure call
-            const query = "CALL sp_CreatecaseV1(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
+            const query = "CALL sp_Createcase(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
             const params = [
                 CaseNumber,
-                EntryUserID,
                 CaseDate,
                 DistrictID,
                 psID,
                 caseTypeID,
                 ref,
                 ipcAct,
+                bnsNumber,
                 hearingDate,
-                sendTo,
-                copyTo,
                 photocopycaseDiaryExist,
-                caseDocumentPath
+                caseDocumentPath,
+                EntryUserID
             ];
 
             // Execute stored procedure

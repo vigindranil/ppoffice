@@ -18,7 +18,7 @@ const Layout = ({children}) => {
   }, [token, userDetails]); 
 
   const breadcrumb = [
-    { name: "Public Prosecutor" },{ name: "Dashboard" },
+    { name: "Advocate" },{ name: "Dashboard" },
   ];
 
   return (
