@@ -122,7 +122,7 @@ export default function CaseTable() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-5">
       <CustomAlertDialog
         isOpen={isOpen}
         alertType={alertType}
@@ -133,20 +133,18 @@ export default function CaseTable() {
 
       <div className="flex gap-4 mb-3">
         <DatePicker
-          date={fromDate ? formatDate(fromDate) : null}
+          date={fromDate}
           setDate={setFromDate}
           placeholder="From (Date Range)"
         />
         <DatePicker
-          date={toDate ? formatDate(toDate) : null}
+          date={toDate}
           setDate={setToDate}
           placeholder="To (Date Range)"
         />
         <Button
           className="ml-2 bg-blue-400 hover:bg-blue-600"
-          onClick={() =>
-            showallCaseBetweenRange(formatDate(fromDate), formatDate(toDate))
-          }
+          onClick={() => showallCaseBetweenRange(fromDate, toDate)}
         >
           {loading ? "Loading..." : "Get Cases"}
         </Button>
@@ -216,14 +214,19 @@ export default function CaseTable() {
             ))
           ) : error ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-red-500">
-                {error}
+              <TableCell colSpan={6} className="text-center">
+                Something Went Wrong! Please try again.
+              </TableCell>
+            </TableRow>
+          ) : currentCases.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center">
+                No case found
               </TableCell>
             </TableRow>
           ) : (
             currentCases.map((caseItem, index) => (
               <TableRow key={index}>
-                {/* Desktop Cells */}
                 <TableCell className="hidden md:table-cell">
                   {caseItem.PPuserName || "Not Assigned"}
                 </TableCell>
@@ -241,7 +244,6 @@ export default function CaseTable() {
                     <Badge className="bg-orange-300">Pending</Badge>
                   )}
                 </TableCell>
-                {/* Mobile-only Details Button */}
                 <TableCell className="md:hidden">
                   <Button
                     variant="outline"

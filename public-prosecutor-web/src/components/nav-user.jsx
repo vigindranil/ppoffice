@@ -47,10 +47,6 @@ export function NavUser() {
   }, [encryptedUser]);
 
   const handleLogout = async () => {
-    toast({
-      title: "Scheduled: Catch up",
-      description: "Friday, February 10, 2023 at 5:57 PM",
-    });
     router.push("/logout");
   };
 

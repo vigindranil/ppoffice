@@ -136,17 +136,21 @@ const SPList = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
 
       <main className="relative flex-1 p-6 w-full min-h-screen">
-        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
-          <CardHeader>
-            <CardTitle>Public Prosecutor Office Admin List</CardTitle>
+        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden">
+          <CardHeader className=" text-white bg-green-600 text-xl">
+            <CardTitle>Superintendent of Police List</CardTitle>
           </CardHeader>
 
           <CardContent>
             {message ? (
               <p className="text-red-600 mb-4 text-center">{message}</p>
             ) : (
-              <div className="container mx-auto py-10">
+              <div className="container mx-auto py-5">
                 {/* Top controls: District dropdown + Search */}
+                {/* Total records */}
+                <div className="text-right text-xs mt-2">
+                  <span>Total number of records: {filteredData.length}</span>
+                </div>
                 <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-4 md:space-y-0 md:space-x-4">
                   {/* District Dropdown */}
                   <div className="flex-1">
@@ -186,11 +190,6 @@ const SPList = () => {
                       className="pl-8"
                     />
                   </div>
-                </div>
-
-                {/* Total records */}
-                <div className="text-right text-xs mt-2">
-                  <span>Total number of records: {filteredData.length}</span>
                 </div>
 
                 {/* Responsive Table */}
@@ -341,13 +340,13 @@ const SPList = () => {
                           onClick={() => paginate(Math.max(1, currentPage - 1))}
                           className={
                             currentPage === 1
-                              ? "pointer-events-none opacity-50"
+                              ? "cursor-pointer opacity-100"
                               : ""
                           }
                         />
                       </PaginationItem>
                       {[...Array(totalPages || 0)].map((_, index) => (
-                        <PaginationItem key={index}>
+                        <PaginationItem className="cursor-pointer" key={index}>
                           <PaginationLink
                             onClick={() => paginate(index + 1)}
                             isActive={currentPage === index + 1}

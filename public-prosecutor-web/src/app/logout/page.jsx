@@ -19,9 +19,6 @@ const Logout = () => {
         duration: 2000,
       });
 
-      // Wait for toast to be visible
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       // Clear the token
       dispatch(clearToken());
 

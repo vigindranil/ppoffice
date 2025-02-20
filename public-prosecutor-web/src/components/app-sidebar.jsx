@@ -77,7 +77,7 @@ const data = {
       items: [
         {
           title: "Assign Case",
-          url: "/pp-head-pending-cases",
+          url: "/underprogress",
         },
       ],
     },

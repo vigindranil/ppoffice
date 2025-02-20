@@ -143,13 +143,14 @@ export default function CaseTable() {
       <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
-        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
-          <CardHeader>
-            <CardTitle>All Case List</CardTitle>
-          </CardHeader>
+        <Card className="w-full max-w-6xl mx-auto overflow-hidden bg-white/100 backdrop-blur-sm my-4 ">
+          <CardTitle className="bg-green-600 p-4 text-2xl text-white font-bold mb-5">
+            All Case List
+          </CardTitle>
+
           <CardContent>
             {error ? (
-              <p className="text-red-600 mb-4 text-center">{error}</p>
+              <p className="mb-4 text-center">{error}</p>
             ) : (
               <div className="container mx-auto py-10">
                 <CustomAlertDialog

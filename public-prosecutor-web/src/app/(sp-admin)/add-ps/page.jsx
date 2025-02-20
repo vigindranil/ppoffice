@@ -119,7 +119,7 @@ const Page = () => {
   }, [user]);
 
   return (
-    <Card className="w-full max-w-md mx-auto h-full bg-white/30 backdrop-blur-sm my-4">
+    <Card className="w-full max-w-md mx-auto overflow-hidden h-full bg-white/30 backdrop-blur-sm ">
       <CustomAlertDialog
         isOpen={isOpen}
         alertType={alertType}
@@ -129,9 +129,11 @@ const Page = () => {
           console.log("success!");
         }}
       />
-      <CardHeader>
-        <CardTitle>Add PS User</CardTitle>
-      </CardHeader>
+
+      <CardTitle className="bg-green-600 p-4 text-xl text-white font-bold mb-5">
+        Add PS User
+      </CardTitle>
+
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex space-x-4">

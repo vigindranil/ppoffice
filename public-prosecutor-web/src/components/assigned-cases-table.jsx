@@ -127,7 +127,7 @@ export default function CaseTable() {
   };
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-3">
       <CustomAlertDialog
         isOpen={isOpen}
         alertType={alertType}
@@ -210,8 +210,8 @@ export default function CaseTable() {
             ))
           ) : error ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-red-500">
-                {error}
+              <TableCell colSpan={5} className="text-center ">
+                Something went wrong. Please try again later.
               </TableCell>
             </TableRow>
           ) : currentCases.length > 0 ? (
@@ -318,9 +318,7 @@ export default function CaseTable() {
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => paginate(Math.max(1, currentPage - 1))}
-                className={
-                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
-                }
+                className={currentPage === 1 ? "cursor-pointer opacity-50" : ""}
               />
             </PaginationItem>
             {[...Array(totalPages)].map((_, index) => (
@@ -328,6 +326,7 @@ export default function CaseTable() {
                 <PaginationLink
                   onClick={() => paginate(index + 1)}
                   isActive={currentPage === index + 1}
+                  className="cursor-pointer"
                 >
                   {index + 1}
                 </PaginationLink>
@@ -337,9 +336,7 @@ export default function CaseTable() {
               <PaginationNext
                 onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                 className={
-                  currentPage === totalPages
-                    ? "pointer-events-none opacity-50"
-                    : ""
+                  currentPage === totalPages ? "cursor-pointer opacity-50" : ""
                 }
               />
             </PaginationItem>

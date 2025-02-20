@@ -30,7 +30,7 @@ class AuthController {
                 // Check if the stored procedure returned any results
                 if (results[0] && results[0].length > 0) {
                     // Generate a JWT token
-                    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
+                    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '8h' });
 
                     // Respond with success
                     return ResponseHelper.success(res, "Data found", results[0], token);
