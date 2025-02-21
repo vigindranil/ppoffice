@@ -161,11 +161,14 @@ const PPAllCaseList = () => {
           onClose={closeAlert}
           onConfirm={handleConfirm}
         />
-        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="w-full max-w-6xl mx-auto overflow-hidden bg-white/100 backdrop-blur-sm my-4">
+          <CardHeader className="flex flex-row items-center justify-between bg-green-600 p-4 text-2xl text-white font-bold mb-5">
             <CardTitle>Assigned Case List</CardTitle>
-            <Button onClick={downloadExcel} className="flex items-center gap-2">
-              <FileSpreadsheet className="h-4 w-4" />
+            <Button
+              onClick={downloadExcel}
+              className="flex bg-white hover:text-white text-black items-center gap-2"
+            >
+              <FileSpreadsheet className="h-4  w-4" />
               Export to Excel
             </Button>
           </CardHeader>

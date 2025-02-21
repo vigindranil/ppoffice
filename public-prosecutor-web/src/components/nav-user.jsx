@@ -29,6 +29,7 @@ export function NavUser() {
   const router = useRouter();
   const encryptedUser = useSelector((state) => state.auth.user);
   const [user, setUser] = useState({ name: "", email: "", org: "" });
+  const [activeItem, setActiveItem] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {

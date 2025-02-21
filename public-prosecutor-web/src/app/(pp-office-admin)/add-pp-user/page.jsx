@@ -35,6 +35,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { decrypt } from "@/utils/crypto";
+import { useToast } from "@/hooks/use-toast";
 
 const Page = () => {
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } =
@@ -64,6 +65,7 @@ const Page = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(encryptedUser));
@@ -133,11 +135,23 @@ const Page = () => {
           Email: "",
           LicenseNumber: "",
         });
+
+        toast({
+          title: "Successfully User Added",
+          description: "Head User Added Successfully!",
+          variant: "success",
+        });
       })
       .catch((err) => {
         // console.log(err)
         openAlert("error", err || "An unexpected error occurred");
         setError(err || "An unexpected error occurred");
+        toast({
+          title: "Add User Failed",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+          duration: 2000,
+        });
       })
       .finally(() => {
         setIsLoading(false);

@@ -22,7 +22,7 @@ import {
   fetchBnsIdFromBnsSection,
   fetchBnsIdFromIpcSection,
   fetchIpcSections,
-  fetchIbsByBnsId, // New import
+  fetchIbsByBnsId,
 } from "./api";
 import {
   Select,
@@ -96,7 +96,7 @@ const AddCasePage = () => {
     caseTypeID: "",
     ref: "",
     bnsSection: "",
-    sectionType: "ipc", // <-- Added default value here
+    sectionType: "ipc", //default value
     hearingDate: "",
     sendTo: "",
     copyTo: "",
@@ -266,6 +266,7 @@ const AddCasePage = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    console.log(formData);
   };
 
   // const handleFileChange = (e) => {
@@ -552,7 +553,7 @@ const AddCasePage = () => {
               <div className="flex gap-4">
                 <div className="flex-1 space-y-2">
                   <Label className="font-bold" htmlFor="hearingDate">
-                    Hearing Date
+                    Hearing Date 1
                   </Label>
                   <Input
                     icon={Clock}

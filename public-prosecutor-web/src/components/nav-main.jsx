@@ -21,10 +21,12 @@ import {
 import { useSelector } from "react-redux";
 import { decrypt } from "@/utils/crypto";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function NavMain({ items }) {
   const encryptedUser = useSelector((state) => state.auth.user);
   const [userType, setUserType] = useState(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (encryptedUser) {
@@ -63,7 +65,14 @@ export function NavMain({ items }) {
                       {item.items?.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton asChild>
-                            <Link href={subItem.url}>
+                            <Link
+                              className={`${
+                                pathname == subItem?.url
+                                  ? "bg-gray-200 font-semibold"
+                                  : ""
+                              }`}
+                              href={subItem.url}
+                            >
                               <span>{subItem.title}</span>
                             </Link>
                           </SidebarMenuSubButton>
