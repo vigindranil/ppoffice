@@ -594,7 +594,7 @@ class CaseController {
                     return ResponseHelper.error(res, "An error occurred while fetching data");
                 }
     
-                // Assuming the stored procedure returns results in results[0]
+                // The SP returns data in results[0], typically an array of rows
                 const caseData = results[0];
     
                 // Initialize counts
@@ -602,8 +602,39 @@ class CaseController {
                 let assignedCases = 0;
                 let totalCases = 0;
     
-                // Process the results
-                caseData.forEach(row => {
+                // Check if we got at least one row from the SP
+                if (!caseData || !caseData.length) {
+                    // Possibly the SP exited early or returned no data
+                    const response = {
+                        unassignedCases: 0,
+                        assignedCases: 0,
+                        totalCases: 0
+                    };
+                    return ResponseHelper.success_reponse(
+                        res,
+                        "No data returned from sp_DashBoardCount",
+                        response
+                    );
+                }
+    
+                // The SP returns exactly one row with columns:
+                //    TotalUnassignedCase, TotalAssignedCase, TotalCases
+                const spRow = caseData[0];
+    
+                // Transform that single row into the array structure your loop expects:
+                const transformedData = [
+                    {
+                        caseTypeName: 0,
+                        CaseCount: spRow.TotalUnassignedCase || 0
+                    },
+                    {
+                        caseTypeName: 1,
+                        CaseCount: spRow.TotalAssignedCase || 0
+                    }
+                ];
+    
+                // Use the existing loop logic on the transformed data
+                transformedData.forEach(row => {
                     if (row.caseTypeName === 0) {
                         unassignedCases = row.CaseCount;
                     } else if (row.caseTypeName === 1) {
@@ -612,24 +643,29 @@ class CaseController {
                     totalCases += row.CaseCount;
                 });
     
-                // Prepare the response
+                // Or you can directly take spRow.TotalCases if you trust it:
+                // totalCases = spRow.TotalCases || 0;
+    
+                // Prepare the final response
                 const response = {
-                   
-                    
-                      unassignedCases,
-                      assignedCases,
-                      totalCases
-                     
+                    unassignedCases,
+                    assignedCases,
+                    totalCases
                 };
     
                 // Send the response
-                return ResponseHelper.success_reponse(res, "Counts retrieved successfully", response);
+                return ResponseHelper.success_reponse(
+                    res,
+                    "Counts retrieved successfully",
+                    response
+                );
             });
         } catch (error) {
             console.error("Unexpected error:", error);
             return ResponseHelper.error(res, "An unexpected error occurred", error);
         }
     }
+    
     
 }
 
