@@ -58,7 +58,7 @@ class ipcBnsMasterController {
   static async search(req, res) {
     const { type, searchTerm } = req.body; 
     try {
-
+ 
       console.log(req.body);
 
         let query = '';
