@@ -88,6 +88,27 @@ class ipcBnsMasterController {
     }
   }
 
+
+  static async getAdvocatesByCaseId(req, res) {
+    const { caseId } = req.params; 
+    try {
+        if (!caseId) {
+            return ResponseHelper.error(res, "caseId is required in the request params"); 
+        }
+
+        const [results] = await db.promise().query('CALL sp_getAdvocatelistByCaseId(?)', [caseId]); 
+
+        if (!results || results.length === 0) {
+            return ResponseHelper.success_reponse(res,"No Data found",[]);
+        }
+
+        return ResponseHelper.success_reponse(res, "Data found", results[0]);
+    } catch (error) {
+        console.error('Error in getAdvocatesByCaseId:', error);
+        return ResponseHelper.error(res, "An error occurred while fetching data");
+    }
+  }
+
 }
 
 module.exports = ipcBnsMasterController;

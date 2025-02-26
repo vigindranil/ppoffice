@@ -10,7 +10,8 @@ router.post('/api/showBnsSection', authMiddleware.verifyToken, ipcBnsMasterContr
 router.post('/api/showIpcSection', authMiddleware.verifyToken, ipcBnsMasterController.showIpcSection);
 router.post('/api/showIbsByBnsId', authMiddleware.verifyToken, ipcBnsMasterController.showIbsByBnsId);
 router.post('/api/search', authMiddleware.verifyToken, ipcBnsMasterController.search);
-
+router.get('/api/advocates/:caseId', authMiddleware.verifyToken, ipcBnsMasterController.getAdvocatesByCaseId);
+ 
 
 module.exports = router;
 
