@@ -4,8 +4,10 @@ const app = express();
 const bodyParser = require('body-parser');
 const caseRoutes = require('./routes/caseRoutes');
 const myRoutes = require('./routes/myRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 const path = require('path');
 require('dotenv').config();
+const multer = require('multer');
 
 
 const port = process.env.PORT || 3000;  // Use the port from .env or default to 3000
@@ -14,11 +16,30 @@ const port = process.env.PORT || 3000;  // Use the port from .env or default to 
 app.use(cors());
 
 // Middleware to parse JSON bodies
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Configure Multer storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Save files in 'uploads' folder
+  },
+  filename: function (req, file, cb) {
+    req.documents_path = [...req.documents_path, file.fieldname + '-' + Date.now() + path.extname(file.originalname)]
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  }
+});
+
+// File filter to allow only specific file types (optional)
+const fileFilter = (req, file, cb) => {
+  cb(null, true); // Accept all file types (modify if needed)
+};
+
+// Multer middleware (NO LIMIT on number of files)
+const upload = multer({ storage, fileFilter });
+
 
 app.use('/api/cases', caseRoutes);
 
@@ -27,6 +48,7 @@ const routes = require('./routes/routes');
 app.use('/', routes);
 
 app.use('/', myRoutes);
+app.use('/upload', upload.array('documents'), uploadRoutes);
 
 // Start the server
 app.listen(port, () => {

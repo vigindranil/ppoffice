@@ -475,31 +475,97 @@ export const showallCase = async (typeID) => {
 export const createCaseOfficeAdmin = async (req_body) => {
   return new Promise(async (resolve, reject) => {
     try {
-      // console.log("Request body 123:", req_body);
-      
+      console.log(req_body);
       const token = sessionStorage.getItem('token');
-      
+
       const response = await fetch(`${BASE_URL}cases/create`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: req_body, 
+        body: JSON.stringify(req_body),
       });
 
       const result = await response.json();
 
       if (response.ok && result.status === 0) {
-        resolve(result);
+        resolve(result); // Return the case ID
       } else {
-        // console.log("hi", result);
-        reject(result.message || 'An error occurred 123');
+        reject(result.message || 'An error occurred while creating the case');
       }
     } catch (error) {
       reject(`Fetch error: ${error.message}`);
     }
   });
 };
+
+
+export const uploadCaseDocuments = async (caseId, documents, entryUserId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const errors = [];
+
+      // for (const document of documents) {
+      //   const formData = new FormData();
+      //   formData.append("CaseID", caseId);
+      //   formData.append("EntryUserID", entryUserId);
+      //   formData.append("documents", document);
+      //   console.log(formData);
+
+      //   const response = await fetch(`${BASE_URL}upload/add-case-document`, {
+      //     method: 'POST',
+      //     headers: {
+      //       'Authorization': `Bearer ${token}`,
+      //     },
+      //     body: formData,
+      //   });
+
+      //   const result = await response.json();
+
+      //   if (!response.ok || result.status !== 0) {
+      //     errors.push(result.message || `Failed to upload document: ${document.name}`);
+      //   }
+      // }
+      //}
+      
+      const formData = new FormData();
+      formData.append("CaseID", caseId);
+      formData.append("EntryUserID", entryUserId);
+
+      documents.forEach((file) => {
+        formData.append("documents", file); 
+      });
+
+      console.log("🔥 FormData Content:", ...formData.entries()); 
+
+      const response = await fetch(`${BASE_URL}cases/add-case-document`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || result.status !== 0) {
+        errors.push(result.message || "Failed to upload document");
+      }
+      
+
+      if (errors.length > 0) {
+        reject(errors);
+      } else {
+        resolve("All documents uploaded successfully");
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
 
 // Case Type Dropdown
 export const getcasetype = async () => {

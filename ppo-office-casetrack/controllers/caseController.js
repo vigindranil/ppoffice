@@ -116,103 +116,99 @@ class CaseController {
 
     // create Case without Doc
     static async createCase(req, res) {
-        const {
-            CaseNumber,
-            EntryUserID,
-            CaseDate,
-            DistrictID,
-            psID,
-            caseTypeID,
-            ref,
-            ipcAct,
-            hearingDate,
-            sendTo,
-            copyTo,
-            photocopycaseDiaryExist
-        } = req.body;
-
-        // Validate required input fields
-        if (
-            !CaseNumber || !EntryUserID || !CaseDate || !DistrictID || !psID ||
-            !caseTypeID || !ref || !ipcAct || !hearingDate || sendTo === undefined ||
-            copyTo === undefined || photocopycaseDiaryExist === undefined )
-            {
-                return ResponseHelper.error(res, "please  entry all required feild ");
-           
-        }
-
         try {
-            // Define the stored procedure call
-            const query = "CALL sp_Createcase(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
-            const params = [
+            console.log("Request Payload:", req.body); // Debugging log
+    
+            const {
                 CaseNumber,
                 EntryUserID,
                 CaseDate,
-                DistrictID,
-                psID,
-                caseTypeID,
-                ref,
+                districtId,
+                psId,
+                caseTypeId,
+                refNumber, 
                 ipcAct,
                 hearingDate,
-                sendTo,
-                copyTo,
-                photocopycaseDiaryExist,
+                bnsNumber
+            } = req.body;
+    
+            // Validate required input fields
+            if (
+                !CaseNumber || !EntryUserID || !CaseDate || !districtId || !psId ||
+                !caseTypeId || !refNumber || !ipcAct || !hearingDate
+            ) {
+                console.error("Validation failed: Missing required fields.");
+                return ResponseHelper.error(res, "Please enter all required fields.");
+            }
+    
+            // ✅ Ensure `bnsNumber` is in a valid format (strip invalid characters)
+            const validBnsNumber = typeof bnsNumber === "string" ? bnsNumber.replace(/[^\d]/g, "") : bnsNumber;
+    
+            // ✅ Define the stored procedure call (matching your SP parameters)
+            const query = "CALL sp_Createcase(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
+            const params = [
+                CaseNumber,
+                CaseDate,
+                districtId,
+                psId,
+                caseTypeId,
+                refNumber,  
+                ipcAct,
+                validBnsNumber,
+                hearingDate,
+                EntryUserID
             ];
-
+    
+            console.log("Executing Stored Procedure with params:", params);
+    
             // Execute the stored procedure
             await new Promise((resolve, reject) => {
                 db.query(query, params, (err) => {
                     if (err) {
-                        return  ResponseHelper.error(res,"An error occurred while executing the procedure");
+                        console.error("Error executing stored procedure:", err);
+                        return reject(err);
                     }
                     resolve();
                 });
             });
-
+    
             // Fetch the output parameters `CaseID` and `ErrorCode`
             const outputResults = await new Promise((resolve, reject) => {
                 db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode", (outputErr, results) => {
                     if (outputErr) {
-                        return  ResponseHelper.error(res,"An error occurred while executing the procedure");
+                        console.error("Error fetching output parameters:", outputErr);
+                        return reject(outputErr);
                     }
                     resolve(results);
                 });
             });
-
+    
             const { CaseID, ErrorCode } = outputResults[0];
-
-            // Check for errors from the stored procedure
+    
+            // Handle stored procedure errors
             if (ErrorCode === 1) {
-               
-                return  ResponseHelper.error(res,"An error occurred while executing the procedure");
+                return ResponseHelper.error(res, "An error occurred while executing the procedure.");
             }
             if (ErrorCode === 2) {
-               
-                return  ResponseHelper.error(res,"Case Already Created ");
+                return ResponseHelper.error(res, "Case already exists.");
             }
-            
             if (ErrorCode === 3) {
-               
-                return  ResponseHelper.error(res,"Loggedin user no permission to create case ");
+                return ResponseHelper.error(res, "Logged-in user does not have permission to create a case.");
             }
+    
             // Success response
             return res.status(201).json({
                 status: 0,
                 message: "Case created successfully.",
-                data: {
-                    CaseID: CaseID,
-                },
+                data: { CaseID }
             });
+    
         } catch (error) {
-           
-            return  ResponseHelper.error(res,"An unexpected error occurred while processing the request.",error);
-           
+            console.error("Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
         }
     }
-       
     
-
-
 
     static async createCaseWithDocument(req, res) {
         try {
@@ -663,6 +659,75 @@ class CaseController {
         }
     }
     
+
+    static async addCaseDocuments(req, res) {
+        try {
+            console.log("🔥 Received Request Body:", req.body);
+            console.log("🔥 Received Files:", req.files);
+    
+            const { CaseID, EntryUserID } = req.body;
+            const files = req.files; // ✅ Extract files from request
+    
+            // ✅ Validate input fields
+            if (!CaseID || !EntryUserID || !files || files.length === 0) {
+                return ResponseHelper.error(res, "Invalid input: Provide CaseID, EntryUserID, and at least one document.");
+            }
+    
+            for (const file of files) {
+                const filePath = `/uploads/${Date.now()}_${file.originalname}`; // Simulate file storage path
+    
+                console.log("✅ Saving document:", filePath); // Debugging
+    
+                const query = "CALL sp_createcaseDocument(?, ?, ?, @ErrorCode)";
+                const params = [CaseID, filePath, EntryUserID];
+    
+                // ✅ Execute the stored procedure
+                await new Promise((resolve, reject) => {
+                    db.query(query, params, (err) => {
+                        if (err) {
+                            console.error("❌ Error executing stored procedure:", err);
+                            return reject(err);
+                        }
+                        resolve();
+                    });
+                });
+    
+                // ✅ Fetch the output parameter `ErrorCode`
+                const outputResults = await new Promise((resolve, reject) => {
+                    db.query("SELECT @ErrorCode AS ErrorCode", (outputErr, results) => {
+                        if (outputErr) {
+                            console.error("❌ Error fetching output parameters:", outputErr);
+                            return reject(outputErr);
+                        }
+                        resolve(results);
+                    });
+                });
+    
+                const { ErrorCode } = outputResults[0];
+    
+                // ✅ Handle stored procedure errors
+                if (ErrorCode === 1) {
+                    return ResponseHelper.error(res, "An error occurred while executing the procedure.");
+                }
+                if (ErrorCode === 3) {
+                    return ResponseHelper.error(res, "Logged-in user does not have permission to add case documents.");
+                }
+            }
+    
+            // ✅ Success response
+            return res.status(201).json({
+                status: 0,
+                message: "All case documents added successfully.",
+            });
+    
+        } catch (error) {
+            console.error("❌ Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+        }
+    }
+    
+    
+
 }
 
 

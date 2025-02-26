@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import {
   createCaseOfficeAdmin,
+  uploadCaseDocuments,
   getcasetype,
   showRefferenceDetails,
   alldistrict,
@@ -18,7 +19,7 @@ import { Label } from "@/components/ui/label"
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { useSelector } from "react-redux"
-import { Calendar, FileText, Hash, Clock } from "lucide-react"
+import { Calendar, FileText, Hash, Clock, Trash } from "lucide-react"
 import { decrypt } from "@/utils/crypto"
 import { Switch } from "@/components/ui/switch"
 import { Check, ChevronsUpDown } from "lucide-react"
@@ -46,6 +47,7 @@ const AddCasePage = () => {
   const [ibsReceivedDataBNS, setIbsReceivedDataBNS] = useState(null)
   const [isCurrentBnsId, setIsCurrentBnsId] = useState(null)
   const [useIpcAct, setUseIpcAct] = useState(true)
+  const [documents, setDocuments] = useState([]);
 
   const [openDistrict, setOpenDistrict] = useState(false)
   const [openPS, setOpenPS] = useState(false)
@@ -58,15 +60,13 @@ const AddCasePage = () => {
     CaseNumber: "",
     EntryUserID: "",
     CaseDate: "",
-    DistrictID: "",
-    psID: "",
-    caseTypeID: "",
-    ref: "",
+    districtId: "",
+    psId: "",
+    caseTypeId: "",
+    refNumber: "",
     ipcAct: "",
     bnsNumber: "",
     hearingDate: "",
-    photocopycaseDiaryExist: "0",
-    caseDocument: null,
   })
 
   useEffect(() => {
@@ -123,8 +123,8 @@ const AddCasePage = () => {
   }, [user])
 
   useEffect(() => {
-    if (formData.DistrictID) {
-      showpoliceBydistrict(formData.DistrictID)
+    if (formData.districtId) {
+      showpoliceBydistrict(formData.districtId)
         .then((result) => {
           setAllPSList(result)
         })
@@ -132,7 +132,7 @@ const AddCasePage = () => {
           openAlert("error", err?.message || "An unexpected error occurred")
         })
     }
-  }, [formData.DistrictID])
+  }, [formData.districtId])
 
   useEffect(() => {
     if (formData.sendTo) {
@@ -228,71 +228,65 @@ const AddCasePage = () => {
   }
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
+    const files = Array.from(e.target.files);
+    const validFiles = files.filter(file => {
       if (file.size > 15000 * 1024) {
-        // 15 MB in bytes
-        openAlert("error", "File size should not exceed 15 MB")
-        return
+        openAlert("error", `${file.name} exceeds 15 MB.`);
+        return false;
       }
       if (!["image/jpeg", "image/jpg", "application/pdf"].includes(file.type)) {
-        openAlert("error", "Only JPG, JPEG, or PDF files are allowed")
-        return
+        openAlert("error", `${file.name} is not a valid format (JPG, JPEG, PDF only).`);
+        return false;
       }
-      setFormData((prevState) => ({
-        ...prevState,
-        caseDocument: file,
-        photocopycaseDiaryExist: "1",
-      }))
-    }
-  }
+      return true;
+    });
+
+    setDocuments(prev => [...prev, ...validFiles]);
+  };
+
+  const removeDocument = (index) => {
+    setDocuments(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleAddCase = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
+    setError("");
+    setMessage("");
+
     try {
-      const formDataToSend = new FormData()
-      for (const key in formData) {
-        if (key === "caseDocument") {
-          if (formData[key]) {
-            formDataToSend.append("caseDocument", formData[key])
-          }
-        } else {
-          formDataToSend.append(key, formData[key])
-        }
+
+      const caseResult = await createCaseOfficeAdmin(formData);
+      const caseId = caseResult.data.CaseID;
+
+      // Step 2: Upload all documents
+      if (documents.length > 0) {
+        await uploadCaseDocuments(caseId, documents, user.AuthorityUserID);
       }
 
-      const result = await createCaseOfficeAdmin(formDataToSend)
-      // console.log(result);
-      openAlert("success", result.message || "Case added successfully")
-      // try {
-      //   const res = await handleNotifyFromPPOfficeAdmin(result?.data?.CaseID);
-      //   // console.log(res);
-      // } catch (err) {
-      //   // console.log(err);
-      //   openAlert('error', err?.message || "An unexpected error occurred");
-      // }
-
+      openAlert("success", "Case and documents added successfully");
       setFormData({
         CaseNumber: "",
         EntryUserID: user.AuthorityUserID,
         CaseDate: "",
-        DistrictID: "",
-        psID: "",
-        caseTypeID: "",
-        ref: "",
+        districtId: "",
+        psId: "",
+        caseTypeId: "",
+        refNumber: "",
         ipcAct: "",
         bnsNumber: "",
         hearingDate: "",
-        photocopycaseDiaryExist: "0",
-        caseDocument: null,
-      })
+      });
+      setIbsReceivedDataIPC(null);
+      setIbsReceivedDataBNS(null);
+      setIsCurrentBnsId(null);
+      setDocuments([]);
+
     } catch (err) {
-      // console.log(err);
-      openAlert("error", err?.message || "An unexpected error occurred")
+      openAlert("error", err instanceof Array ? err.join(", ") : err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleConfirm = () => {
     closeAlert()
@@ -348,7 +342,7 @@ const AddCasePage = () => {
               </div>
               <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="DistrictID">
+                  <Label className="font-bold" htmlFor="districtId">
                     District
                   </Label>
                   <Popover open={openDistrict} onOpenChange={setOpenDistrict}>
@@ -359,8 +353,8 @@ const AddCasePage = () => {
                         aria-expanded={openDistrict}
                         className="w-full justify-between"
                       >
-                        {formData.DistrictID
-                          ? allDistrictList.find((district) => district.districtId.toString() === formData.DistrictID)
+                        {formData.districtId
+                          ? allDistrictList.find((district) => district.districtId.toString() === formData.districtId)
                               ?.districtName
                           : "Select District"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -375,12 +369,12 @@ const AddCasePage = () => {
                             {allDistrictList.map((district) => (
                               <CommandItem
                                 key={district.districtId}
-                                onSelect={() => handleSelectChange("DistrictID", district.districtId.toString())}
+                                onSelect={() => handleSelectChange("districtId", district.districtId.toString())}
                               >
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    formData.DistrictID === district.districtId.toString()
+                                    formData.districtId === district.districtId.toString()
                                       ? "opacity-100"
                                       : "opacity-0",
                                   )}
@@ -395,7 +389,7 @@ const AddCasePage = () => {
                   </Popover>
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="psID">
+                  <Label className="font-bold" htmlFor="psId">
                     Police Station
                   </Label>
                   <Popover open={openPS} onOpenChange={setOpenPS}>
@@ -406,8 +400,8 @@ const AddCasePage = () => {
                         aria-expanded={openPS}
                         className="w-full justify-between"
                       >
-                        {formData.psID
-                          ? allPSList.find((ps) => ps.id.toString() === formData.psID)?.ps_name
+                        {formData.psId
+                          ? allPSList.find((ps) => ps.id.toString() === formData.psId)?.ps_name
                           : "Select Police Station"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -419,11 +413,11 @@ const AddCasePage = () => {
                           <CommandEmpty>No police station found.</CommandEmpty>
                           <CommandGroup>
                             {allPSList.map((ps) => (
-                              <CommandItem key={ps.id} onSelect={() => handleSelectChange("psID", ps.id.toString())}>
+                              <CommandItem key={ps.id} onSelect={() => handleSelectChange("psId", ps.id.toString())}>
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    formData.psID === ps.id.toString() ? "opacity-100" : "opacity-0",
+                                    formData.psId === ps.id.toString() ? "opacity-100" : "opacity-0",
                                   )}
                                 />
                                 {ps.ps_name}
@@ -438,7 +432,7 @@ const AddCasePage = () => {
               </div>
               <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="caseTypeID">
+                  <Label className="font-bold" htmlFor="caseTypeId">
                     Case Type
                   </Label>
                   <Popover open={openCaseType} onOpenChange={setOpenCaseType}>
@@ -449,8 +443,8 @@ const AddCasePage = () => {
                         aria-expanded={openCaseType}
                         className="w-full justify-between"
                       >
-                        {formData.caseTypeID
-                          ? caseTypeList.find((caseType) => caseType.CasetypeId.toString() === formData.caseTypeID)
+                        {formData.caseTypeId
+                          ? caseTypeList.find((caseType) => caseType.CasetypeId.toString() === formData.caseTypeId)
                               ?.CasetypeName
                           : "Select Case Type"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -465,12 +459,12 @@ const AddCasePage = () => {
                             {caseTypeList.map((caseType) => (
                               <CommandItem
                                 key={caseType.CasetypeId}
-                                onSelect={() => handleSelectChange("caseTypeID", caseType.CasetypeId.toString())}
+                                onSelect={() => handleSelectChange("caseTypeId", caseType.CasetypeId.toString())}
                               >
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    formData.caseTypeID === caseType.CasetypeId.toString()
+                                    formData.caseTypeId === caseType.CasetypeId.toString()
                                       ? "opacity-100"
                                       : "opacity-0",
                                   )}
@@ -485,7 +479,7 @@ const AddCasePage = () => {
                   </Popover>
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="ref">
+                  <Label className="font-bold" htmlFor="refNumber">
                     Reference
                   </Label>
                   <Popover open={openReference} onOpenChange={setOpenReference}>
@@ -496,8 +490,8 @@ const AddCasePage = () => {
                         aria-expanded={openReference}
                         className="w-full justify-between"
                       >
-                        {formData.ref
-                          ? referenceList.find((ref) => ref.refferenceId.toString() === formData.ref)?.refferenceName
+                        {formData.refNumber
+                          ? referenceList.find((ref) => ref.refferenceId.toString() === formData.refNumber)?.refferenceName
                           : "Select Reference"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -511,12 +505,12 @@ const AddCasePage = () => {
                             {referenceList.map((ref) => (
                               <CommandItem
                                 key={ref.refferenceId}
-                                onSelect={() => handleSelectChange("ref", ref.refferenceId.toString())}
+                                onSelect={() => handleSelectChange("refNumber", ref.refferenceId.toString())}
                               >
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    formData.ref === ref.refferenceId.toString() ? "opacity-100" : "opacity-0",
+                                    formData.refNumber === ref.refferenceId.toString() ? "opacity-100" : "opacity-0",
                                   )}
                                 />
                                 {ref.refferenceName}
@@ -682,29 +676,30 @@ const AddCasePage = () => {
               </div>
               <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="caseDocument">
-                    Case Document
-                  </Label>
-                  <Input
-                    icon={FileText}
-                    id="caseDocument"
-                    name="caseDocument"
-                    type="file"
-                    accept=".jpg,.jpeg,.pdf"
-                    onChange={handleFileChange}
-                  />
+                <Label>Upload Case Documents</Label>
+                  <Input type="file" multiple onChange={handleFileChange} />
+
+                  {documents.length > 0 && (
+                    <div className="mt-3">
+                      <p className="font-semibold mb-2">Selected Documents:</p>
+                      <ul className="space-y-2">
+                        {documents.map((file, index) => (
+                          <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded">
+                            <span>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => removeDocument(index)}
+                              className="ml-2"
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <p className="text-sm text-gray-500">Max file size: 15 MB. Allowed formats: JPG, JPEG, PDF</p>
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Label className="font-bold" htmlFor="photocopycaseDiaryExist">
-                    Photocopy Case Diary Exists
-                  </Label>
-                  <Input
-                    id="photocopycaseDiaryExist"
-                    name="photocopycaseDiaryExist"
-                    value={formData.photocopycaseDiaryExist === "1" ? "Yes" : "No"}
-                    readOnly
-                  />
                 </div>
               </div>
               
