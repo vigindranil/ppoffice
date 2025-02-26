@@ -9,6 +9,8 @@ import { BASE_URL } from "@/app/constants";
 const AdvocatePage = ({ params }) => {
   const unwrappedParams = use(params);
   const { caseId } = unwrappedParams;
+  const dec_caseId = decodeURIComponent(caseId);
+  const case_id = atob(dec_caseId);
   const [advocateData, setAdvocateData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,7 +18,7 @@ const AdvocatePage = ({ params }) => {
   useEffect(() => {
     const token = sessionStorage.getItem("token");
 
-    fetch(`${BASE_URL}advocates/${caseId}`, {
+    fetch(`${BASE_URL}advocates/${case_id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -34,7 +36,7 @@ const AdvocatePage = ({ params }) => {
         setError("Failed to fetch data");
         setLoading(false);
       });
-  }, [caseId]);
+  }, [case_id]);
   return (
     <div className="max-w-full p-8">
       <h1 className="text-2xl font-bold mb-4">Advocate Lists</h1>

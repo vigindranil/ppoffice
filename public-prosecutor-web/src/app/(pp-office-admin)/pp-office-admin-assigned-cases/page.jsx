@@ -166,8 +166,9 @@ const PPAllCaseList = () => {
   };
   const handleAdvocateClick = (head) => {
     // Redirect to the placeholder page for advocate
-    console.log("head", head.CaseId);
-    router.push(`/advocate-page/${head.CaseId}`);
+    const caseID = head.CaseId;
+    const enc_caseId = btoa(caseID);
+    router.push(`/advocate-page/${enc_caseId}`);
   };
 
   return (
