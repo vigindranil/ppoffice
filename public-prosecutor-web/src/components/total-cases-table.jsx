@@ -1,12 +1,13 @@
 'use client'
-import { BASE_URL } from '@/app/constants'; 
+import { BASE_URL } from '@/app/constants'
 import { useEffect, useState } from 'react'
+import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { ClipboardPlus, Eye, LoaderCircle, Search } from 'lucide-react'
+import { ClipboardPlus, Edit, Eye, LoaderCircle, Search } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
@@ -18,6 +19,7 @@ import { Badge } from './ui/badge'
 
 
 export default function CaseTable() {
+  const router = useRouter();
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
   const [selectedCase, setSelectedCase] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -148,18 +150,17 @@ export default function CaseTable() {
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-100">
-            <TableHead className="font-bold">PP User Name</TableHead>
             <TableHead className="font-bold">Case Number</TableHead>
             <TableHead className="font-bold">PS Name</TableHead>
             <TableHead className="font-bold">Case Date</TableHead>
             <TableHead className="font-bold">Case Status</TableHead>
-            <TableHead className="font-bold">Action</TableHead>
+            <TableHead className="font-bold">View</TableHead>
+            <TableHead className="font-bold">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {currentCases.map((caseItem, index) => (
             <TableRow key={index}>
-              <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell>
               <TableCell>{caseItem.CaseNumber}</TableCell>
               <TableCell>{caseItem.PsName}</TableCell>
               <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
@@ -189,7 +190,6 @@ export default function CaseTable() {
                         {selectedCase && (
                           <>
                             <div className="space-y-2">
-                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName || 'Not Assigned'}</p>
                               <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
                               <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
                               <p><strong>PS Name:</strong> {selectedCase.PsName}</p>
@@ -207,6 +207,18 @@ export default function CaseTable() {
                     </Card>
                   </DialogContent>
                 </Dialog>
+              </TableCell>
+              <TableCell>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        const caseID = caseItem.CaseId;
+                        const enc_caseId = btoa(caseID);
+                        router.push(`/case-control-center/${enc_caseId}`);
+                      }}
+                    >
+                      <Edit /> Take Action
+                    </Button>
               </TableCell>
             </TableRow>
           ))}

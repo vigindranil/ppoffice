@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useDispatch, useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
 import { Input } from '@/components/ui/input'
+import Link from 'next/link';
 
 const PPAllCaseList = () => {
   const [allCaseList, setAllCaseList] = useState([])
@@ -128,9 +129,9 @@ const PPAllCaseList = () => {
                         <TableCell>{head.BeginReferenceName}</TableCell>
                         <TableCell>
                           {head.Document && (
-                            <a href={`${PORT_URL}${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            <Link href={`${PORT_URL}${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                               View Document
-                            </a>
+                            </Link>
                           )}
                         </TableCell>
                       </TableRow>

@@ -24,8 +24,10 @@ router.post('/api/authenticate', authController.authenticateUser);
 const ppuserController = require('../controllers/PPuserController');
 router.post('/api/addppUser', authMiddleware.verifyToken,ppuserController.createPPUser); //create ppstaff by ppadmin
 router.get('/api/getppuser', authMiddleware.verifyToken,ppuserController.showppuser); // show ppuser
+router.post('/api/assigned-advocates', authMiddleware.verifyToken,ppuserController.getAssignedAdvocatesByCaseId); // show assigned ppuser
+router.post('/api/unassigned-advocates', authMiddleware.verifyToken,ppuserController.getUnassignedAdvocatesByCaseId); // show unassigned ppuser
 router.get('/api/caseDetailsByPPuserId', authMiddleware.verifyToken,ppuserController.caseDetailsByPPuserId); // show ppstaffdetails by Id
-router.post('/api/assigncase', authMiddleware.verifyToken,ppuserController.assignCasetoppuser); // show ppstaffdetails by Id
+router.post('/api/assigncase', authMiddleware.verifyToken,ppuserController.assignOrUnAdvocateToCase); // show ppstaffdetails by Id
 router.get('/api/getppuserDetailsById', authMiddleware.verifyToken,ppuserController.getppuserDetailsById);
 
 
@@ -46,6 +48,7 @@ router.post("/api/showallCaseBetweenRange",authMiddleware.verifyToken,CaseContro
 router.post("/api/showallCase", authMiddleware.verifyToken,CaseController.showallCaseWithDOC);
 router.post("/api/DashboardCount",authMiddleware.verifyToken,CaseController.getDashboardCounts);
 router.post("/api/showCaseDetail", authMiddleware.verifyToken,CaseController.showCaseDetail);
+router.post("/api/show-case-document", authMiddleware.verifyToken,CaseController.getCaseDocuments);
 
 // send email
 const EmailController = require("../controllers/emailController");

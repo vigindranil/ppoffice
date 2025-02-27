@@ -85,9 +85,9 @@ export default function LoginPage() {
             // console.log("Unknown AuthorityTypeID:", userData.AuthorityTypeID);
             router.push("/login");
         }
-      } else {
-        setErrorMessage("Invalid credentials. Please try again.");
-      }
+      } else if (response.data.status === 0 && response.data.message === "Invalid credentials provided") {
+        setErrorMessage(response.data.message || "Invalid credentials. Please try again.");
+      } 
     } catch (error) {
       console.error("Login error:", error);
       setErrorMessage("An error occurred. Please try again.");

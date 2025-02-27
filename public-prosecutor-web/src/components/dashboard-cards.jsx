@@ -46,6 +46,7 @@ export default function DashboardCards() {
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(userDetails));
     setUser(decoded_user);
+    console.log(decoded_user);
   }, [userDetails]);
 
    useEffect(() => {

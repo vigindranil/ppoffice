@@ -54,30 +54,17 @@ const data = {
           title: "Dashboard",
           url: "/pp-head-dashboard",
         },
+        // {
+        //   title: "Assigned Cases",
+        //   url: "/pp-head-assigned-cases",
+        // },
+        // {
+        //   title: "Pending Cases",
+        //   url: "/pp-head-pending-cases",
+        // },
         {
-          title: "Assigned Cases",
-          url: "/pp-head-assigned-cases",
-        },
-        {
-          title: "Pending Cases",
-          url: "/pp-head-pending-cases",
-        },
-        {
-          title: "Total Cases",
+          title: "Cases",
           url: "/pp-head-total-cases",
-        },
-      ],
-    },
-    {
-      title: "Operations",
-      url: "#",
-      icon: ShieldPlus,
-      isActive: true,
-      type: 20,
-      items: [
-        {
-          title: "Assign Case",
-          url: "/pp-head-pending-cases",
         },
       ],
     },

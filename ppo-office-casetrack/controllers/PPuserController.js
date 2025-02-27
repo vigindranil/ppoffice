@@ -179,6 +179,183 @@ class PPuserController {
       return ResponseHelper.error(res, "An unexpected error occurred");
     }
   }
+
+
+  static async assignOrUnAdvocateToCase(req, res) {
+    try {
+        console.log("🔥 Request Payload:", req.body); // Debugging
+
+        const {
+            assignId,    // 0 for new assignment, existing ID for unassigning
+            ppUserId,    // Advocate being assigned
+            caseId,      // Case ID
+            districtId,  // District 0
+            psId,        // Police Station 0
+            EntryUserId  // Logged-in user assigning the case
+          } = req.body;
+
+        // ✅ Validate required input fields
+        if (!caseId || !EntryUserId) {
+            console.error("❌ Validation failed: Missing required fields.");
+            return ResponseHelper.error(res, "Please enter all required fields.");
+        }
+
+        // ✅ Define the stored procedure call
+        const query = "CALL sp_saveCaseAssignv2(?, ?, ?, ?, ?, ?, @CaseAssignId, @ErrorCode)";
+        const params = [assignId, ppUserId, caseId, districtId, psId, EntryUserId];
+
+        console.log("🛠️ Executing Stored Procedure with params:", params);
+
+        // ✅ Execute the stored procedure
+        await new Promise((resolve, reject) => {
+            db.query(query, params, (err) => {
+                if (err) {
+                    console.error("❌ Error executing stored procedure:", err);
+                    return reject(err);
+                }
+                resolve();
+            });
+        });
+
+        // ✅ Fetch the output parameters `CaseAssignId` and `ErrorCode`
+        const outputResults = await new Promise((resolve, reject) => {
+            db.query("SELECT @CaseAssignId AS CaseAssignId, @ErrorCode AS ErrorCode", (outputErr, results) => {
+                if (outputErr) {
+                    console.error("❌ Error fetching output parameters:", outputErr);
+                    return reject(outputErr);
+                }
+                resolve(results);
+            });
+        });
+
+        const { CaseAssignId, ErrorCode } = outputResults[0];
+
+        // ✅ Handle stored procedure errors
+        if (ErrorCode === 1) {
+            return ResponseHelper.error(res, "An error occurred while executing the procedure.");
+        }
+        if (ErrorCode === 3) {
+            return ResponseHelper.error(res, "Case ID does not exist.");
+        }
+        if (ErrorCode === 4) {
+            return ResponseHelper.error(res, "Cannot unassign the last advocate.");
+        }
+        if (ErrorCode === 5) {
+            return ResponseHelper.error(res, "Logged-in user does not have permission to assign/unassign advocates.");
+        }
+
+        // ✅ Success response
+        return res.status(201).json({
+            status: 0,
+            message: assignId === 0 
+                ? "Case successfully assigned to advocate."
+                : "Advocate successfully unassigned from case.",
+            data: { CaseAssignId }
+        });
+
+    } catch (error) {
+        console.error("❌ Unexpected error:", error);
+        return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+    }
+  }
+
+
+  static async getAssignedAdvocatesByCaseId(req, res) {
+    try {
+        console.log("🔥 Request Params:", req.body); // Debugging
+
+        const { caseId } = req.body;
+
+        // ✅ Validate required input
+        if (!caseId) {
+            console.error("❌ Validation failed: Missing caseId.");
+            return ResponseHelper.error(res, "Please provide a valid caseId.");
+        }
+
+        // ✅ Define the stored procedure call
+        const query = "CALL sp_getAssignedAdvocatelistByCaseId(?)";
+        const params = [caseId];
+
+        console.log("🛠️ Executing Stored Procedure with params:", params);
+
+        // ✅ Execute the stored procedure
+        const results = await new Promise((resolve, reject) => {
+            db.query(query, params, (err, result) => {
+                if (err) {
+                    console.error("❌ Error executing stored procedure:", err);
+                    return reject(err);
+                }
+                resolve(result[0]); // ✅ First array contains result set
+            });
+        });
+
+        // ✅ Check if advocates are found
+        if (!results || results.length === 0) {
+            return ResponseHelper.error(res, "No advocates found for the given caseId.");
+        }
+
+        // ✅ Success response
+        return res.status(200).json({
+            status: 0,
+            message: "Advocates retrieved successfully.",
+            data: results
+        });
+
+    } catch (error) {
+        console.error("❌ Unexpected error:", error);
+        return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+    }
+  }
+
+
+  static async getUnassignedAdvocatesByCaseId(req, res) {
+    try {
+        console.log("🔥 Request Params:", req.body); // Debugging
+
+        const { caseId } = req.body;
+
+        // ✅ Validate required input
+        if (!caseId) {
+            console.error("❌ Validation failed: Missing caseId.");
+            return ResponseHelper.error(res, "Please provide a valid caseId.");
+        }
+
+        // ✅ Define the stored procedure call
+        const query = "CALL sp_getUnassignedAdvocatelistByCaseId(?)";
+        const params = [caseId];
+
+        console.log("🛠️ Executing Stored Procedure with params:", params);
+
+        // ✅ Execute the stored procedure
+        const results = await new Promise((resolve, reject) => {
+            db.query(query, params, (err, result) => {
+                if (err) {
+                    console.error("❌ Error executing stored procedure:", err);
+                    return reject(err);
+                }
+                resolve(result[0]); // ✅ First array contains result set
+            });
+        });
+
+        // ✅ Check if any unassigned advocates are found
+        if (!results || results.length === 0) {
+            return ResponseHelper.error(res, "No unassigned advocates found for the given caseId.");
+        }
+
+        // ✅ Success response
+        return res.status(200).json({
+            status: 0,
+            message: "Unassigned advocates retrieved successfully.",
+            data: results
+        });
+
+    } catch (error) {
+        console.error("❌ Unexpected error:", error);
+        return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+    }
+  }
+
+
 }
 
 module.exports = PPuserController;

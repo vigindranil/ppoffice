@@ -36,7 +36,7 @@ class AuthController {
                     return ResponseHelper.success(res, "Data found", results[0], token);
                 } else {
                     // Respond with invalid credentials
-                    return ResponseHelper.error(res, "Invalid credentials provided");
+                    return ResponseHelper.success(res, "Invalid credentials provided");
                 }
             });
         } catch (error) {

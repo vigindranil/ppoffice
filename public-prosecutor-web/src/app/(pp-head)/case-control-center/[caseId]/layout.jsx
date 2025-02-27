@@ -11,7 +11,8 @@ const Layout = ({ children }) => {
   const breadcrumb = [
     { name: "PP Head Admin" },
     { href: "/pp-head-dashboard", name: "Dashboard" },
-    { name: "All Cases" },
+    { href: "/pp-head-total-cases", name: "All Cases" },
+    { name: "Case Control" },
   ];
 
   return (
