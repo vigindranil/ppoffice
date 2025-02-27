@@ -11,10 +11,19 @@ import Cookies from "react-cookies";
 import { useToast } from "@/hooks/use-toast"
 import { ToastAction } from "@/components/ui/toast"
 import { motion } from "framer-motion";
+import { CustomAlertDialog } from "@/components/custom-alert-dialog"
+import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { Button } from "./ui/button"
+import { postRequest } from "@/app/commonAPI";
 import moment from "moment"
+import { useSelector } from "react-redux"
+import { decrypt } from "@/utils/crypto"
 
-const AssignedTable = ({ documents, isLoadingDocumentTable }) => {
+const AssignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
+  const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
+  const [user, setUser] = useState(null)
+  const encryptedUser = useSelector((state) => state.auth.user)
+  const token = useSelector((state) => state.auth.token)
   const [isLocationDetailsModalOpen, setIsLocationDetailsModalOpen] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState("")
   const [selectedLocationDetails, setSelectedLocationDetails] = useState("")
@@ -30,6 +39,46 @@ const AssignedTable = ({ documents, isLoadingDocumentTable }) => {
   const { toast } = useToast()
   const [type, setType] = useState("")
 
+  const [formData, setFormData] = useState({
+      EntryUserID: "",
+    })
+  
+    useEffect(() => {
+      const decoded_user = JSON.parse(decrypt(encryptedUser))
+      setUser(decoded_user)
+      setFormData((prevState) => ({
+        ...prevState,
+        EntryUserID: decoded_user.AuthorityUserID,
+      }))
+    }, [encryptedUser])
+
+  const [isUnassigning, setIsUnassigning] = useState(false);
+
+  const handleUnassign = async (doc) => {
+    try {
+      setIsUnassigning(true);
+      const response = await postRequest("assigncase", {
+        assignId: doc.assignId,
+        ppUserId: doc.advocateId,
+        caseId: identity,
+        districtId: "0",
+        psId: "0",
+        EntryUserId: formData.EntryUserID,
+      });
+  
+      if (response) {
+        openAlert("success", "Advocate Removed Successfully!")
+      }
+  
+      return response;
+    } catch (error) {
+      console.log("Error:", error);
+      return null;
+    } finally {
+      setIsUnassigning(false);
+    }
+  };
+
   const SkeletonLoader = () => (
     <>
       {[...Array(3)].map((_, index) => (
@@ -41,7 +90,20 @@ const AssignedTable = ({ documents, isLoadingDocumentTable }) => {
     </>
   )
 
+  const handleConfirm = () => {
+    closeAlert()
+    window.location.reload();
+  }
+
   return (
+    <>
+    <CustomAlertDialog
+                isOpen={isOpen}
+                alertType={alertType}
+                alertMessage={alertMessage}
+                onClose={closeAlert}
+                onConfirm={handleConfirm}
+              />
     <Card className="m-5">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
@@ -64,9 +126,11 @@ const AssignedTable = ({ documents, isLoadingDocumentTable }) => {
                     <TableCell>
                       <Button
                         className="bg-blue-100 hover:bg-blue-200 text-sm text-blue-600"
-                        onClick={() =>  window.open(`${PORT_URL}${doc.caseDocument}`, "_blank")}
+                        onClick={() => handleUnassign(doc)}
+                        disabled={isUnassigning}
                       >
-                        <Trash className="text-blue-600 mr-2 h-4 w-4" /> Remove
+                        <Trash className="text-blue-600 mr-2 h-4 w-4" />
+                        {isUnassigning ? "Please Wait..." : "Remove"}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -81,6 +145,7 @@ const AssignedTable = ({ documents, isLoadingDocumentTable }) => {
         </div>
       </CardContent>
     </Card>
+    </>
   )
 }
 

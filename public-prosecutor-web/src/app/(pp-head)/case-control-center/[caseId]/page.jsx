@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
 import Cookies from "react-cookies";
+import { CustomAlertDialog } from "@/components/custom-alert-dialog"
+import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { useSelector } from "react-redux"
 import AssignedTable from "@/components/assigned-adv-table-component"
 import UnassignedTable from "@/components/unassigned-adv-table-component copy"
@@ -31,6 +33,7 @@ export default function Page ({ params }) {
   const encryptedUser = useSelector((state) => state.auth.user)
   const token = useSelector((state) => state.auth.token)
   const [user, setUser] = useState("");
+  const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
   const FileNumber = case_id;
   const [applicationDetails, setApplicationDetails] = useState(null);
   const [documentDetails, setDocumentsDetails] = useState(null);
@@ -111,10 +114,21 @@ export default function Page ({ params }) {
     fetchUnassigned(); 
   }, [user]);
 
+  const handleConfirm = () => {
+    closeAlert()
+  }
+
   return (
-    <div className="flex bg-gray-100 h-full min-h-screen">
+    <div className="relative flex bg-gray-100 h-full min-h-screen w-full">
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+          <CustomAlertDialog
+            isOpen={isOpen}
+            alertType={alertType}
+            alertMessage={alertMessage}
+            onClose={closeAlert}
+            onConfirm={handleConfirm}
+          />
           <div className="container mx-auto px-6 py-8">
             <Tabs defaultValue="documents" className="w-full">
               <TabsList className="flex gap-6 justify-center mb-4">
@@ -129,7 +143,7 @@ export default function Page ({ params }) {
                   <div className="bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3">
                     <h2 className="text-2xl font-bold text-white">Document(s) Uploaded for the Case</h2>
                   </div>
-                  <DocumentTable fileNo={FileNumber} documents={documentDetails} docPath={documentDetails?.caseDocument} isLoadingDocumentTable={isLoadingDocumentTable} verificationSuccess={setVerificationSuccess} />
+                  <DocumentTable documents={documentDetails} isLoadingDocumentTable={isLoadingDocumentTable} identity={case_id} />
                 </div>
               </TabsContent>
 

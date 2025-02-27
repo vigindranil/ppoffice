@@ -664,7 +664,7 @@ class CaseController {
             }
     
             for (const file of files) {
-                const filePath = `/uploads/${Date.now()}_${file.originalname}`; // Simulate file storage path
+                const filePath = `/uploads/${file.filename}`; // Simulate file storage path
     
                 console.log("✅ Saving document:", filePath); // Debugging
     

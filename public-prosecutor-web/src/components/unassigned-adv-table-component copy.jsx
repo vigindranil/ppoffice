@@ -2,52 +2,23 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CustomAlertDialog } from "@/components/custom-alert-dialog"
+import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { PlusCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { postRequest } from "@/app/commonAPI";
 
 const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
+  const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
   const { toast } = useToast();
   const [isAssigning, setIsAssigning] = useState(false);
-
-  // const handleAssign = async (doc) => {
-  //   try {
-  //     setIsAssigning(true);
-  //     const response = await fetch(`${BASE_URL}assigncase`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         assignId: "0",
-  //         ppUserId: doc.AdvocateId,
-  //         caseId: identity,
-  //         districtId: "0",
-  //         psId: "0",
-  //         EntryUserId: "2",
-  //       }),
-  //     });
-      
-  //     const result = await response.json();
-  //     if (response.ok) {
-  //       toast({ description: "Case assigned successfully!", status: "success" });
-  //       window.location.reload();
-  //     } else {
-  //       toast({ description: result.message || "Failed to assign case", status: "error" });
-  //     }
-  //   } catch (error) {
-  //     toast({ description: "An error occurred. Please try again.", status: "error" });
-  //   } finally {
-  //     setIsAssigning(false);
-  //   }
-  // };
 
 
   const handleAssign = async (doc) => {
     try {
       setIsAssigning(true);
-      return await postRequest("assigncase", {
+      const response = await postRequest("assigncase", {
         assignId: "0",
         ppUserId: doc.AdvocateId,
         caseId: identity,
@@ -55,6 +26,12 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
         psId: "0",
         EntryUserId: "2",
       });
+
+      if (response) {
+        openAlert("success", "Advocate Assigned Successfully!")
+      }
+
+      return response;
     } catch (error) {
       console.log("Error:", error);
       return null;
@@ -63,7 +40,20 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
     }
   };
 
+  const handleConfirm = () => {
+    closeAlert()
+    window.location.reload();
+  }
+
   return (
+    <>
+        <CustomAlertDialog
+                    isOpen={isOpen}
+                    alertType={alertType}
+                    alertMessage={alertMessage}
+                    onClose={closeAlert}
+                    onConfirm={handleConfirm}
+                  />
     <Card className="m-5">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
@@ -90,7 +80,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
                         disabled={isAssigning}
                       >
                         <PlusCircle className="text-blue-600 mr-2 h-4 w-4" />
-                        {isAssigning ? "Assigning..." : "Assign"}
+                        {isAssigning ? "Please Wait..." : "Assign"}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -105,6 +95,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 };
 
