@@ -160,7 +160,7 @@ export default function Page ({ params }) {
               {/* Application Status History */}
               <TabsContent value="statusHistory">
                 <div className="mt-12 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden min-h-[200px]">
-                  <div className="bg-gradient-to-r from-violet-600 to-amber-600 px-6 py-3">
+                  <div className="bg-gradient-to-r from-amber-600 to-indigo-600 px-6 py-3">
                     <h2 className="text-2xl font-bold text-white">Unassigned Advocates List</h2>
                   </div>
                   <UnassignedTable documents={unassignedDetails} isLoadingDocumentTable={isLoadingUnassignedTable} identity={case_id}/>
