@@ -204,9 +204,9 @@ const SearchComponent = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Search</CardTitle>
+      <Card className="mb-6 overflow-hidden">
+        <CardHeader className="mb-5  bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3">
+          <CardTitle className="text-white text-xl">Search</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

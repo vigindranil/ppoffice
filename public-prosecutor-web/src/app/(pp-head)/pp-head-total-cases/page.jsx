@@ -1,12 +1,9 @@
-'use client'
+"use client";
 
-import CaseTable from '@/components/total-cases-table'
+import CaseTable from "@/components/total-cases-table";
 
 const Page = () => {
-  return (
-      <CaseTable />
-  )
-}
+  return <CaseTable />;
+};
 
-export default Page
-
+export default Page;
