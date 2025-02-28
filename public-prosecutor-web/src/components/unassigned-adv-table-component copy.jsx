@@ -27,8 +27,13 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
         EntryUserId: "2",
       });
 
+      const issent = await postRequest("send-email-pp", {
+        CaseID: identity,
+        PPuserID: doc.AdvocateId,
+      });
+
       if (response) {
-        openAlert("success", "Advocate Assigned Successfully!")
+        openAlert("success", "Advocate Assigned & Notified Successfully!")
       }
 
       return response;

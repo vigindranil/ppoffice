@@ -214,8 +214,10 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
           Back
           <Undo2 />
         </Button>
-          <CardHeader>
-            <CardTitle>Add Upcoming Hearing Summary</CardTitle>
+        <CardHeader className="mb-5  bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-6">
+            <CardTitle className="text-white text-xl">
+              Add Upcoming Hearing Summary
+            </CardTitle>
           </CardHeader>
           <CardContent>
 

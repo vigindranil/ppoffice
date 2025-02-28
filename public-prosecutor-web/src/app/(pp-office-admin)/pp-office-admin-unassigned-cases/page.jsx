@@ -77,8 +77,10 @@ const PPAllCaseList = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
-          <CardHeader>
-            <CardTitle>Unassigned Case List</CardTitle>
+        <CardHeader className="mb-5  bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3 rounded-t-lg">
+            <CardTitle className="text-white text-xl">
+              Unassigned Case List
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -112,8 +114,8 @@ const PPAllCaseList = () => {
                       <TableHead className="font-bold">Case Type</TableHead>
                       <TableHead className="font-bold">Case Hearing Date</TableHead>
                       <TableHead className="font-bold">IPC Section</TableHead>
-                      <TableHead className="font-bold">Reference</TableHead>
-                      <TableHead className="font-bold">Document</TableHead>
+                      {/* <TableHead className="font-bold">Reference</TableHead>
+                      <TableHead className="font-bold">Document</TableHead> */}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -126,14 +128,14 @@ const PPAllCaseList = () => {
                         <TableCell>{head.CaseType}</TableCell>
                         <TableCell>{formatDate(head.CaseHearingDate)}</TableCell>
                         <TableCell>{head.IPCSection}</TableCell>
-                        <TableCell>{head.BeginReferenceName}</TableCell>
+                        {/* <TableCell>{head.BeginReferenceName}</TableCell>
                         <TableCell>
                           {head.Document && (
                             <Link href={`${PORT_URL}${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                               View Document
                             </Link>
                           )}
-                        </TableCell>
+                        </TableCell> */}
                       </TableRow>
                     ))}
                   </TableBody>

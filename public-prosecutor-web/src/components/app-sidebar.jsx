@@ -236,7 +236,7 @@ const data = {
           url: "/pp-office-admin-add-case",
         },
         {
-          title: "Add PP User",
+          title: "Add New Advocate",
           url: "/add-pp-user",
         },
       ],
@@ -249,7 +249,7 @@ const data = {
       type: 10,
       items: [
         {
-          title: "Public Prosecutor List",
+          title: "Advocate List",
           url: "/pp-users",
         },
         {

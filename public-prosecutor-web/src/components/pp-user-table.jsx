@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, ChevronUp, Search, ClipboardPlus, Key, EyeOff, Eye } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, Key, EyeOff, Eye } from 'lucide-react'
 import { CustomAlertDialog } from './custom-alert-dialog'
 import { useAlertDialog } from "@/hooks/useAlertDialog"
 
@@ -32,9 +32,8 @@ export default function PPUserTable() {
   const [selectedUser, setSelectedUser] = useState(null)
   const [newPassword, setNewPassword] = useState("")
   const [isPasswordResetDialogOpen, setIsPasswordResetDialogOpen] = useState(false)
-  const itemsPerPage = 10
-
   const [showPassword, setShowPassword] = useState(false)
+  const itemsPerPage = 10
 
   const fetchData = async () => {
     try {
@@ -49,8 +48,6 @@ export default function PPUserTable() {
       }
       const result = await response.json()
       if (result.status === 0 && result.message === "Data found") {
-        // console.log(result.data);
-        
         setUsers(result.data)
       } else {
         throw new Error(result.message || 'Failed to fetch data')
@@ -61,10 +58,22 @@ export default function PPUserTable() {
       setLoading(false)
     }
   }
+  
+  const filteredUsers = users.filter((user) =>
+    Object.values(user).some((value) =>
+      typeof value === "string" && value.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
   useEffect(() => {
     fetchData()
   }, [])
+
+  useEffect(() => {
+    if (currentPage > Math.ceil(filteredUsers.length / itemsPerPage)) {
+      setCurrentPage(1);
+    }
+  }, [filteredUsers, currentPage, itemsPerPage]);
 
   const handleResetPassword = async () => {
     if (!selectedUser || !newPassword) return
@@ -92,11 +101,6 @@ export default function PPUserTable() {
     }
   }
 
-  const filteredUsers = users.filter((user) =>
-    Object.values(user).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  )
 
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * itemsPerPage,
@@ -117,12 +121,12 @@ export default function PPUserTable() {
   return (
     <div className="container mx-auto py-10">
       <CustomAlertDialog
-              isOpen={isOpen}
-              alertType={alertType}
-              alertMessage={alertMessage}
-              onClose={closeAlert}
-              onConfirm={handleConfirm}
-            />
+        isOpen={isOpen}
+        alertType={alertType}
+        alertMessage={alertMessage}
+        onClose={closeAlert}
+        onConfirm={handleConfirm}
+      />
       <div className="flex justify-between items-center mb-4">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -171,36 +175,54 @@ export default function PPUserTable() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <Button
+          variant="outline"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+        </Button>
+
+        <span>Page {currentPage} of {Math.ceil(filteredUsers.length / itemsPerPage)}</span>
+
+        <Button
+          variant="outline"
+          disabled={currentPage >= Math.ceil(filteredUsers.length / itemsPerPage)}
+          onClick={() => setCurrentPage(prev => prev + 1)}
+        >
+          Next <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
+
       <Dialog open={isPasswordResetDialogOpen} onOpenChange={setIsPasswordResetDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reset Password for {selectedUser?.pp_name}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 space-y-2">
-          <div className="relative">
-          <Input
-            type={showPassword ? "text" : "password"}
-            placeholder="Enter new password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="mb-4"
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-            onMouseDown={() => setShowPassword(true)}
-            onMouseUp={() => setShowPassword(false)}
-            onMouseLeave={() => setShowPassword(false)}
-          >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </Button>
-          </div>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter new password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="mb-4"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onMouseDown={() => setShowPassword(true)}
+                onMouseUp={() => setShowPassword(false)}
+                onMouseLeave={() => setShowPassword(false)}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
           <Button className="w-full" onClick={handleResetPassword}>
             Reset Password

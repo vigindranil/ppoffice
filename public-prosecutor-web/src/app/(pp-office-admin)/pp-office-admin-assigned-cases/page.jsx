@@ -147,9 +147,9 @@ const PPAllCaseList = () => {
           onClose={closeAlert}
           onConfirm={handleConfirm}
         />
-        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Assigned Case List</CardTitle>
+        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 rounded-lg">
+          <CardHeader className="flex flex-row items-center justify-between mb-5 bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3 rounded-t-lg">
+            <CardTitle className="text-white text-xl">Assigned Case List</CardTitle>
             <Button onClick={downloadExcel} className="flex items-center gap-2">
               <FileSpreadsheet className="h-4 w-4" />
               Export to Excel
@@ -186,7 +186,6 @@ const PPAllCaseList = () => {
                       <TableHead className="font-bold hidden lg:table-cell">Case Type</TableHead>
                       <TableHead className="font-bold hidden lg:table-cell">Case Hearing Date</TableHead>
                       <TableHead className="font-bold hidden lg:table-cell">IPC Section</TableHead>
-                      <TableHead className="font-bold hidden lg:table-cell">Reference</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -204,9 +203,6 @@ const PPAllCaseList = () => {
                           </TableCell>
                           <TableCell className="flex space-x-2">
                             <Skeleton className="bg-slate-300 h-8 w-16" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="bg-slate-300 h-4 w-20" />
                           </TableCell>
                           <TableCell>
                             <Skeleton className="bg-slate-300 h-4 w-20" />
@@ -279,7 +275,6 @@ const PPAllCaseList = () => {
                             <TableCell className="hidden lg:table-cell">{head.CaseType}</TableCell>
                             <TableCell className="hidden lg:table-cell">{formatDate(head.CaseHearingDate)}</TableCell>
                             <TableCell className="hidden lg:table-cell">{head.IPCSection}</TableCell>
-                            <TableCell className="hidden lg:table-cell">{head.BeginReferenceName}</TableCell>
                           </TableRow>
                           {expandedRows[index] && (
                             <TableRow className="bg-gray-50 lg:hidden">
@@ -328,9 +323,6 @@ const PPAllCaseList = () => {
                                   )}
                                   {head.IPCSection && (
                                     <div className="lg:hidden"><strong>IPC Section:</strong> {head.IPCSection}</div>
-                                  )}
-                                  {head.BeginReferenceName && (
-                                    <div className="lg:hidden"><strong>Reference:</strong> {head.BeginReferenceName}</div>
                                   )}
                                 </div>
                               </TableCell>
