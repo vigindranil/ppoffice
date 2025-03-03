@@ -151,25 +151,25 @@ const AddCasePage = () => {
     ipcAct: "",
     bnsNumber: "",
   });
-  
+
   const handleSelectChange = async (name, value) => {
     if (name === "ipcAct" && useIpcAct) {
       const selectedIpc = ipcActList.find((ipc) => ipc.bnsId.toString() === value);
       if (!selectedIpc) return;
-  
+
       setFormData((prev) => ({
         ...prev,
         ipcAct: selectedIpc.ipcSection, // Store actual IPC Act for API submission
         bnsNumber: "", // Clear BNS Number
       }));
-  
+
       setSelectedValues((prev) => ({
         ...prev,
         ipcAct: value, // Store bnsId for UI display
       }));
-  
+
       setIsCurrentBnsId(value);
-  
+
       try {
         const result = await showIbsByBnsId(value);
         if (Array.isArray(result) && result.length > 0) {
@@ -182,24 +182,24 @@ const AddCasePage = () => {
       } catch (error) {
         openAlert("error", "Failed to fetch corresponding BNS Section.");
       }
-    } 
+    }
     else if (name === "bnsNumber" && !useIpcAct) {
       const selectedBns = bnsSectionList.find((bns) => bns.bnsId.toString() === value);
       if (!selectedBns) return;
-  
+
       setFormData((prev) => ({
         ...prev,
         bnsNumber: selectedBns.bnsSection, // Store actual BNS Section for API submission
         ipcAct: "", // Clear IPC Act
       }));
-  
+
       setSelectedValues((prev) => ({
         ...prev,
         bnsNumber: value, // Store bnsId for UI display
       }));
-  
+
       setIsCurrentBnsId(value);
-  
+
       try {
         const result = await showIbsByBnsId(value);
         if (Array.isArray(result) && result.length > 0) {
@@ -212,7 +212,7 @@ const AddCasePage = () => {
       } catch (error) {
         openAlert("error", "Failed to fetch corresponding IPC Act.");
       }
-    } 
+    }
     else {
       // Handle other dropdowns
       setFormData((prev) => ({
@@ -220,8 +220,8 @@ const AddCasePage = () => {
         [name]: value, // Update other fields normally
       }));
     }
-  };   
-  
+  };
+
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -262,6 +262,14 @@ const AddCasePage = () => {
       if (documents.length > 0) {
         await uploadCaseDocuments(caseId, documents, user.AuthorityUserID);
       }
+
+      // try {
+      //   const res = await handleNotifyFromPPOfficeAdmin(caseId);
+      //   // console.log(res);
+      // } catch (err) {
+      //   console.log(err);
+      //   // openAlert('error', err?.message || "An unexpected error occurred");
+      // }
 
       openAlert("success", "Case and documents added successfully");
       setFormData({
@@ -306,7 +314,7 @@ const AddCasePage = () => {
         />
 
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
-        <CardHeader className="mb-5 bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3">
+          <CardHeader className="mb-5 bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3">
             <CardTitle className="text-white text-xl">Add New Case</CardTitle>
           </CardHeader>
           <CardContent>
@@ -355,7 +363,7 @@ const AddCasePage = () => {
                       >
                         {formData.districtId
                           ? allDistrictList.find((district) => district.districtId.toString() === formData.districtId)
-                              ?.districtName
+                            ?.districtName
                           : "Select District"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -445,7 +453,7 @@ const AddCasePage = () => {
                       >
                         {formData.caseTypeId
                           ? caseTypeList.find((caseType) => caseType.CasetypeId.toString() === formData.caseTypeId)
-                              ?.CasetypeName
+                            ?.CasetypeName
                           : "Select Case Type"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -533,17 +541,17 @@ const AddCasePage = () => {
                       className={`relative w-20 h-8 rounded-full flex items-center cursor-pointer transition-all 
                       ${useIpcAct ? "bg-blue-600" : "bg-green-600"}`}
                       onClick={() => {
-                        setUseIpcAct((prev) => !prev); 
+                        setUseIpcAct((prev) => !prev);
 
                         setFormData((prev) => ({
                           ...prev,
-                          ipcAct: "",     
+                          ipcAct: "",
                           bnsNumber: "",
                         }));
-                      
+
                         setIbsReceivedDataIPC(null);
                         setIbsReceivedDataBNS(null);
-                        setIsCurrentBnsId(null); 
+                        setIsCurrentBnsId(null);
                       }}
                     >
                       <span
@@ -559,7 +567,7 @@ const AddCasePage = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex-1 space-y-2">
                   <Label className="font-bold" htmlFor="hearingDate">
                     Hearing Date
@@ -575,108 +583,108 @@ const AddCasePage = () => {
                 </div>
               </div>
               <div className="flex space-x-4">
-              {useIpcAct ? (
-                <>
-                  <div className="flex-1 space-y-2">
-                    <Label className="font-bold" htmlFor="ipcAct">
-                      IPC Act
-                    </Label>
-                    <Popover open={openIpcAct} onOpenChange={setOpenIpcAct}>
-                      <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" aria-expanded={openIpcAct} className="w-full justify-between">
-                        {selectedValues.ipcAct
-                          ? ipcActList.find((ipc) => ipc.bnsId.toString() === selectedValues.ipcAct)?.ipcSection
-                          : "Select IPC Act"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
-                          <CommandInput placeholder="Search IPC Act..." />
-                          <CommandList>
-                            <CommandEmpty>No IPC Act found.</CommandEmpty>
-                            <CommandGroup>
-                              {ipcActList.map((ipc) => (
-                                <CommandItem
-                                  key={ipc.bnsId}
-                                  onSelect={() => handleSelectChange("ipcAct", ipc.bnsId.toString())}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      formData.ipcAct === ipc.bnsId.toString() ? "opacity-100" : "opacity-0",
-                                    )}
-                                  />
-                                  {ipc.ipcSection}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <Label className="font-bold" htmlFor="bnsNumber">
-                      Corresponding BNS Section
-                    </Label>
-                    <Input id="bnsNumber" name="bnsNumber" value={ibsReceivedDataBNS?.BnsSection || ""} onChange={handleChange} readOnly />
-                  </div>
-                </>
+                {useIpcAct ? (
+                  <>
+                    <div className="flex-1 space-y-2">
+                      <Label className="font-bold" htmlFor="ipcAct">
+                        IPC Act
+                      </Label>
+                      <Popover open={openIpcAct} onOpenChange={setOpenIpcAct}>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" role="combobox" aria-expanded={openIpcAct} className="w-full justify-between">
+                            {selectedValues.ipcAct
+                              ? ipcActList.find((ipc) => ipc.bnsId.toString() === selectedValues.ipcAct)?.ipcSection
+                              : "Select IPC Act"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Search IPC Act..." />
+                            <CommandList>
+                              <CommandEmpty>No IPC Act found.</CommandEmpty>
+                              <CommandGroup>
+                                {ipcActList.map((ipc) => (
+                                  <CommandItem
+                                    key={ipc.bnsId}
+                                    onSelect={() => handleSelectChange("ipcAct", ipc.bnsId.toString())}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        formData.ipcAct === ipc.bnsId.toString() ? "opacity-100" : "opacity-0",
+                                      )}
+                                    />
+                                    {ipc.ipcSection}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <Label className="font-bold" htmlFor="bnsNumber">
+                        Corresponding BNS Section
+                      </Label>
+                      <Input id="bnsNumber" name="bnsNumber" value={ibsReceivedDataBNS?.BnsSection || ""} onChange={handleChange} readOnly />
+                    </div>
+                  </>
                 ) : (
                   <>
-                  <div className="flex-1 space-y-2">
-                    <Label className="font-bold" htmlFor="bnsNumber">
-                      BNS Section
-                    </Label>
-                    <Popover open={openBnsSection} onOpenChange={setOpenBnsSection}>
-                      <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" aria-expanded={openBnsSection} className="w-full justify-between">
-                        {selectedValues.bnsNumber
-                          ? bnsSectionList.find((bns) => bns.bnsId.toString() === selectedValues.bnsNumber)?.bnsSection
-                          : "Select BNS Section"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
-                          <CommandInput placeholder="Search BNS Section..." />
-                          <CommandList>
-                            <CommandEmpty>No BNS Section found.</CommandEmpty>
-                            <CommandGroup>
-                              {bnsSectionList.map((bns) => (
-                                <CommandItem
-                                  key={bns.bnsId}
-                                  onSelect={() => handleSelectChange("bnsNumber", bns.bnsId.toString())}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      formData.bnsNumber === bns.bnsId.toString() ? "opacity-100" : "opacity-0",
-                                    )}
-                                  />
-                                  {bns.bnsSection}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <Label className="font-bold" htmlFor="ipcAct">
-                      Corresponding IPC Act
-                    </Label>
-                    <Input id="ipcAct" name="ipcAct" value={ibsReceivedDataIPC?.IpcSection || ""} onChange={handleChange} readOnly />
-                  </div>
-                </>
+                    <div className="flex-1 space-y-2">
+                      <Label className="font-bold" htmlFor="bnsNumber">
+                        BNS Section
+                      </Label>
+                      <Popover open={openBnsSection} onOpenChange={setOpenBnsSection}>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" role="combobox" aria-expanded={openBnsSection} className="w-full justify-between">
+                            {selectedValues.bnsNumber
+                              ? bnsSectionList.find((bns) => bns.bnsId.toString() === selectedValues.bnsNumber)?.bnsSection
+                              : "Select BNS Section"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Search BNS Section..." />
+                            <CommandList>
+                              <CommandEmpty>No BNS Section found.</CommandEmpty>
+                              <CommandGroup>
+                                {bnsSectionList.map((bns) => (
+                                  <CommandItem
+                                    key={bns.bnsId}
+                                    onSelect={() => handleSelectChange("bnsNumber", bns.bnsId.toString())}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        formData.bnsNumber === bns.bnsId.toString() ? "opacity-100" : "opacity-0",
+                                      )}
+                                    />
+                                    {bns.bnsSection}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <Label className="font-bold" htmlFor="ipcAct">
+                        Corresponding IPC Act
+                      </Label>
+                      <Input id="ipcAct" name="ipcAct" value={ibsReceivedDataIPC?.IpcSection || ""} onChange={handleChange} readOnly />
+                    </div>
+                  </>
                 )}
-                
+
               </div>
               <div className="flex space-x-4">
                 <div className="flex-1 space-y-2">
-                <Label>Upload Case Documents</Label>
+                  <Label>Upload Case Documents</Label>
                   <Input type="file" multiple onChange={handleFileChange} />
 
                   {documents.length > 0 && (
@@ -702,7 +710,7 @@ const AddCasePage = () => {
                   <p className="text-sm text-gray-500">Max file size: 15 MB. Allowed formats: JPG, JPEG, PDF</p>
                 </div>
               </div>
-              
+
 
               <Button onClick={handleAddCase} className="max-w-min bg-blue-500 mx-auto my-5 mt-5" disabled={isLoading}>
                 {isLoading ? "Please Wait..." : "Add Case"}
