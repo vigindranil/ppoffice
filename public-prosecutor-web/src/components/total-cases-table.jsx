@@ -165,10 +165,12 @@ export default function CaseTable() {
                 placeholder="To (Date Range)"
               />
               </div>
+              <div className="flex items-end">
                 <Button
                   className="ml-2 bg-blue-400 hover:bg-blue-600"
                   onClick={() => showallCaseBetweenRange(formatDate(fromDate), formatDate(toDate))}
                 >{loading ? 'Loading...' : 'Get Cases'}</Button>
+              </div>
               </div>
               <div className='w-100 h-[1px] bg-slate-100 my-4'></div>
               <div className="flex justify-between items-center mb-4">
