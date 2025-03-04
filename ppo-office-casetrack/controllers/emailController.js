@@ -192,13 +192,13 @@ class EmailController {
                 }
     
                 // ✅ Extract required fields correctly
-                const { districtEmail, psEmail, rolegalEmail, psCaseNo, dated, hearingDate, ipcSection, districtId, psId, PPId, PPUserName } = emailDetails;
+                const { districtEmail, psEmail, rolegalEmail, psCaseNo, dated, hearingDate, ipcSection, districtId, policestationId, PPId, PPUserName } = emailDetails;
     
                 // ✅ Define recipients and their corresponding user types
                 const recipients = [
-                    { email: districtEmail, userTypeId: 30 },  // District Recipient
-                    { email: psEmail, userTypeId: 50 },        // Police Station Recipient
-                    { email: rolegalEmail, userTypeId: 70 }    // RO Legal Recipient
+                    { email: districtEmail, userTypeId: 30, districtId, policestationId: 0 },  // District Recipient
+                    { email: psEmail, userTypeId: 50, districtId: 0, policestationId },        // Police Station Recipient
+                    { email: rolegalEmail, userTypeId: 70, districtId, policestationId: 0 }    // RO Legal Recipient
                 ];
     
                 // ✅ Filter out null or empty emails
@@ -263,8 +263,8 @@ class EmailController {
                             ipcSection,
                             hearingDate,    // Hearing Date
                             recipient.email, // ✅ Email recipient
-                            districtId,      // ✅ Corrected district ID
-                            psId,            // ✅ Corrected police station ID
+                            recipient.districtId, // ✅ District ID or 0 for PS
+                            recipient.policestationId, // ✅ PS ID or 0 for District
                             PPId,            // ✅ Corrected PP ID
                             recipient.userTypeId, // ✅ Ensured userTypeId is an integer
                             1                // ✅ Success (Delivery Status)
@@ -289,9 +289,9 @@ class EmailController {
                             ipcSection,
                             hearingDate,
                             recipient.email,
-                            districtId,
-                            psId,
-                            PPId,
+                            recipient.districtId, // ✅ District ID or 0 for PS
+                            recipient.policestationId, // ✅ PS ID or 0 for District
+                            PPId,            // ✅ Corrected PP ID
                             recipient.userTypeId,
                             0             // ✅ Failure (Delivery Status)
                         ];
@@ -328,6 +328,7 @@ class EmailController {
             });
         }
     }
+    
       
 
     // static async sendEmailTO(req, res) {
@@ -606,8 +607,8 @@ class EmailController {
                             ipcSection,
                             hearingDate,    // Hearing Date
                             recipient.email, // ✅ Email recipient
-                            null,           // District ID (Not available)
-                            null,           // Police Station ID (Not available)
+                            0,           // District ID (Not available)
+                            0,           // Police Station ID (Not available)
                             PPId,           // ✅ Corrected PP ID
                             recipient.userTypeId, // ✅ Ensured userTypeId is correct (60 for PP)
                             1                // ✅ Success (Delivery Status)
@@ -632,8 +633,8 @@ class EmailController {
                             ipcSection,
                             hearingDate,
                             recipient.email,
-                            null,           // District ID (Not available)
-                            null,           // Police Station ID (Not available)
+                            0,           // District ID (Not available)
+                            0,           // Police Station ID (Not available)
                             PPId,           // ✅ Corrected PP ID
                             recipient.userTypeId,
                             0             // ✅ Failure (Delivery Status)

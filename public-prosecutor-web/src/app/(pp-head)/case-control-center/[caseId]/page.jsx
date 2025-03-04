@@ -23,7 +23,7 @@ import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { useSelector } from "react-redux"
 import AssignedTable from "@/components/assigned-adv-table-component"
-import UnassignedTable from "@/components/unassigned-adv-table-component copy"
+import UnassignedTable from "@/components/unassigned-adv-table-component"
 
 export default function Page ({ params }) {
   const unwrappedParams = use(params);

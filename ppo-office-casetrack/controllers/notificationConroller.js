@@ -13,7 +13,7 @@ class notificationController {
       }
   
       // SQL query to call the stored procedure
-      const query = 'CALL GetMailDetailsv1(?, ?)';
+      const query = 'CALL sp_mailDetails_byID(?, ?)';
       const params = [authorityTypeId, boundaryId];
   
       db.query(query, params, (err, results) => {
@@ -37,16 +37,16 @@ class notificationController {
   static async checkMailRead(req, res) {
     try {
       // Retrieve the necessary parameters from the request body
-      const { mailId, caseId, authorityTypeId, boundaryId } = req.body;
+      const { mailId, CaseId, authorityTypeId, boundaryId } = req.body;
 
       // Validate input parameters
-      if (!mailId || !caseId || !authorityTypeId || !boundaryId) {
+      if (!mailId || !CaseId || !authorityTypeId || !boundaryId) {
         return ResponseHelper.error(res, 'mailId, caseId, authorityTypeId, and boundaryId are required');
       }
 
       // SQL query to call the stored procedure
-      const query = 'CALL sp_checkmail_Readv1(?, ?, ?, ?)';
-      const params = [mailId, caseId, authorityTypeId, boundaryId];
+      const query = 'CALL sp_checkmail_Read(?, ?, ?, ?)';
+      const params = [mailId, CaseId, authorityTypeId, boundaryId];
 
       // Execute the query
       db.query(query, params, (err, results) => {

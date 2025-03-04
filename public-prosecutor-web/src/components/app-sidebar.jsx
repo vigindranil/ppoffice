@@ -54,17 +54,26 @@ const data = {
           title: "Dashboard",
           url: "/pp-head-dashboard",
         },
-        // {
-        //   title: "Assigned Cases",
-        //   url: "/pp-head-assigned-cases",
-        // },
-        // {
-        //   title: "Pending Cases",
-        //   url: "/pp-head-pending-cases",
-        // },
+      ],
+    },
+    {
+      title: "Reports",
+      url: "#",
+      icon: FolderSearch,
+      isActive: true,
+      type: 20,
+      items: [
         {
-          title: "Cases",
+          title: "All Cases",
           url: "/pp-head-total-cases",
+        },
+        {
+          title: "Assigned Cases",
+          url: "/pp-head-assigned-cases",
+        },
+        {
+          title: "Pending Cases",
+          url: "/pp-head-pending-cases",
         },
       ],
     },
@@ -90,9 +99,9 @@ const data = {
       ],
     },
     {
-      title: "Ps-dashboard",
+      title: "Navigation",
       url: "#",
-      icon: SquareTerminal,
+      icon: Menu,
       isActive: true,
       type: 50,
       items: [
@@ -101,7 +110,7 @@ const data = {
           url: "/ps-case",
         },
         {
-          title: "Police Station Profile",
+          title: "My Profile",
           url: "/ps-profile",
         },{
           title:"Notifications",

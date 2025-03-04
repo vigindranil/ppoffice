@@ -384,7 +384,7 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                 </div>
               </div>
               <Button onClick={handleAddSummary} className="max-w-min bg-blue-500 mx-auto my-5 mt-5" disabled={isLoading}>
-                {isLoading ? 'Please Wait...' : 'Add Case'}
+                {isLoading ? 'Please Wait...' : 'Add Summary'}
               </Button>
             </div>
           </CardContent>

@@ -89,7 +89,7 @@ export default function ProfilePage() {
             <AvatarFallback>{profile.ps_name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <CardTitle className="text-2xl">{profile.ps_name}</CardTitle>
+            <CardTitle className="text-2xl">{profile.user_fullname}</CardTitle>
             <Badge variant="outline" className="mt-1">{profile.WBP_ID}</Badge>
           </div>
         </CardHeader>
@@ -100,7 +100,7 @@ export default function ProfilePage() {
               <dd className="mt-1 text-sm text-gray-900">{profile.ps_username}</dd>
             </div>
             <div className="sm:col-span-1">
-              <dt className="text-sm font-medium text-gray-500">Email</dt>
+              <dt className="text-sm font-medium text-gray-500">E-mail Address</dt>
               <dd className="mt-1 text-sm text-gray-900">{profile.ps_email}</dd>
             </div>
             <div className="sm:col-span-1">
@@ -108,7 +108,7 @@ export default function ProfilePage() {
               <dd className="mt-1 text-sm text-gray-900">{profile.ps_contactnumber}</dd>
             </div>
             <div className="sm:col-span-1">
-              <dt className="text-sm font-medium text-gray-500">PS</dt>
+              <dt className="text-sm font-medium text-gray-500">Police Station</dt>
               <dd className="mt-1 text-sm text-gray-900">{profile.ps_name}</dd>
             </div>
           </dl>

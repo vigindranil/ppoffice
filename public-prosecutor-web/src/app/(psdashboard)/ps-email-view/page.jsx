@@ -17,12 +17,13 @@ export default function EmailDetailsComponent({ emailDetails }) {
 
     const requestData = {
       mailId: mailId,
-      caseId: caseId,
-      authorityTypeId: authorityTypeId, // Example ID
-      boundaryId:  boundaryId// Example ID
+      CaseId: caseId,
+      authorityTypeId: authorityTypeId, 
+      boundaryId:  boundaryId
     };
 
     try {
+      console.log(requestData);
         const token = sessionStorage.getItem('token');
       const response = await fetch(`${BASE_URL}emailRead`, {
         method: 'POST',

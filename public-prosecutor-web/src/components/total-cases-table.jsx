@@ -128,13 +128,11 @@ export default function CaseTable() {
           <div className="container mx-auto px-6 py-8 w-full">
           <div className="mt-12 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden px-4">
             <div className="bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3">
-              <h2 className="text-2xl font-bold text-white">Cases</h2>
+              <h2 className="text-2xl font-bold text-white">All Cases</h2>
             </div>
             <div className="container mx-auto py-10">
 
               <div className='flex gap-4 mb-3'>
-                {/* <DatePicker date={fromDate ? formatDate(fromDate) : null} setDate={setFromDate} placeholder="From (Date Range)" />
-                <DatePicker date={toDate ? formatDate(toDate) : null} setDate={setToDate} placeholder="To (Date Range)" /> */}
 
               <div className="max-w-xs">
               <Label className="font-bold" htmlFor="fromDate">

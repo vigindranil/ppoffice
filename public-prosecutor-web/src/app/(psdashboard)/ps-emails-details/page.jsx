@@ -17,9 +17,6 @@ export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const userDetails = useSelector((state) => state.auth.user);
 
-  const authorityTypeId = 30; // Example authorityTypeId
-  const boundaryId = 7; // Example boundaryId
-
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(userDetails));
     setUser(decoded_user);
@@ -40,7 +37,6 @@ export default function ProfilePage() {
 
       const data = await response.json();
       if (response.ok) {
-        // console.log(data.data);
         
         setEmailDetails(data.data);
       } else {
@@ -56,7 +52,6 @@ export default function ProfilePage() {
   useEffect(() => {
 
     user && loadEmailDetails(user?.AuthorityTypeID, user?.BoundaryID);
-    // user && loadEmailDetails(30, 7);
   }, [user]);
 
   const handleEmailRead = async (authorityTypeId, boundaryId, mailId, caseId) => {
@@ -78,7 +73,7 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({ 
           "mailId": mailId,
-          "caseId": caseId,
+          "CaseId": caseId,
           "authorityTypeId": authorityTypeId,
           "boundaryId": boundaryId
          }),
@@ -151,7 +146,7 @@ export default function ProfilePage() {
                     <div className="mt-4 flex justify-between">
                       <Dialog>
                         <DialogTrigger asChild>
-                          {email?.readStatus == 1 ? <Button variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button> : <Button onClick={()=>handleEmailRead(user?.AuthorityTypeID, user?.BoundaryID, email?.id, email?.caseID)} variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button>}
+                          {email?.readStatus == 1 ? <Button variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button> : <Button onClick={()=>handleEmailRead(user?.AuthorityTypeID, user?.BoundaryID, email?.id, email?.CaseId)} variant="outline" className="px-4 py-2 rounded-lg transition-colors duration-300">View</Button>}
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>

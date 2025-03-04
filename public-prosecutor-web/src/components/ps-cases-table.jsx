@@ -1,12 +1,13 @@
 'use client'
-import { BASE_URL } from '@/app/constants'; 
+import { BASE_URL } from '@/app/constants';
 import { useEffect, useState } from 'react'
+import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { ClipboardPlus, Eye, LoaderCircle, Search } from 'lucide-react'
+import { ClipboardPlus, Edit, Eye, FileSpreadsheet, LoaderCircle, Search } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
@@ -14,9 +15,11 @@ import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { Input } from './ui/input'
 import { handleNotifyToPPUser } from "@/app/api";
+import * as XLSX from 'xlsx'
 
 
 export default function CaseTable() {
+  const router = useRouter();
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
   const [selectedCase, setSelectedCase] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -32,17 +35,17 @@ export default function CaseTable() {
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
-    
+
     const date = new Date(dateString);
-    
+
     // Format as "yyyy-mm-dd"
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based
     const day = String(date.getDate()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day}`;
-    };
-    
+  };
+
 
   const handleAssignCasetoPPUser = async () => {
     try {
@@ -78,6 +81,17 @@ export default function CaseTable() {
     }
   }
 
+  const downloadExcel = () => {
+      const worksheet = XLSX.utils.json_to_sheet(filteredData)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Cases")
+      const currentDate = new Date();
+      const formattedDate = currentDate.toISOString().split('T')[0];
+      const fileName = `my_case_list_${formattedDate}.xlsx`;
+  
+      XLSX.writeFile(workbook, fileName);
+    }
+
   const handleConfirm = () => {
     closeAlert()
     showallCaseBetweenRange(ps)
@@ -101,7 +115,7 @@ export default function CaseTable() {
       const result = await response.json()
       if (result.status === 0) {
         // console.log(result);
-        
+
         setAllCases(result.data)
       } else {
         throw new Error(result.message || 'Failed to fetch data')
@@ -140,127 +154,156 @@ export default function CaseTable() {
   if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>
 
   return (
-    <div className="container mx-auto py-10">
-      <CustomAlertDialog
-        isOpen={isOpen}
-        alertType={alertType}
-        alertMessage={alertMessage}
-        onClose={closeAlert}
-        onConfirm={handleConfirm}
-      />
-      
-      <div className="flex justify-between items-center mb-4">
-        <div className="relative">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="text"
-            placeholder="Search Cases..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <div>
-          <span className="mr-2 text-xs">Total number of records: {filteredData.length}</span>
-        </div>
-      </div>
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-slate-100">
-            <TableHead className="font-bold">PP User Name</TableHead>
-            <TableHead className="font-bold">Case Number</TableHead>
-            <TableHead className="font-bold">PS Name</TableHead>
-            <TableHead className="font-bold">Case Date</TableHead>
-            <TableHead className="font-bold">Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currentCases.map((caseItem, index) => (
-            <TableRow key={index}>
-              <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell>
-              <TableCell>{caseItem.CaseNumber}</TableCell>
-              <TableCell>{caseItem.PsName}</TableCell>
-              <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
-              <TableCell>
-                <Dialog open={isCaseSelected} onOpenChange={setIsCaseSelected}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className=""
-                      onClick={() => {
-                        setIsCaseSelected(true)
-                        setSelectedCase(caseItem)
-                        setSelectedPPUser('')
-                      }}
-                    >
-                      <Eye /> More Details
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Case Details</DialogTitle>
-                    </DialogHeader>
-                    <DialogDescription>
-                      These informations are for case {selectedCase?.CaseNumber}
-                    </DialogDescription>
-                    <Card>
-                      <CardContent>
-                        {selectedCase && (
-                          <>
-                            <div className="space-y-2">
-                              <p><strong>PP User Name:</strong> {selectedCase.PPuserName || 'Not Assigned' }</p>
-                              <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
-                              <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
-                              <p><strong>PS Name:</strong> {selectedCase.PsName}</p>
-                              <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
-                              <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
-                              <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
-                              <p><strong>IPC Section:</strong> {selectedCase.IPCSection}</p>
-                              <p><strong>Begin Reference:</strong> {selectedCase.BeginReferenceName}</p>
-                              <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
-                              <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p>
-                            </div>
-                          </>
-                        )}
-                      </CardContent>
+    <div className="relative min-h-screen w-full">
+      <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
+      <main className="relative flex-1 p-6 w-full min-h-screen">
+        <CustomAlertDialog
+          isOpen={isOpen}
+          alertType={alertType}
+          alertMessage={alertMessage}
+          onClose={closeAlert}
+          onConfirm={handleConfirm}
+        />
+        <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 rounded-lg">
+          <CardHeader className="flex flex-row items-center justify-between mb-5 bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3 rounded-t-lg">
+            <CardTitle className="text-white text-xl">My Case</CardTitle>
+            <Button onClick={downloadExcel} className="flex items-center gap-2">
+              <FileSpreadsheet className="h-4 w-4" />
+              Export to Excel
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="container mx-auto py-10">
+              <div className="flex justify-between items-center mb-4">
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    type="text"
+                    placeholder="Search Cases..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+                <div>
+                  <span className="mr-2 text-xs">Total number of records: {filteredData.length}</span>
+                </div>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-slate-100">
+                    {/* <TableHead className="font-bold">PP User Name</TableHead> */}
+                    <TableHead className="font-bold">Case Number</TableHead>
+                    <TableHead className="font-bold">PS Name</TableHead>
+                    <TableHead className="font-bold">Case Date</TableHead>
+                    <TableHead className="font-bold">More Details</TableHead>
+                    <TableHead className="font-bold">Case Resources</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentCases.map((caseItem, index) => (
+                    <TableRow key={index}>
+                      {/* <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell> */}
+                      <TableCell>{caseItem.CaseNumber}</TableCell>
+                      <TableCell>{caseItem.PsName}</TableCell>
+                      <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
+                      <TableCell>
+                        <Dialog open={isCaseSelected} onOpenChange={setIsCaseSelected}>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className=""
+                              onClick={() => {
+                                setIsCaseSelected(true)
+                                setSelectedCase(caseItem)
+                                setSelectedPPUser('')
+                              }}
+                            >
+                              <Eye /> View
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                              <DialogTitle>Case Details</DialogTitle>
+                            </DialogHeader>
+                            <DialogDescription>
+                              These informations are for case {selectedCase?.CaseNumber}
+                            </DialogDescription>
+                            <Card>
+                              <CardContent>
+                                {selectedCase && (
+                                  <>
+                                    <div className="space-y-2">
+                                      <p><strong>PP User Name:</strong> {selectedCase.PPuserName || 'Not Assigned'}</p>
+                                      <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
+                                      <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
+                                      <p><strong>PS Name:</strong> {selectedCase.PsName}</p>
+                                      <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
+                                      <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
+                                      <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
+                                      <p><strong>IPC Section:</strong> {selectedCase.IPCSection}</p>
+                                      <p><strong>Reference:</strong> {selectedCase.BeginReferenceName}</p>
+                                      {/* <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
+                                      <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p> */}
+                                    </div>
+                                  </>
+                                )}
+                              </CardContent>
+                            </Card>
+
+                          </DialogContent>
+                        </Dialog>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            const caseID = caseItem.CaseId;
+                            const enc_caseId = btoa(caseID);
+                            router.push(`/ps-case-library/${enc_caseId}`);
+                          }}
+                        >
+                          <Eye /> View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="mt-4">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => paginate(Math.max(1, currentPage - 1))}
+                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                    {[...Array(totalPages)].map((_, index) => (
+                      <PaginationItem key={index}>
+                        <PaginationLink
+                          onClick={() => paginate(index + 1)}
+                          isActive={currentPage === index + 1}
+                        >
+                          {index + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            </div>
+            </CardContent>
                     </Card>
-                    
-                  </DialogContent>
-                </Dialog>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <div className="mt-4">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => paginate(Math.max(1, currentPage - 1))}
-                className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-              />
-            </PaginationItem>
-            {[...Array(totalPages)].map((_, index) => (
-              <PaginationItem key={index}>
-                <PaginationLink
-                  onClick={() => paginate(index + 1)}
-                  isActive={currentPage === index + 1}
-                >
-                  {index + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
-    </div>
-  )
+                  </main>
+                </div>
+            )
 }
 
