@@ -18,11 +18,12 @@ const Layout = ({children}) => {
       {const decryptedUser = JSON.parse(decrypt(userDetails))
     setUser(decryptedUser);}
   }, [userDetails]); 
-  
 
+  const type = user?.data?.length > 0 ? user.data[0].AuthorityTypeID : null;
+  
   const breadcrumb = [
-    { name: "Police Station" },
-    { href: "/ps-case", name: "Dashboard" },
+    { name: type == 70 ? "RO Legal" : "Master Admin"},
+    { href: type == 70 ? "/ro-dashboard" : "/master-dashboard", name: "Dashboard" },
     { name: "Case Library" },
   ];
 
@@ -32,8 +33,8 @@ const Layout = ({children}) => {
       <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
         <AuthorizationWrapper
-          authorizedUserTypes={[50]}
-          redirectPath="/ps-case"
+          authorizedUserTypes={[70 && 150]}
+          redirectPath="/logout"
         ></AuthorizationWrapper>
           <div className="flex flex-1">
             <Suspense fallback={<Loading />}>

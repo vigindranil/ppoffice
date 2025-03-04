@@ -18,16 +18,14 @@ const Layout = ({children}) => {
       {const decryptedUser = JSON.parse(decrypt(userDetails))
     setUser(decryptedUser);}
   }, [userDetails]); 
-  
 
   const breadcrumb = [
-    { name: "Police Station" },
-    { href: "/ps-case", name: "Dashboard" },
-    { name: "Case Library" },
+    { name: "Police Station" },{ href: "/ps-case", name: "Dashboard" },{ name: "Hearing Summary List" },
   ];
 
   return (
     <>
+      
       <Header />
       <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>

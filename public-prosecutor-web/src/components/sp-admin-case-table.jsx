@@ -30,7 +30,7 @@ import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { Input } from "./ui/input"
 import * as XLSX from "xlsx"
 
-export default function CaseTable() {
+export default function CaseTable({ps}) {
   const router = useRouter()
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
   const [selectedCase, setSelectedCase] = useState(null)
@@ -95,7 +95,7 @@ export default function CaseTable() {
 
   const handleConfirm = () => {
     closeAlert()
-    showallCaseBetweenRange(user?.BoundaryID)
+    showallCaseBetweenRange(ps)
     setSelectedCase(null)
     setIsCaseSelected(false)
     setSelectedPPUser("")
@@ -134,8 +134,8 @@ export default function CaseTable() {
   }, [userDetails])
 
   useEffect(() => {
-    user && showallCaseBetweenRange(user?.BoundaryID)
-  }, [user, showallCaseBetweenRange])
+    ps && showallCaseBetweenRange(ps);
+  }, [ps])
 
   const filteredData = allCases?.filter((data) =>
     Object?.values(data)?.some((value) => value?.toString()?.toLowerCase()?.includes(searchTerm?.toLowerCase())),
@@ -176,7 +176,7 @@ export default function CaseTable() {
             />
             <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 rounded-lg">
               <CardHeader className="flex flex-row items-center justify-between mb-5 bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3 rounded-t-lg">
-                <CardTitle className="text-white text-xl">My Cases</CardTitle>
+                <CardTitle className="text-white text-xl">Police Station Cases</CardTitle>
                 <Button onClick={downloadExcel} className="flex items-center gap-2">
                   <FileSpreadsheet className="h-4 w-4" />
                   Export to Excel
@@ -288,7 +288,7 @@ export default function CaseTable() {
                               onClick={() => {
                                 const caseID = caseItem.CaseId
                                 const enc_caseId = btoa(caseID)
-                                router.push(`/ps-case-library/${enc_caseId}`)
+                                router.push(`/sp-case-library/${enc_caseId}`)
                               }}
                             >
                               <Eye /> View

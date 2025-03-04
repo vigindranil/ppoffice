@@ -18,22 +18,20 @@ const Layout = ({children}) => {
       {const decryptedUser = JSON.parse(decrypt(userDetails))
     setUser(decryptedUser);}
   }, [userDetails]); 
-  
 
   const breadcrumb = [
-    { name: "Police Station" },
-    { href: "/ps-case", name: "Dashboard" },
-    { name: "Case Library" },
+    { name: "SP" },{ href: "/sp-dashboard", name: "Dashboard" },{ name: "Hearing Summary List" },
   ];
 
   return (
     <>
+      
       <Header />
       <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
         <AuthorizationWrapper
-          authorizedUserTypes={[50]}
-          redirectPath="/ps-case"
+          authorizedUserTypes={[30]}
+          redirectPath="/sp-dashboard"
         ></AuthorizationWrapper>
           <div className="flex flex-1">
             <Suspense fallback={<Loading />}>

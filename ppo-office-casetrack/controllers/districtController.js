@@ -5,17 +5,17 @@ const ResponseHelper = require('./ResponseHelper'); // Import the helper
 class DistrictController {
   // Handle the GET request for /show (Call stored procedure)
   static show(req, res) {
-    const query = 'CALL showDistrict()';  
+    const query = 'CALL showDistrict()';
 
     db.query(query, (err, results) => {
       if (err) {
         console.error('Error executing stored procedure:', err);
-        return  ResponseHelper.error(res,"An error occurred while executing the procedure");
+        return ResponseHelper.error(res, "An error occurred while executing the procedure");
       }
 
-      
+
       // Assuming your stored procedure returns data in results[0]
-      return  ResponseHelper.success_reponse(res,"Data found",results[0]);
+      return ResponseHelper.success_reponse(res, "Data found", results[0]);
     });
   }
 
@@ -23,9 +23,9 @@ class DistrictController {
   static async showallcasesBydistrict(req, res) {
     try {
       // Retrieve the district_id from the query parameters or request body
-      const districtId = req.query.districtId; 
+      const districtId = req.query.districtId;
 
-      
+
       if (!districtId) {
         return ResponseHelper.error(res, "districtId is required");
       }
@@ -35,7 +35,7 @@ class DistrictController {
       // Pass the districtId as an argument to the stored procedure
       db.query(query, [districtId], (err, results) => {
         if (err) {
-         
+
           return ResponseHelper.error(res, "An error occurred while fetching data");
         }
 
@@ -43,40 +43,55 @@ class DistrictController {
         return ResponseHelper.success_reponse(res, "Data found", results[0]);
       });
     } catch (error) {
-     
+
       return ResponseHelper.error(res, "An unexpected error occurred");
     }
   }
 
   static async getCaseCountsByPoliceStation(req, res) {
     try {
-        // Get the districtId from the request body
-        const districtId = req.query.districtId; 
-        
-        // Validate the input
-        if (!districtId) {
-            return res.status(400).json({ error: 'District ID is required.' });
+      // Get the districtId from the request body
+      const districtId = req.query.districtId;
+
+      // Validate the input
+      if (!districtId) {
+        return res.status(400).json({ error: 'District ID is required.' });
+      }
+
+      // Call the stored procedure
+      const query = "CALL sp_CountCasesByPoliceStation(?)";
+      const params = [districtId]; // Ensure districtId is an integer
+
+      db.query(query, [districtId], (err, results) => {
+        if (err) {
+
+          return ResponseHelper.error(res, "An error occurred while fetching data");
         }
 
-        // Call the stored procedure
-        const query = "CALL sp_CountCasesByPoliceStation(?)";
-        const params = [districtId]; // Ensure districtId is an integer
+        // Assuming your stored procedure returns data in results[0]
+        return ResponseHelper.success_reponse(res, "Data found", results[0]);
+      });
+    } catch (error) {
 
-        db.query(query, [districtId], (err, results) => {
-          if (err) {
-           
-            return ResponseHelper.error(res, "An error occurred while fetching data");
-          }
-  
-          // Assuming your stored procedure returns data in results[0]
-          return ResponseHelper.success_reponse(res, "Data found", results[0]);
-        });
-      } catch (error) {
-       
-        return ResponseHelper.error(res, "An unexpected error occurred");
+      return ResponseHelper.error(res, "An unexpected error occurred");
+    }
+  }
+
+  static async getCaseCountByDistrict(req, res) {
+    try {
+      const [results] = await db.promise().query('CALL sp_CountCasesByDistrict()'); 
+
+      if (!results || results.length === 0) { 
+        return ResponseHelper.success_reponse(res,"No Data found",[]);
       }
-} 
-  
+
+      return ResponseHelper.success_reponse(res, "Data found", results[0]);
+    } catch (error) {
+      console.error('Error in getCaseCountByDistrict:', error); 
+      return ResponseHelper.error(res, "An error occurred while fetching data");
+    }
+  }
+
 }
 
 module.exports = DistrictController;

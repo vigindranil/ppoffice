@@ -1,5 +1,5 @@
 import React from 'react'
-import CaseTable from '@/components/sp-admin-case-table';
+import CaseTable from '@/components/ro-legal-case-table';
 const page = ({ps}) => {
   return (
       <CaseTable ps={ps}/>

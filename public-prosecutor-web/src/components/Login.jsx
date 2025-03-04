@@ -72,6 +72,9 @@ export default function LoginPage() {
           case 60:
             router.push("/public-prosecutor-user-dashboard");
             break;
+          case 70:
+            router.push("/ro-dashboard");
+            break;
           case 80:
             router.push("/stf-dashboard");
             break;
@@ -80,6 +83,9 @@ export default function LoginPage() {
             break;
           case 100:
             router.push("/super-admin-dashboard");
+            break;
+          case 150:
+            router.push("/master-dashboard");
             break;
           default:
             // console.log("Unknown AuthorityTypeID:", userData.AuthorityTypeID);

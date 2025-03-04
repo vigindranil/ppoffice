@@ -78,9 +78,9 @@ const data = {
       ],
     },
     {
-      title: "SP Operations",
+      title: "Navigation",
       url: "#",
-      icon: SquareTerminal,
+      icon: Menu,
       isActive: true,
       type: 30,
       items: [
@@ -93,8 +93,34 @@ const data = {
           url: "/sp-notifications",
         },
         {
-          title: "Add PS",
+          title: "Add PS User",
           url: "/add-ps",
+        },
+      ],
+    },
+    {
+      title: "Navigation",
+      url: "#",
+      icon: Menu,
+      isActive: true,
+      type: 70,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/ro-dashboard",
+        },
+      ],
+    },
+    {
+      title: "Navigation",
+      url: "#",
+      icon: Menu,
+      isActive: true,
+      type: 150,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/master-dashboard",
         },
       ],
     },
