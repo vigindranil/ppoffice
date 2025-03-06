@@ -202,9 +202,9 @@ export default function CaseTable() {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-slate-100">
-                        {/* <TableHead className="font-bold">PP User Name</TableHead> */}
                         <TableHead className="font-bold">Case Number</TableHead>
                         <TableHead className="font-bold">PS Name</TableHead>
+                        <TableHead className="font-bold">Reference</TableHead>
                         <TableHead className="font-bold">Case Date</TableHead>
                         <TableHead className="font-bold">More Details</TableHead>
                         <TableHead className="font-bold">Case Resources</TableHead>
@@ -217,6 +217,7 @@ export default function CaseTable() {
                           {/* <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell> */}
                           <TableCell>{caseItem.CaseNumber}</TableCell>
                           <TableCell>{caseItem.PsName}</TableCell>
+                          <TableCell>{caseItem.CRMName}</TableCell>
                           <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
                           <TableCell>
                             <Dialog open={isCaseSelected} onOpenChange={setIsCaseSelected}>
@@ -245,9 +246,6 @@ export default function CaseTable() {
                                       <>
                                         <div className="space-y-2">
                                           <p>
-                                            <strong>PP User Name:</strong> {selectedCase.PPuserName || "Not Assigned"}
-                                          </p>
-                                          <p>
                                             <strong>Case Number:</strong> {selectedCase.CaseNumber}
                                           </p>
                                           <p>
@@ -270,7 +268,7 @@ export default function CaseTable() {
                                             <strong>IPC Section:</strong> {selectedCase.IPCSection}
                                           </p>
                                           <p>
-                                            <strong>Reference:</strong> {selectedCase.BeginReferenceName}
+                                            <strong>Reference:</strong> {selectedCase.CRMName}
                                           </p>
                                           {/* <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
                                           <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p> */}

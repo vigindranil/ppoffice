@@ -191,6 +191,7 @@ export default function CaseTable() {
                   <TableRow className="bg-slate-100">
                     <TableHead className="font-bold">Case Number</TableHead>
                     <TableHead className="font-bold">PS Name</TableHead>
+                    <TableHead className="font-bold">Reference</TableHead>
                     <TableHead className="font-bold">Case Date</TableHead>
                     <TableHead className="font-bold">Case Status</TableHead>
                     <TableHead className="font-bold">View</TableHead>
@@ -202,6 +203,7 @@ export default function CaseTable() {
                     <TableRow key={index}>
                       <TableCell>{caseItem.CaseNumber}</TableCell>
                       <TableCell>{caseItem.PsName}</TableCell>
+                      <TableCell>{caseItem.Crm}</TableCell>
                       <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
                       <TableCell>{caseItem.IsAssigned ? <Badge className='bg-emerald-400'>Assigned</Badge> : <Badge className='bg-orange-300'>Pending</Badge>}</TableCell>
                       <TableCell>
@@ -236,7 +238,7 @@ export default function CaseTable() {
                                       <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
                                       <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
                                       <p><strong>IPC Section:</strong> {selectedCase.IPCSection}</p>
-                                      <p><strong>Begin Reference:</strong> {selectedCase.BeginReferenceName}</p>
+                                      <p><strong>Reference:</strong> {selectedCase.Crm}</p>
                                       <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
                                       <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p>
                                     </div>
