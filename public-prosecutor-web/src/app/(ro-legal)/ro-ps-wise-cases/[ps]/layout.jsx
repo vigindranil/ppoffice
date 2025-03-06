@@ -1,6 +1,6 @@
 "use client";
 import React, { Suspense, useEffect, useState } from "react";
-import { useParams } from "next/navigation"; // ✅ Fix for params issue
+import { useParams } from "next/navigation";
 import Loading from "./loading";
 import AdminSidebarLayout from "@/components/sidebar-layout";
 import Footer from "@/components/Footer";
@@ -10,10 +10,10 @@ import { useSelector } from "react-redux";
 import { decrypt } from "@/utils/crypto";
 
 const Layout = () => {
-  const [user, setUser] = useState(null); // Ensure user starts as null
+  const [user, setUser] = useState(null);
   const token = useSelector((state) => state.auth.token);
   const userDetails = useSelector((state) => state.auth.user);
-  const { ps } = useParams(); // ✅ Fix: Use `useParams()` instead of accessing `params` directly
+  const { ps } = useParams();
 
   useEffect(() => {
     if (userDetails) {
@@ -22,12 +22,11 @@ const Layout = () => {
     }
   }, [userDetails]);
 
-  // Ensure user is set before accessing nested properties
-  const type = user?.data?.length > 0 ? user.data[0].AuthorityTypeID : null;
+  // const type = user?.data?.length > 0 ? user.data[0].AuthorityTypeID : null;
 
   const breadcrumb = [
-    { name: type === 70 ? "RO Legal" : "Master Admin" },
-    { href: type === 70 ? "/ro-dashboard" : "/master-dashboard", name: "Dashboard" },
+    { name: "RO Legal"},
+    { href: "/ro-dashboard", name: "Dashboard" },
     { name: "PS wise Cases" }
   ];
 

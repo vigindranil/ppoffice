@@ -85,7 +85,7 @@ export default function DashboardCards() {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {psData.map((card, index) => (
-        <Link key={index} href={`/ro-ps-wise-cases/${card.PoliceStationID}`} className="block">
+        <Link key={index} href={`/master-ps-wise-cases/${card.PoliceStationID}`} className="block">
         <motion.div
           key={index}
           variants={cardVariants}

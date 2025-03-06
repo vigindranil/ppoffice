@@ -22,7 +22,7 @@ const Layout = ({children}) => {
   // const type = user?.data[0].AuthorityTypeID
 
   const breadcrumb = [
-    { name: "RO Legal"},{ href:"/ro-dashboard", name: "Dashboard" },{ name: "Hearing Summary List" },
+    { name:"Master Admin"},{ href:"/master-dashboard", name: "Dashboard" },{ name: "Hearing Summary List" },
   ];
 
   return (
@@ -32,7 +32,7 @@ const Layout = ({children}) => {
       <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
         <AuthorizationWrapper
-          authorizedUserTypes={[70]}
+          authorizedUserTypes={[150]}
           redirectPath="/logout"
         ></AuthorizationWrapper>
           <div className="flex flex-1">

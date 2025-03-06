@@ -1,43 +1,45 @@
 "use client";
 import React, { Suspense, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Loading from "./loading";
 import AdminSidebarLayout from "@/components/sidebar-layout";
-import { useSelector } from "react-redux";
-import Footer from '@/components/Footer';
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import AuthorizationWrapper from "@/components/AuthorizationWrapper";
+import Page from "./page";
+import { useSelector } from "react-redux";
 import { decrypt } from "@/utils/crypto";
 
-const Layout = ({children}) => {
-  const [user, setUser] = useState("");
+const Layout = () => {
+  const [user, setUser] = useState(null);
   const token = useSelector((state) => state.auth.token);
   const userDetails = useSelector((state) => state.auth.user);
+  const { ps } = useParams();
 
   useEffect(() => {
-    if(userDetails)
-      {const decryptedUser = JSON.parse(decrypt(userDetails))
-    setUser(decryptedUser);}
-  }, [userDetails]); 
+    if (userDetails) {
+      const decryptedUser = JSON.parse(decrypt(userDetails));
+      setUser(decryptedUser);
+    }
+  }, [userDetails]);
 
-  // const type = user?.data[0].AuthorityTypeID
+  // const type = user?.data?.length > 0 ? user.data[0].AuthorityTypeID : null;
 
   const breadcrumb = [
-    { name: "RO Legal"},{ href:"/ro-dashboard", name: "Dashboard" },{ name: "Hearing Summary List" },
+    { name: "Master Admin" },
+    { href: "/master-dashboard", name: "Dashboard" },
+    { name: "PS wise Cases" }
   ];
 
   return (
     <>
-      
       <Header />
+
+      {/* Main Content */}
       <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
-        <AuthorizationWrapper
-          authorizedUserTypes={[70]}
-          redirectPath="/logout"
-        ></AuthorizationWrapper>
           <div className="flex flex-1">
             <Suspense fallback={<Loading />}>
-              {children}
+              <Page ps={ps} />
             </Suspense>
           </div>
         </AdminSidebarLayout>
