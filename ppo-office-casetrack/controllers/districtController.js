@@ -92,6 +92,166 @@ class DistrictController {
     }
   }
 
+  static async getAssignedDistrictAndPoliceByCaseId(req, res) {
+    try {
+        console.log("🔥 Request Params:", req.body); // Debugging
+
+        const { caseId } = req.body;
+
+        // ✅ Validate required input fields
+        if (!caseId) {
+            return res.status(400).json({
+                status: 1,
+                message: "caseId is required.",
+            });
+        }
+
+        // ✅ Call stored procedure
+        const query = "CALL sp_getAssignedDistrictAndPoliceByCaseId(?)";
+        db.query(query, [caseId], (err, results) => {
+            if (err) {
+                console.error("❌ Error executing stored procedure:", err);
+                return res.status(500).json({
+                    status: 1,
+                    message: "Error retrieving assigned districts and police stations.",
+                });
+            }
+
+            // ✅ Extract result set
+            const assignedDistrictsAndPolice = results[0]; 
+
+            if (!assignedDistrictsAndPolice || assignedDistrictsAndPolice.length === 0) {
+                return res.status(404).json({
+                    status: 1,
+                    message: "No assigned districts or police stations found for the given caseId.",
+                });
+            }
+
+            // ✅ Respond with success
+            return res.status(200).json({
+                status: 0,
+                message: "Assigned districts and police stations retrieved successfully.",
+                data: assignedDistrictsAndPolice,
+            });
+        });
+
+      } catch (error) {
+          console.error("❌ Unexpected error:", error);
+          return res.status(500).json({
+              status: 1,
+              message: "An unexpected error occurred.",
+              error: error.message,
+          });
+      }
+  }
+
+  static async getUnassignedDistrictByCaseId(req, res) {
+    try {
+        console.log("🔥 Request Params:", req.body); // Debugging
+
+        const { caseId } = req.body;
+
+        // ✅ Validate required input fields
+        if (!caseId) {
+            return res.status(400).json({
+                status: 1,
+                message: "caseId is required.",
+            });
+        }
+
+        // ✅ Call stored procedure
+        const query = "CALL sp_getUnassignedDistrictByCaseId(?)";
+        db.query(query, [caseId], (err, results) => {
+            if (err) {
+                console.error("❌ Error executing stored procedure:", err);
+                return res.status(500).json({
+                    status: 1,
+                    message: "Error retrieving unassigned districts.",
+                });
+            }
+
+            // ✅ Extract result set
+            const unassignedDistricts = results[0];
+
+            if (!unassignedDistricts || unassignedDistricts.length === 0) {
+                return res.status(404).json({
+                    status: 1,
+                    message: "No unassigned districts found for the given caseId.",
+                });
+            }
+
+            // ✅ Respond with success
+            return res.status(200).json({
+                status: 0,
+                message: "Unassigned districts retrieved successfully.",
+                data: unassignedDistricts,
+            });
+        });
+
+    } catch (error) {
+        console.error("❌ Unexpected error:", error);
+        return res.status(500).json({
+            status: 1,
+            message: "An unexpected error occurred.",
+            error: error.message,
+        });
+    }
+  }
+
+  static async getUnassignedPoliceStationsByCaseAndDistrict(req, res) {
+    try {
+        console.log("🔥 Request Params:", req.body); // Debugging
+
+        const { caseId, districtId } = req.body;
+
+        // ✅ Validate required input fields
+        if (!caseId || !districtId) {
+            return res.status(400).json({
+                status: 1,
+                message: "Both caseId and districtId are required.",
+            });
+        }
+
+        // ✅ Call stored procedure
+        const query = "CALL sp_getUnassignedPoliceStationsByCaseAndDistrict(?, ?)";
+        db.query(query, [caseId, districtId], (err, results) => {
+            if (err) {
+                console.error("❌ Error executing stored procedure:", err);
+                return res.status(500).json({
+                    status: 1,
+                    message: "Error retrieving unassigned police stations.",
+                });
+            }
+
+            // ✅ Extract result set
+            const unassignedPoliceStations = results[0];
+
+            if (!unassignedPoliceStations || unassignedPoliceStations.length === 0) {
+                return res.status(404).json({
+                    status: 1,
+                    message: "No unassigned police stations found for the given caseId and districtId.",
+                });
+            }
+
+            // ✅ Respond with success
+            return res.status(200).json({
+                status: 0,
+                message: "Unassigned police stations retrieved successfully.",
+                data: unassignedPoliceStations,
+            });
+        });
+
+    } catch (error) {
+        console.error("❌ Unexpected error:", error);
+        return res.status(500).json({
+            status: 1,
+            message: "An unexpected error occurred.",
+            error: error.message,
+        });
+    }
+  }
+
+
 }
 
 module.exports = DistrictController;

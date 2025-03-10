@@ -6,7 +6,7 @@ import Navbar from '@/components/notnavbar'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { getDetailsApplicationId, getPccCrimeDetails, updateCriminalInfoApi, getDocByCaseId, getAssignedByCaseId, getUnassignedByCaseId } from "./api"
+import { getDetailsApplicationId, getPccCrimeDetails, updateCriminalInfoApi, getDocByCaseId, getAssignedByCaseId, getUnassignedByCaseId, getAssignedDeptByCaseId } from "./api"
 import moment, { isMoment } from "moment"
 import DocumentTable from "@/components/document-table-component"
 import { useToast } from "@/hooks/use-toast"
@@ -24,6 +24,8 @@ import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { useSelector } from "react-redux"
 import AssignedTable from "@/components/assigned-adv-table-component"
 import UnassignedTable from "@/components/unassigned-adv-table-component"
+import AssignedDeptTable from "@/components/assigned-dept-table-component"
+import UnassignedDeptTable from "@/components/unassigned-dept-table-component"
 
 export default function Page ({ params }) {
   const unwrappedParams = use(params);
@@ -39,6 +41,8 @@ export default function Page ({ params }) {
   const [documentDetails, setDocumentsDetails] = useState(null);
   const [assignedDetails, setAssignedDetails] = useState(null);
   const [unassignedDetails, setUnassignedDetails] = useState(null);
+  const [assignedDeptDetails, setAssignedDeptDetails] = useState(null);
+  const [unassignedDeptDetails, setUnassignedDeptDetails] = useState(null);
   const [isLoadingStatusHistrory, setIsLoadingStatusHistrory] = useState(true)
   const [isLoadingDocumentTable, setIsLoadingDocumentTable] = useState(true)
   const [isLoadingAssignedTable, setIsLoadingAssignedTable] = useState(true)
@@ -114,6 +118,26 @@ export default function Page ({ params }) {
     fetchUnassigned(); 
   }, [user]);
 
+  useEffect(() => {
+    const fetchDeptAssigned = async () => {
+      try {
+        setIsLoadingStatusHistrory(true);
+        setIsLoadingUnassignedTable(true);
+  
+        const response = await getAssignedDeptByCaseId(case_id); 
+        console.log("Dept Assigned:", response); 
+        setAssignedDeptDetails(response?.data);
+      } catch (e) {
+        console.log("Error:", e);
+      } finally {
+        setIsLoadingStatusHistrory(false);
+        setIsLoadingUnassignedTable(false);
+      }
+    };
+  
+    fetchDeptAssigned(); 
+  }, [user]);
+
   const handleConfirm = () => {
     closeAlert()
   }
@@ -133,8 +157,10 @@ export default function Page ({ params }) {
             <Tabs defaultValue="documents" className="w-full">
               <TabsList className="flex gap-6 justify-center mb-4">
                 <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="documents">Uploaded Documents</TabsTrigger>
-                <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="crimeVerification">Assigned Advocates</TabsTrigger>
-                <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="statusHistory">Unassigned Advocates</TabsTrigger>
+                <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="asVocate">Assigned Advocates</TabsTrigger>
+                <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="usVocate">Unassigned Advocates</TabsTrigger>
+                <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="asDept">Assigned Departments</TabsTrigger>
+                <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="usDept">Unassigned Departments</TabsTrigger>
               </TabsList>
 
               {/* Document(s) Uploaded for the Application */}
@@ -147,8 +173,8 @@ export default function Page ({ params }) {
                 </div>
               </TabsContent>
 
-              {/* Crime Activity Verification */}
-              <TabsContent value="crimeVerification">
+              {/* Assigned Advocates List*/}
+              <TabsContent value="asVocate">
                 <div className="mt-12 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden min-h-[200px]">
                   <div className="bg-gradient-to-r from-violet-600 to-amber-600 px-6 py-3">
                     <h2 className="text-2xl font-bold text-white">Assigned Advocates List</h2>
@@ -157,13 +183,33 @@ export default function Page ({ params }) {
                 </div>
               </TabsContent>
 
-              {/* Application Status History */}
-              <TabsContent value="statusHistory">
+              {/* Unassigned Advocates List */}
+              <TabsContent value="usVocate">
                 <div className="mt-12 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden min-h-[200px]">
                   <div className="bg-gradient-to-r from-amber-600 to-indigo-600 px-6 py-3">
                     <h2 className="text-2xl font-bold text-white">Unassigned Advocates List</h2>
                   </div>
                   <UnassignedTable documents={unassignedDetails} isLoadingDocumentTable={isLoadingUnassignedTable} identity={case_id}/>
+                </div>
+              </TabsContent>
+
+              {/* Assigned Department List */}
+              <TabsContent value="asDept">
+                <div className="mt-12 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden min-h-[200px]">
+                  <div className="bg-gradient-to-r from-indigo-600 to-emerald-500 px-6 py-3">
+                    <h2 className="text-2xl font-bold text-white">Assigned Department List</h2>
+                  </div>
+                  <AssignedDeptTable documents={assignedDeptDetails} isLoadingDocumentTable={isLoadingUnassignedTable} identity={case_id}/>
+                </div>
+              </TabsContent>
+
+              {/* Unassigned Department List */}
+              <TabsContent value="usDept">
+                <div className="mt-12 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden min-h-[200px]">
+                  <div className="bg-gradient-to-r from-emerald-500 to-yellow-400 px-6 py-3">
+                    <h2 className="text-2xl font-bold text-white">Unassigned Department List</h2>
+                  </div>
+                  <UnassignedDeptTable documents={unassignedDetails} isLoadingDocumentTable={isLoadingUnassignedTable} identity={case_id}/>
                 </div>
               </TabsContent>
 

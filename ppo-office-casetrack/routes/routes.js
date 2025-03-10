@@ -13,6 +13,10 @@ router.get('/api/alldistrict', authMiddleware.verifyToken, districtController.sh
 router.get('/api/showallCasesBydistrictId',authMiddleware.verifyToken,districtController.showallcasesBydistrict);
 router.get('/api/count-by-ps',authMiddleware.verifyToken,districtController.getCaseCountsByPoliceStation);
 router.post('/api/count-by-district',authMiddleware.verifyToken,districtController.getCaseCountByDistrict);
+router.post('/api/assigned-dept', authMiddleware.verifyToken,districtController.getAssignedDistrictAndPoliceByCaseId); // show assigned dept
+// router.post('/api/unassigned-dept', authMiddleware.verifyToken,districtController.getUnassignedAdvocatesByCaseId); 
+router.post('/api/alldistrict-case', authMiddleware.verifyToken,districtController.getUnassignedDistrictByCaseId); 
+router.post('/api/allps-case-district', authMiddleware.verifyToken,districtController.getUnassignedPoliceStationsByCaseAndDistrict); 
 
 
 
