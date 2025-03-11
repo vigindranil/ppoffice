@@ -17,6 +17,7 @@ import { Input } from './ui/input'
 import { DatePicker } from './date-picker'
 import { Badge } from './ui/badge'
 import { Label } from "@/components/ui/label"
+import { postRequest } from "@/app/commonAPI"
 
 
 export default function CaseTable() {
@@ -27,9 +28,11 @@ export default function CaseTable() {
   const casesPerPage = 10
   const [allCases, setAllCases] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isloading, setIsLoading] = useState(true)  
   const [error, setError] = useState(null)
   const userDetails = useSelector((state) => state.auth.user);
   const [user, setUser] = useState("");
+  const [reference, setReference] = useState([]);
   const [searchTerm, setSearchTerm] = useState('')
   const [isCaseSelected, setIsCaseSelected] = useState(false)
   const [fromDate, setFromDate] = useState(null);
@@ -48,11 +51,34 @@ export default function CaseTable() {
     return `${year}-${month}-${day}`;
   };
 
+  const fetchCrm = async (identity) => {
+    try {
+      setIsLoading(true);
+      const response = await postRequest("crm-list-case", { caseId: identity });
+      console.log(response);
+  
+      if (response.status === 0 && Array.isArray(response.data)) {
+        setReference(response.data); // Store array in state
+      } else {
+        setReference([]); // Handle empty response
+      }
+    } catch (error) {
+      console.error("Error fetching CRM:", error);
+      setReference([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }  
+
   const handleConfirm = () => {
     closeAlert()
     showallCaseBetweenRange(null, null)
     setSelectedCase(null)
     setIsCaseSelected(false)
+  }
+
+  const handleOpenCrm = (identity) => {
+    fetchCrm(identity)
   }
 
   const showallCaseBetweenRange = async (start, end) => {
@@ -203,7 +229,44 @@ export default function CaseTable() {
                     <TableRow key={index}>
                       <TableCell>{caseItem.CaseNumber}</TableCell>
                       <TableCell>{caseItem.PsName}</TableCell>
-                      <TableCell>{caseItem.Crm}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          onClick={() => handleOpenCrm(caseItem.CaseId)}
+                        >
+                          View Reference
+                        </Button>
+
+                        {/* Modal for displaying reference details */}
+                        <Dialog open={reference.length > 0} onOpenChange={() => setReference([])}>
+                          <DialogContent className="sm:max-w-auto">
+                            <DialogHeader>
+                              <DialogTitle>Reference Details</DialogTitle>
+                            </DialogHeader>
+                            <div className="text-sm text-muted-foreground">
+                              {isloading ? (
+                                <div className="text-center py-10">
+                                  <LoaderCircle className="animate-spin mx-auto" />
+                                </div>
+                              ) : reference.length > 0 ? (
+                                <Card>
+                                  <CardContent>
+                                  <ol className="list-decimal list-inside space-y-2">
+                                    {reference.map((crm, index) => (
+                                      <li key={index} className="border-b pb-2">
+                                        {crm.crmName}
+                                      </li>
+                                    ))}
+                                  </ol>
+                                  </CardContent>
+                                </Card>
+                              ) : (
+                                <p>No reference details found.</p>
+                              )}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </TableCell>
                       <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
                       <TableCell>{caseItem.IsAssigned ? <Badge className='bg-emerald-400'>Assigned</Badge> : <Badge className='bg-orange-300'>Pending</Badge>}</TableCell>
                       <TableCell>

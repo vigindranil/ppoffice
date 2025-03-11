@@ -24,6 +24,7 @@ const UnassignedDeptTable = ({ identity }) => {
     try {
       setIsLoading(true)
       const response = await postRequest("alldistrict-case", { caseId: identity })
+      console.log(response);
       if (response.status === 0 && response.data) {
         setDistricts(response.data)
       }

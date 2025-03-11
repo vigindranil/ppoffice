@@ -764,6 +764,58 @@ class CaseController {
         }
     }
     
+    static async getCrmListByCaseId(req, res) {
+        try {
+            console.log("🔥 Request Params:", req.body); // Debugging
+    
+            const { caseId } = req.body;
+    
+            // ✅ Validate required input fields
+            if (!caseId) {
+                return res.status(400).json({
+                    status: 1,
+                    message: "caseId is required.",
+                });
+            }
+    
+            // ✅ Call stored procedure
+            const query = "CALL sp_getCrmListByCaseId(?)";
+            db.query(query, [caseId], (err, results) => {
+                if (err) {
+                    console.error("❌ Error executing stored procedure:", err);
+                    return res.status(500).json({
+                        status: 1,
+                        message: "Error retrieving CRM list.",
+                    });
+                }
+    
+                // ✅ Extract result set
+                const crmList = results[0];
+    
+                if (!crmList || crmList.length === 0) {
+                    return res.status(404).json({
+                        status: 1,
+                        message: "No CRM records found for the given caseId.",
+                    });
+                }
+    
+                // ✅ Respond with success
+                return res.status(200).json({
+                    status: 0,
+                    message: "CRM list retrieved successfully.",
+                    data: crmList,
+                });
+            });
+    
+        } catch (error) {
+            console.error("❌ Unexpected error:", error);
+            return res.status(500).json({
+                status: 1,
+                message: "An unexpected error occurred.",
+                error: error.message,
+            });
+        }
+    }    
 
 }
 

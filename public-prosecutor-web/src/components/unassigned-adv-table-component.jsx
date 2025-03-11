@@ -36,6 +36,8 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
 
       const res = await postRequest("send-email", {
         CaseID: identity,
+        DistrictID: doc.CaseCreatedDistrictId,
+        PSID: doc.CaseCreatedPoliceId
       });
 
       console.log(res);

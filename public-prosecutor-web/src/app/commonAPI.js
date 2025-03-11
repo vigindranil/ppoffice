@@ -22,7 +22,7 @@ export const postRequest = async (url, request_body = {}, dispatch) => {
     const response = await fetch(`${BASE_URL}${url}`, requestOptions);
 
     if (response.status === 401 || response.status === 403) {
-      clearUserData(dispatch);
+      // clearUserData(dispatch);
       window.location.href = "/unauthorized";
     } else if (!response.ok) {
       throw new Error(response);

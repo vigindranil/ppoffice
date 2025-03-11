@@ -29,6 +29,7 @@ import HearingListPage from "@/app/(psdashboard)/ps-hearing-summary-list/page"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { Input } from "./ui/input"
 import * as XLSX from "xlsx"
+import { postRequest } from "@/app/commonAPI"
 
 export default function CaseTable() {
   const router = useRouter()
@@ -44,6 +45,7 @@ export default function CaseTable() {
   const [user, setUser] = useState("")
   const [caseDetails, setCaseDetails] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [reference, setReference] = useState([]);
   const [isCaseSelected, setIsCaseSelected] = useState(false)
   const [showHearingSummaryList, setShowHearingSummaryList] = useState(false)
   // Define isLoading state that was missing but used in handleReset
@@ -62,6 +64,28 @@ export default function CaseTable() {
     const day = String(date.getDate()).padStart(2, "0")
 
     return `${year}-${month}-${day}`
+  }
+
+  const fetchCrm = async (identity) => {
+    try {
+      setIsLoading(true);
+      const response = await postRequest("crm-list-case", { caseId: identity });
+      console.log(response);
+  
+      if (response.status === 0 && Array.isArray(response.data)) {
+        setReference(response.data); // Store array in state
+      } else {
+        setReference([]); // Handle empty response
+      }
+    } catch (error) {
+      console.error("Error fetching CRM:", error);
+      setReference([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }  
+ const handleOpenCrm = (identity) => {
+    fetchCrm(identity)
   }
 
   const viewHearingSummary = (caseItem) => {
@@ -217,7 +241,44 @@ export default function CaseTable() {
                           {/* <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell> */}
                           <TableCell>{caseItem.CaseNumber}</TableCell>
                           <TableCell>{caseItem.PsName}</TableCell>
-                          <TableCell>{caseItem.CRMName}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              onClick={() => handleOpenCrm(caseItem.CaseId)}
+                            >
+                              View Reference
+                            </Button>
+
+                            {/* Modal for displaying reference details */}
+                            <Dialog open={reference.length > 0} onOpenChange={() => setReference([])}>
+                              <DialogContent className="sm:max-w-auto">
+                                <DialogHeader>
+                                  <DialogTitle>Reference Details</DialogTitle>
+                                </DialogHeader>
+                                <div className="text-sm text-muted-foreground">
+                                  {isLoading ? (
+                                    <div className="text-center py-10">
+                                      <LoaderCircle className="animate-spin mx-auto" />
+                                    </div>
+                                  ) : reference.length > 0 ? (
+                                    <Card>
+                                      <CardContent>
+                                      <ol className="list-decimal list-inside space-y-2">
+                                        {reference.map((crm, index) => (
+                                          <li key={index} className="border-b pb-2">
+                                            {crm.crmName}
+                                          </li>
+                                        ))}
+                                      </ol>
+                                      </CardContent>
+                                    </Card>
+                                  ) : (
+                                    <p>No reference details found.</p>
+                                  )}
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </TableCell>
                           <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
                           <TableCell>
                             <Dialog open={isCaseSelected} onOpenChange={setIsCaseSelected}>
