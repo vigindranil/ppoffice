@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { AlertCircle, CheckCircle2, CheckCircle2Icon, Eye, FileCheck2, Loader, MapPin, Search, Trash } from "lucide-react"
 import Image from "next/image"
 import { VisuallyHidden } from "@/components/ui/visually-hidden"
-import { getBirthCertificateDetails, getWBSEDCLDetails, verifyApplication } from "@/app/applicationDetails/[FileNumber]/api"
 import Cookies from "react-cookies";
 import { useToast } from "@/hooks/use-toast"
 import { ToastAction } from "@/components/ui/toast"

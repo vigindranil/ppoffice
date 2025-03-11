@@ -6,13 +6,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { AlertCircle, CheckCircle2, CheckCircle2Icon, Eye, FileCheck2, Loader, MapPin, Search, Trash } from "lucide-react"
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
-import Image from "next/image"
-import { VisuallyHidden } from "@/components/ui/visually-hidden"
-import { getBirthCertificateDetails, getWBSEDCLDetails, verifyApplication } from "@/app/applicationDetails/[FileNumber]/api"
 import Cookies from "react-cookies";
 import { useToast } from "@/hooks/use-toast"
-import { ToastAction } from "@/components/ui/toast"
-import { motion } from "framer-motion";
 import { decrypt } from "@/utils/crypto"
 import { useSelector } from "react-redux"
 import { Button } from "./ui/button"

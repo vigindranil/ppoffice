@@ -16,7 +16,7 @@ router.post('/api/count-by-district',authMiddleware.verifyToken,districtControll
 router.post('/api/assigned-dept', authMiddleware.verifyToken,districtController.getAssignedDistrictAndPoliceByCaseId); // show assigned dept
 // router.post('/api/unassigned-dept', authMiddleware.verifyToken,districtController.getUnassignedAdvocatesByCaseId); 
 router.post('/api/alldistrict-case', authMiddleware.verifyToken,districtController.getUnassignedDistrictByCaseId); 
-router.post('/api/allps-case-district', authMiddleware.verifyToken,districtController.getUnassignedPoliceStationsByCaseAndDistrict); 
+router.post('/api/allps-case-district', authMiddleware.verifyToken,districtController.getUnassignedPoliceStationsByCaseAndDistrict ); 
 
 
 

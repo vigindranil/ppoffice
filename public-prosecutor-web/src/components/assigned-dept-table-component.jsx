@@ -143,7 +143,7 @@ const AssignedDeptTable = ({ documents, isLoadingDocumentTable, identity }) => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center">
-                      No Advocates Assigned
+                      Only Initial Department Assigned
                     </TableCell>
                   </TableRow>
                 )}

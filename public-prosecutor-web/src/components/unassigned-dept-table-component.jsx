@@ -1,61 +1,106 @@
 "use client"
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+import { useState, useEffect } from "react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
-import { PlusCircle } from "lucide-react";
-import { Button } from "./ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { postRequest } from "@/app/commonAPI";
+import { PlusCircle } from "lucide-react"
+import { postRequest } from "@/app/commonAPI"
 
-const UnassignedDeptTable = ({ documents, isLoadingDocumentTable, identity }) => {
+const UnassignedDeptTable = ({ identity }) => {
+  const [districts, setDistricts] = useState([])
+  const [policeStations, setPoliceStations] = useState([])
+  const [selectedDistrict, setSelectedDistrict] = useState("")
+  const [selectedPoliceStation, setSelectedPoliceStation] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
-  const { toast } = useToast();
-  const [isAssigning, setIsAssigning] = useState(false);
 
+  useEffect(() => {
+    fetchDistricts()
+  }, [])
 
-  const handleAssign = async (doc) => {
+  const fetchDistricts = async () => {
     try {
-      setIsAssigning(true);
+      setIsLoading(true)
+      const response = await postRequest("alldistrict-case", { caseId: identity })
+      if (response.status === 0 && response.data) {
+        setDistricts(response.data)
+      }
+    } catch (error) {
+      console.error("Error fetching districts:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const fetchPoliceStations = async (districtId) => {
+    try {
+      setIsLoading(true)
+      const response = await postRequest("allps-case-district", { caseId: identity, districtId })
+      if (response.status === 0 && response.data) {
+        setPoliceStations(response.data)
+      }
+    } catch (error) {
+      console.error("Error fetching police stations:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDistrictChange = (e) => {
+    const districtId = e.target.value
+    setSelectedDistrict(districtId)
+    setSelectedPoliceStation("")
+    if (districtId) {
+      fetchPoliceStations(districtId)
+    } else {
+      setPoliceStations([])
+    }
+  }
+
+  const handlePoliceStationChange = (e) => {
+    setSelectedPoliceStation(e.target.value)
+  }
+
+  const handleAssign = async () => {
+    if (!selectedDistrict || !selectedPoliceStation) {
+      toast({
+        title: "Error",
+        description: "Please select both district and police station",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setIsLoading(true)
       const response = await postRequest("assigncase", {
         assignId: "0",
-        ppUserId: doc.AdvocateId,
+        ppUserId: "0",
         caseId: identity,
-        districtId: "0",
-        psId: "0",
-        EntryUserId: "2",
-      });
+        districtId: selectedDistrict,
+        psId: selectedPoliceStation,
+        EntryUserId: "2", // This should be dynamic based on logged in user
+      })
 
-      // const issent = await postRequest("send-email-pp", {
-      //   CaseID: identity,
-      //   PPuserID: doc.AdvocateId,
-      // });
-
-      // console.log(issent);
-
-      // const res = await postRequest("send-email", {
-      //   CaseID: identity,
-      // });
-
-      // console.log(res);
-
-      if (response) {
-        openAlert("success", "Advocate Assigned & Notifications Sent Successfully!")
+      if (response.success) {
+        openAlert("success", "Department Assigned & Notifications Sent Successfully!")
       }
-
-      return response;
     } catch (error) {
-      console.log("Error:", error);
-      return null;
+      console.error("Error assigning department:", error)
     } finally {
-      setIsAssigning(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleConfirm = () => {
     closeAlert()
-    window.location.reload();
+    setSelectedDistrict("")
+    setSelectedPoliceStation("")
+    setPoliceStations([])
+    fetchDistricts()
+    window.location.reload()
   }
 
   return (
@@ -68,48 +113,61 @@ const UnassignedDeptTable = ({ documents, isLoadingDocumentTable, identity }) =>
         onConfirm={handleConfirm}
       />
       <Card className="m-5">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-100 hover:bg-slate-100">
-                  <TableHead>Advocate Name</TableHead>
-                  <TableHead>Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoadingDocumentTable ? (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-center">Loading...</TableCell>
-                  </TableRow>
-                ) : documents?.length > 0 ? (
-                  documents.map((doc, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{doc.AdvocateName}</TableCell>
-                      <TableCell>
-                        <Button
-                          className="bg-blue-100 hover:bg-blue-200 text-sm text-blue-600"
-                          onClick={() => handleAssign(doc)}
-                          disabled={isAssigning}
-                        >
-                          <PlusCircle className="text-blue-600 mr-2 h-4 w-4" />
-                          {isAssigning ? "Please Wait..." : "Assign"}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-center">No Advocates found</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+        <CardContent className="p-6">
+          <div className="grid gap-6">
+            <div>
+              <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">
+                Select District
+              </label>
+              <select
+                id="district"
+                value={selectedDistrict}
+                onChange={handleDistrictChange}
+                disabled={isLoading}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              >
+                <option value="">Select a district</option>
+                {districts.map((district) => (
+                  <option key={district.districtId} value={district.districtId}>
+                    {district.districtName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="policeStation" className="block text-sm font-medium text-gray-700 mb-1">
+                Select Police Station
+              </label>
+              <select
+                id="policeStation"
+                value={selectedPoliceStation}
+                onChange={handlePoliceStationChange}
+                disabled={!selectedDistrict || isLoading}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              >
+                <option value="">Select a police station</option>
+                {policeStations.map((station) => (
+                  <option key={station.policeStationId} value={station.policeStationId}>
+                    {station.policeStationName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <Button
+              onClick={handleAssign}
+              disabled={!selectedDistrict || !selectedPoliceStation || isLoading}
+              className="mt-4"
+            >
+              <PlusCircle className="h-4 w-4 mr-2" />
+              {isLoading ? "Assigning..." : "Assign Department"}
+            </Button>
           </div>
         </CardContent>
       </Card>
     </>
-  );
-};
+  )
+}
 
-export default UnassignedDeptTable;
+export default UnassignedDeptTable
