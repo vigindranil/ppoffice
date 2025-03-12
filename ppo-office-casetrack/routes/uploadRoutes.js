@@ -1,9 +1,12 @@
 const express = require('express');
-const CaseController = require('../controllers/caseController');
+const UploadController = require('../controllers/uploadController');
+const upload = require('../middlewares/uploadftpMiddleware');
 
 const router = express.Router();
 
-// Route for creating a case with document upload
-router.post('/add-case-document', CaseController.addCaseDocuments);
+router.post("/add-ftp-case-document",UploadController.addCaseDocuments);
+
+// Route to download a file from SFTP
+router.get("/download", UploadController.downloadFTPDoc);
 module.exports = router;
 

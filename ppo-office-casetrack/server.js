@@ -8,6 +8,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const path = require('path');
 require('dotenv').config();
 const multer = require('multer');
+const fs = require('fs');
 
 
 const port = process.env.PORT || 3000;  // Use the port from .env or default to 3000
@@ -19,18 +20,42 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(uploadDir));
+
+// Configure Multer storage
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, 'uploads/'); // Save files in 'uploads' folder
+//   },
+//   filename: function (req, file, cb) {
+//     req.documents_path = [...req.documents_path, file.fieldname + '-' + Date.now() + path.extname(file.originalname)]
+//     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+//   }
+// });
+
 // Configure Multer storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Save files in 'uploads' folder
+      cb(null, 'uploads/'); // Save files in 'uploads' folder
   },
   filename: function (req, file, cb) {
-    req.documents_path = [...req.documents_path, file.fieldname + '-' + Date.now() + path.extname(file.originalname)]
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+      // Ensure req.documents_path is an array before using spread syntax
+      if (!Array.isArray(req.documents_path)) {
+          req.documents_path = [];
+      }
+      const filename = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+      req.documents_path.push(filename);
+      cb(null, filename);
   }
 });
+
 
 // File filter to allow only specific file types (optional)
 const fileFilter = (req, file, cb) => {
@@ -48,7 +73,7 @@ const routes = require('./routes/routes');
 app.use('/', routes);
 
 app.use('/', myRoutes);
-app.use('/upload', upload.array('documents'), uploadRoutes);
+app.use('/api/upload', upload.array('documents'), uploadRoutes);
 
 // Start the server
 app.listen(port, () => {

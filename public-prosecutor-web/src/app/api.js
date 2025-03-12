@@ -540,7 +540,7 @@ export const uploadCaseDocuments = async (caseId, documents, entryUserId) => {
 
       console.log("🔥 FormData Content:", ...formData.entries()); 
 
-      const response = await fetch(`${BASE_URL}cases/add-case-document`, {
+      const response = await fetch(`${BASE_URL}upload/add-ftp-case-document`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
