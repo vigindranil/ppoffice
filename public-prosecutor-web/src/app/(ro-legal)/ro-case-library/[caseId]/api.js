@@ -32,3 +32,15 @@ export const getUnassignedByCaseId = async (case_id) => {
     return null;
   }
 };
+
+export const getAssignedDeptByCaseId = async (case_id) => {
+  try {
+    console.log(case_id)
+    return await postRequest("assigned-dept", {
+        caseId: case_id,
+    });
+  } catch (error) {
+    console.log("Error:", error);
+    return null;
+  }
+};

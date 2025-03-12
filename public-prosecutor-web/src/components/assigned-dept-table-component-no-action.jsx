@@ -49,32 +49,7 @@ const AssignedDeptTable = ({ documents, isLoadingDocumentTable, identity }) => {
     console.log("Documents data:", documents);
   }, [documents]);
 
-  const [isUnassigning, setIsUnassigning] = useState(false)
 
-  const handleUnassign = async (doc) => {
-    try {
-      setIsUnassigning(true)
-      const response = await postRequest("assigncase", {
-        assignId: doc.assignId,
-        ppUserId: "0",
-        caseId: identity,
-        districtId: doc.districtId,
-        psId: doc.policeStationId.toString(),
-        EntryUserId: formData.EntryUserID,
-      })
-
-      if (response) {
-        openAlert("success", "Department Removed Successfully!")
-      }
-
-      return response
-    } catch (error) {
-      console.log("Error:", error)
-      return null
-    } finally {
-      setIsUnassigning(false)
-    }
-  }
 
   const SkeletonLoader = () => (
     <>
@@ -112,7 +87,7 @@ const AssignedDeptTable = ({ documents, isLoadingDocumentTable, identity }) => {
               <TableHeader>
                 <TableRow className="bg-slate-100 hover:bg-slate-100">
                   <TableHead>Department Name</TableHead>
-                  <TableHead>Action</TableHead>
+                  {/* <TableHead>Action</TableHead> */}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -128,7 +103,7 @@ const AssignedDeptTable = ({ documents, isLoadingDocumentTable, identity }) => {
                       <TableCell>
                         {doc.districtName ? `${doc.districtName}, ${doc.policeStationName}` : "No name available"}
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <Button
                           className="bg-blue-100 hover:bg-blue-200 text-sm text-blue-600"
                           onClick={() => handleUnassign(doc)}
@@ -137,7 +112,7 @@ const AssignedDeptTable = ({ documents, isLoadingDocumentTable, identity }) => {
                           <Trash className="text-blue-600 mr-2 h-4 w-4" />
                           {isUnassigning ? "Please Wait..." : "Remove"}
                         </Button>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))
                 ) : (

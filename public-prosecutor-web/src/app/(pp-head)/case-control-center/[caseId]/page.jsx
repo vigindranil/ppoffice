@@ -22,7 +22,7 @@ import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { useSelector } from "react-redux"
 import AssignedTable from "@/components/assigned-adv-table-component"
 import UnassignedTable from "@/components/unassigned-adv-table-component"
-import AssignedDeptTable from "@/components/assigned-dept-table-component"
+import AssignedDeptTable from "@/components/assigned-dept-table-component-no-action"
 import UnassignedDeptTable from "@/components/unassigned-dept-table-component"
 
 export default function Page ({ params }) {
@@ -158,7 +158,7 @@ export default function Page ({ params }) {
                 <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="asVocate">Assigned Advocates</TabsTrigger>
                 <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="usVocate">Unassigned Advocates</TabsTrigger>
                 <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="asDept">Assigned Departments</TabsTrigger>
-                <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="usDept">Unassigned Departments</TabsTrigger>
+                {/* <TabsTrigger className="rounded-full bg-white hover:text-blue-500 ring-1 ring-slate-500/40 hover:shadow-md data-[state=active]:bg-blue-500 data-[state=active]:text-white" value="usDept">Unassigned Departments</TabsTrigger> */}
               </TabsList>
 
               {/* Document(s) Uploaded for the Application */}

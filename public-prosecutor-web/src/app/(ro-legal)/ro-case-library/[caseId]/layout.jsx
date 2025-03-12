@@ -22,8 +22,8 @@ const Layout = ({children}) => {
   const type = user?.data?.length > 0 ? user.data[0].AuthorityTypeID : null;
   
   const breadcrumb = [
-    { name: type == 70 ? "RO Legal" : "Master Admin"},
-    { href: type == 70 ? "/ro-dashboard" : "/master-dashboard", name: "Dashboard" },
+    { name: "RO Legal"},
+    { href: "/ro-dashboard", name: "Dashboard" },
     { name: "Case Library" },
   ];
 
@@ -33,7 +33,7 @@ const Layout = ({children}) => {
       <div className="flex flex-col h-full">
         <AdminSidebarLayout breadcrumb={breadcrumb}>
         <AuthorizationWrapper
-          authorizedUserTypes={[70 && 150]}
+          authorizedUserTypes={[70]}
           redirectPath="/logout"
         ></AuthorizationWrapper>
           <div className="flex flex-1">
