@@ -12,7 +12,33 @@ const SFTP_CONFIG = {
     password: "Vyoma@123"
 };
 
-async function uploadToSFTP(localFilePath, remoteFileName) {
+// async function uploadToSFTP(localFilePath, remoteFileName) {
+//     try {
+//         console.log("🔌 Connecting to SFTP server...");
+//         await sftp.connect(SFTP_CONFIG);
+//         console.log("✅ SFTP Connection Established");
+
+//         const remoteFilePath = `/home/ftpuser/${remoteFileName}`;
+
+//         console.log("📤 Uploading file:", localFilePath, "➡", remoteFilePath);
+//         await sftp.put(localFilePath, remoteFilePath);
+
+//         console.log("✅ File successfully uploaded to SFTP:", remoteFilePath);
+
+//         return remoteFilePath;
+//     } catch (error) {
+//         console.error("❌ SFTP Upload Error:", error);
+//         return null;
+//     } finally {
+//         await sftp.end();
+//         console.log("🔌 SFTP Connection Closed");
+//     }
+// }
+
+// Function to download file from SFTP as a stream
+
+
+async function uploadToSFTP(fileBuffer, remoteFileName) {
     try {
         console.log("🔌 Connecting to SFTP server...");
         await sftp.connect(SFTP_CONFIG);
@@ -20,11 +46,10 @@ async function uploadToSFTP(localFilePath, remoteFileName) {
 
         const remoteFilePath = `/home/ftpuser/${remoteFileName}`;
 
-        console.log("📤 Uploading file:", localFilePath, "➡", remoteFilePath);
-        await sftp.put(localFilePath, remoteFilePath);
+        console.log("📤 Uploading file to SFTP...");
+        await sftp.put(fileBuffer, remoteFilePath);
 
-        console.log("✅ File successfully uploaded to SFTP:", remoteFilePath);
-
+        console.log("✅ File successfully uploaded:", remoteFilePath);
         return remoteFilePath;
     } catch (error) {
         console.error("❌ SFTP Upload Error:", error);
@@ -35,7 +60,7 @@ async function uploadToSFTP(localFilePath, remoteFileName) {
     }
 }
 
-// Function to download file from SFTP as a stream
+
 async function downloadFromSFTP(remoteFilePath, res) {
     try {
         console.log("🔌 Connecting to SFTP server...");
@@ -78,6 +103,7 @@ async function downloadFromSFTP(remoteFilePath, res) {
         console.log("🔌 SFTP Connection Closed");
     }
 }
+
 
 // base64
 // async function downloadFromSFTP(remoteFilePath, res) {

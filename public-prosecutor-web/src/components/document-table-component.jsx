@@ -16,9 +16,8 @@ import { Input } from "@/components/ui/input"
 import {
   uploadCaseDocuments,
 } from "@/app/api"
-import moment from "moment"
 
-const PORT_URL = process.env.NEXT_PUBLIC_PORT_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const getFileName = (path) => {
   return path ? path.split("/").pop().replace(/^[0-9]+_/, "") : "Unknown";
@@ -55,6 +54,29 @@ const DocumentTable = ({ documents, isLoadingDocumentTable, identity }) => {
   const [formData, setFormData] = useState({
     EntryUserID: "",
   })
+
+  const handleView = async (filePath) => {
+    try {
+      const fileName = getFileName(filePath);
+      
+      // Fetch the file as a binary blob
+      const response = await fetch(`${BASE_URL}upload/download?filename=${encodeURIComponent(fileName)}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`, // If authentication is needed
+        },
+      });
+  
+      if (!response.ok) throw new Error("Failed to fetch file");
+  
+      const fileBlob = await response.blob(); // Convert response to Blob
+      const fileURL = URL.createObjectURL(fileBlob);
+      window.open(fileURL, "_blank"); // Open in new tab
+  
+    } catch (error) {
+      openAlert("error", error.message || "Failed to open document.");
+    }
+  };  
 
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(encryptedUser))
@@ -162,12 +184,12 @@ const DocumentTable = ({ documents, isLoadingDocumentTable, identity }) => {
                     <TableCell>{getFileName(doc.caseDocument)}</TableCell>
                     <TableCell>{getFileType(doc.caseDocument)}</TableCell>
                     <TableCell>
-                      <Button
-                        className="bg-blue-100 hover:bg-blue-200 text-sm text-blue-600"
-                        onClick={() =>  window.open(`${PORT_URL}${doc.caseDocument}`, "_blank")}
-                      >
-                        <Eye className="text-blue-600 mr-2 h-4 w-4" /> View
-                      </Button>
+                    <Button
+                      className="bg-blue-100 hover:bg-blue-200 text-sm text-blue-600"
+                      onClick={() => handleView(doc.caseDocument)}
+                    >
+                      <Eye className="text-blue-600 mr-2 h-4 w-4" /> View
+                    </Button>
                     </TableCell>
                   </TableRow>
                 ))

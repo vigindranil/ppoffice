@@ -1,4 +1,4 @@
-const uploadToFTP = require("../utils/ftpUploader");
+const { uploadToSFTP, downloadFromSFTP } = require("../utils/ftpUploader");
 const fs = require("fs");
 const db = require("../config/db"); // Import your database connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
@@ -16,15 +16,16 @@ class uploadController {
     
             const { CaseID, EntryUserID } = req.body;
             const files = req.files;
-    
+
             if (!CaseID || !EntryUserID || !files || files.length === 0) {
                 return ResponseHelper.error(res, "Invalid input: Provide CaseID, EntryUserID, and at least one document.");
             }
     
+            console.log("files", files);
+            
             for (const file of files) {
-                const localFilePath = file.path; // Temporary local file
-                const remoteFilePath = await uploadToFTP(localFilePath, file.filename);
-                console.log("sajkdasj",remoteFilePath);
+                const remoteFilePath = await uploadToSFTP(file.buffer, file.originalname);
+                // console.log("sddddd",remoteFilePath);
                 if (!remoteFilePath) {
                     console.error("❌ FTP Upload Failed");
                     continue; // Skip file processing if FTP upload fails
@@ -32,7 +33,14 @@ class uploadController {
     
                 console.log("✅ File uploaded to FTP:", remoteFilePath);
     
-                // const query = "CALL sp_createcaseDocument(?, ?, ?, @ErrorCode)";
+                const query = "CALL sp_createcaseDocument(?, ?, ?, @ErrorCode)";
+                console.log("CaseID", CaseID);
+                console.log("remoteFilePath", remoteFilePath);
+                console.log("EntryUserID", EntryUserID);
+                
+                
+                
+                
                 const params = [CaseID, remoteFilePath, EntryUserID];
     
                 await new Promise((resolve, reject) => {
@@ -45,8 +53,6 @@ class uploadController {
                     });
                 });
     
-                // Delete the temporary local file
-                fs.unlinkSync(localFilePath);
             }
     
             return res.status(201).json({
@@ -71,7 +77,7 @@ class uploadController {
     
         console.log(`🔥 Download request for: ${remoteFilePath}`);
     
-        await uploadToFTP.downloadFromSFTP(remoteFilePath, res);
+        await downloadFromSFTP(remoteFilePath, res);
     }
 
 }

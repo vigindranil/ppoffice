@@ -32,29 +32,20 @@ app.use('/uploads', express.static(uploadDir));
 // Configure Multer storage
 // const storage = multer.diskStorage({
 //   destination: function (req, file, cb) {
-//     cb(null, 'uploads/'); // Save files in 'uploads' folder
+//       cb(null, 'uploads/'); // Save files in 'uploads' folder
 //   },
 //   filename: function (req, file, cb) {
-//     req.documents_path = [...req.documents_path, file.fieldname + '-' + Date.now() + path.extname(file.originalname)]
-//     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+//       // Ensure req.documents_path is an array before using spread syntax
+//       if (!Array.isArray(req.documents_path)) {
+//           req.documents_path = [];
+//       }
+//       const filename = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+//       req.documents_path.push(filename);
+//       cb(null, filename);
 //   }
 // });
 
-// Configure Multer storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-      cb(null, 'uploads/'); // Save files in 'uploads' folder
-  },
-  filename: function (req, file, cb) {
-      // Ensure req.documents_path is an array before using spread syntax
-      if (!Array.isArray(req.documents_path)) {
-          req.documents_path = [];
-      }
-      const filename = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
-      req.documents_path.push(filename);
-      cb(null, filename);
-  }
-});
+const storage = multer.memoryStorage();
 
 
 // File filter to allow only specific file types (optional)
@@ -79,4 +70,3 @@ app.use('/api/upload', upload.array('documents'), uploadRoutes);
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-
