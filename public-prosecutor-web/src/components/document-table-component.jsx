@@ -58,7 +58,7 @@ const DocumentTable = ({ documents, isLoadingDocumentTable, identity }) => {
   const handleView = async (filePath) => {
     try {
       const fileName = getFileName(filePath);
-      
+
       // Fetch the file as a binary blob
       const response = await fetch(`${BASE_URL}upload/download?filename=${encodeURIComponent(fileName)}`, {
         method: "GET",
@@ -66,17 +66,17 @@ const DocumentTable = ({ documents, isLoadingDocumentTable, identity }) => {
           Authorization: `Bearer ${token}`, // If authentication is needed
         },
       });
-  
+
       if (!response.ok) throw new Error("Failed to fetch file");
-  
+
       const fileBlob = await response.blob(); // Convert response to Blob
       const fileURL = URL.createObjectURL(fileBlob);
       window.open(fileURL, "_blank"); // Open in new tab
-  
+
     } catch (error) {
       openAlert("error", error.message || "Failed to open document.");
     }
-  };  
+  };
 
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(encryptedUser))
@@ -113,22 +113,22 @@ const DocumentTable = ({ documents, isLoadingDocumentTable, identity }) => {
     setIsLoading(true);
     setError("");
     setMessage("");
-  
+
     try {
       const caseId = identity;
-      let response = null; 
-  
+      let response = null;
+
       if (upDocuments.length > 0) {
         response = await uploadCaseDocuments(caseId, upDocuments, user.AuthorityUserID);
       }
-  
+
       if (response) {
         openAlert("success", "Documents added successfully");
         setUpDocuments([]);
       }
-  
+
       return response;
-  
+
     } catch (err) {
       openAlert("error", err?.message || "An unknown error occurred.");
     } finally {
@@ -154,87 +154,87 @@ const DocumentTable = ({ documents, isLoadingDocumentTable, identity }) => {
 
   return (
     <>
-    <CustomAlertDialog
-                isOpen={isOpen}
-                alertType={alertType}
-                alertMessage={alertMessage}
-                onClose={closeAlert}
-                onConfirm={handleConfirm}
-              />
-    <Card className="m-5">
-      <CardContent className="p-0">
-      <div className="flex flex-col gap-4">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-100 hover:bg-slate-100">
-                <TableHead>Document Name</TableHead>
-                <TableHead>File Type</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoadingDocumentTable ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center">Loading...</TableCell>
-                </TableRow>
-              ) : documents?.length > 0 ? (
-                documents.map((doc, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{getFileName(doc.caseDocument)}</TableCell>
-                    <TableCell>{getFileType(doc.caseDocument)}</TableCell>
-                    <TableCell>
-                    <Button
-                      className="bg-blue-100 hover:bg-blue-200 text-sm text-blue-600"
-                      onClick={() => handleView(doc.caseDocument)}
-                    >
-                      <Eye className="text-blue-600 mr-2 h-4 w-4" /> View
-                    </Button>
-                    </TableCell>
+      <CustomAlertDialog
+        isOpen={isOpen}
+        alertType={alertType}
+        alertMessage={alertMessage}
+        onClose={closeAlert}
+        onConfirm={handleConfirm}
+      />
+      <Card className="m-5">
+        <CardContent className="p-0">
+          <div className="flex flex-col gap-4">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-slate-100 hover:bg-slate-100">
+                    <TableHead>Document Name</TableHead>
+                    <TableHead>File Type</TableHead>
+                    <TableHead>Action</TableHead>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center">No documents found</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex space-x-4">
-                <div className="flex-1 space-y-2 px-4">
-                <Label>Upload Case Documents</Label>
-                  <Input type="file" multiple onChange={handleFileChange} />
-
-                  {upDocuments.length > 0 && (
-                    <div className="mt-3">
-                      <p className="font-semibold mb-2">Selected Documents:</p>
-                      <ul className="space-y-2">
-                        {upDocuments.map((file, index) => (
-                          <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded">
-                            <span>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => removeDocument(index)}
-                              className="ml-2"
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                </TableHeader>
+                <TableBody>
+                  {isLoadingDocumentTable ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center">Loading...</TableCell>
+                    </TableRow>
+                  ) : documents?.length > 0 ? (
+                    documents.map((doc, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{getFileName(doc.caseDocument)}</TableCell>
+                        <TableCell>{getFileType(doc.caseDocument)}</TableCell>
+                        <TableCell>
+                          <Button
+                            className="bg-blue-100 hover:bg-blue-200 text-sm text-blue-600"
+                            onClick={() => handleView(doc.caseDocument)}
+                          >
+                            <Eye className="text-blue-600 mr-2 h-4 w-4" /> View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center">No documents found</TableCell>
+                    </TableRow>
                   )}
-                  <p className="text-sm text-gray-500">Max file size: 15 MB. Allowed formats: JPG, JPEG, PDF</p>
-                </div>
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex space-x-4">
+              <div className="flex-1 space-y-2 px-4">
+                <Label>Upload Case Documents</Label>
+                <Input type="file" multiple onChange={handleFileChange} />
+
+                {upDocuments.length > 0 && (
+                  <div className="mt-3">
+                    <p className="font-semibold mb-2">Selected Documents:</p>
+                    <ul className="space-y-2">
+                      {upDocuments.map((file, index) => (
+                        <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded">
+                          <span>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => removeDocument(index)}
+                            className="ml-2"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <p className="text-sm text-gray-500">Max file size: 15 MB. Allowed formats: JPG, JPEG, PDF</p>
               </div>
-              <Button onClick={handleAddDoc} className="max-w-min bg-blue-500 mx-auto my-5 mt-5" disabled={isLoading}>
-                {isLoading ? "Please Wait..." : "Add Document(s)"}
-              </Button>
-              </div>
-      </CardContent>
-    </Card>
+            </div>
+            <Button onClick={handleAddDoc} className="max-w-min bg-blue-500 mx-auto my-5 mt-5" disabled={isLoading}>
+              {isLoading ? "Please Wait..." : "Add Document(s)"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </>
   )
 }
