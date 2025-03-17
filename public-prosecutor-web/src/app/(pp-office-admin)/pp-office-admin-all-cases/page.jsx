@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { ClipboardPlus, Eye, LoaderCircle, Search } from 'lucide-react'
+import { Calendar, ClipboardPlus, Eye, LoaderCircle, Search } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
@@ -17,6 +17,7 @@ import { DatePicker } from '@/components/date-picker'
 import { Badge } from '@/components/ui/badge'
 import { postRequest } from "@/app/commonAPI"
 import { BASE_URL } from '@/app/constants'
+import { Label } from '@/components/ui/label'
 
 
 export default function CaseTable() {
@@ -26,7 +27,7 @@ export default function CaseTable() {
   const casesPerPage = 10
   const [allCases, setAllCases] = useState([])
   const [loading, setLoading] = useState(true)
-  const [isloading, setIsLoading] = useState(true) 
+  const [isloading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const userDetails = useSelector((state) => state.auth.user);
   const [user, setUser] = useState("");
@@ -54,7 +55,7 @@ export default function CaseTable() {
       setIsLoading(true);
       const response = await postRequest("crm-list-case", { caseId: identity });
       console.log(response);
-  
+
       if (response.status === 0 && Array.isArray(response.data)) {
         setReference(response.data); // Store array in state
       } else {
@@ -66,8 +67,8 @@ export default function CaseTable() {
     } finally {
       setIsLoading(false);
     }
-  }  
- const handleOpenCrm = (identity) => {
+  }
+  const handleOpenCrm = (identity) => {
     fetchCrm(identity)
   }
 
@@ -139,7 +140,7 @@ export default function CaseTable() {
       <div className="absolute inset-0 bg-cover bg-center bg-[url('/img/dash2.jpg')]" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
-      <Card className="w-full max-w-6xl mx-auto bg-white/100 overflow-hidden backdrop-blur-sm my-4">
+        <Card className="w-full max-w-6xl mx-auto bg-white/100 overflow-hidden backdrop-blur-sm my-4">
           <CardHeader className="mb-5  bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3">
             <CardTitle className="text-white text-xl">All Case List</CardTitle>
           </CardHeader>
@@ -158,13 +159,51 @@ export default function CaseTable() {
                   onConfirm={handleConfirm}
                 />
 
-                <div className='flex gap-4 mb-3'>
+                {/* <div className='flex gap-4 mb-3'>
                   <DatePicker date={fromDate ? formatDate(fromDate) : null} setDate={setFromDate} placeholder="From (Date Range)" />
                   <DatePicker date={toDate ? formatDate(toDate) : null} setDate={setToDate} placeholder="To (Date Range)" />
                   <Button
                     className="ml-2 bg-blue-500 hover:bg-blue-700"
                     onClick={() => showallCaseBetweenRange(formatDate(fromDate), formatDate(toDate))}
                   >{loading ? 'Loading...' : 'Get Cases'}</Button>
+                </div> */}
+                <div className='flex gap-4 mb-3'>
+
+                  <div className="max-w-xs">
+                    <Label className="font-bold" htmlFor="fromDate">
+                      From Date
+                    </Label>
+                    <Input
+                      icon={Calendar}
+                      id="fromDate"
+                      name="fromDate"
+                      type="date"
+                      value={fromDate ? formatDate(fromDate) : ""}
+                      onChange={(e) => setFromDate(e.target.value)}
+                      placeholder="From (Date Range)"
+                    />
+                  </div>
+
+                  <div className="max-w-xs">
+                    <Label className="font-bold" htmlFor="toDate">
+                      To Date
+                    </Label>
+                    <Input
+                      icon={Calendar}
+                      id="toDate"
+                      name="toDate"
+                      type="date"
+                      value={toDate ? formatDate(toDate) : ""}
+                      onChange={(e) => setToDate(e.target.value)}
+                      placeholder="To (Date Range)"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button
+                      className="ml-2 bg-blue-400 hover:bg-blue-600"
+                      onClick={() => showallCaseBetweenRange(formatDate(fromDate), formatDate(toDate))}
+                    >{loading ? 'Loading...' : 'Get Cases'}</Button>
+                  </div>
                 </div>
                 <div className='w-100 h-[1px] bg-slate-100 my-4'></div>
                 <div className="flex justify-between items-center mb-4">
@@ -222,13 +261,13 @@ export default function CaseTable() {
                                 ) : reference.length > 0 ? (
                                   <Card>
                                     <CardContent>
-                                    <ol className="list-decimal list-inside space-y-2">
-                                      {reference.map((crm, index) => (
-                                        <li key={index} className="border-b pb-2">
-                                          {crm.crmName}
-                                        </li>
-                                      ))}
-                                    </ol>
+                                      <ol className="list-decimal list-inside space-y-2">
+                                        {reference.map((crm, index) => (
+                                          <li key={index} className="border-b pb-2">
+                                            {crm.crmName}
+                                          </li>
+                                        ))}
+                                      </ol>
                                     </CardContent>
                                   </Card>
                                 ) : (
@@ -277,7 +316,6 @@ export default function CaseTable() {
                                         <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
                                         <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
                                         <p><strong>IPC Section:</strong> {selectedCase.IPCSection}</p>
-                                        <p><strong>Refrence:</strong> {selectedCase.Crm}</p>
                                       </div>
                                     </>
                                   )}
