@@ -39,17 +39,17 @@ const AssignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
   const [type, setType] = useState("")
 
   const [formData, setFormData] = useState({
-      EntryUserID: "",
-    })
-  
-    useEffect(() => {
-      const decoded_user = JSON.parse(decrypt(encryptedUser))
-      setUser(decoded_user)
-      setFormData((prevState) => ({
-        ...prevState,
-        EntryUserID: decoded_user.AuthorityUserID,
-      }))
-    }, [encryptedUser])
+    EntryUserID: "",
+  })
+
+  useEffect(() => {
+    const decoded_user = JSON.parse(decrypt(encryptedUser))
+    setUser(decoded_user)
+    setFormData((prevState) => ({
+      ...prevState,
+      EntryUserID: decoded_user.AuthorityUserID,
+    }))
+  }, [encryptedUser])
 
   const [isUnassigning, setIsUnassigning] = useState(false);
 
@@ -64,11 +64,11 @@ const AssignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
         psId: "0",
         EntryUserId: formData.EntryUserID,
       });
-  
+
       if (response) {
         openAlert("success", "Advocate Removed Successfully!")
       }
-  
+
       return response;
     } catch (error) {
       console.log("Error:", error);
@@ -96,54 +96,54 @@ const AssignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
 
   return (
     <>
-    <CustomAlertDialog
-                isOpen={isOpen}
-                alertType={alertType}
-                alertMessage={alertMessage}
-                onClose={closeAlert}
-                onConfirm={handleConfirm}
-              />
-    <Card className="m-5">
-      <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-100 hover:bg-slate-100">
-                <TableHead>Advocate Name</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoadingDocumentTable ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center">Loading...</TableCell>
+      <CustomAlertDialog
+        isOpen={isOpen}
+        alertType={alertType}
+        alertMessage={alertMessage}
+        onClose={closeAlert}
+        onConfirm={handleConfirm}
+      />
+      <Card className="m-5">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-100 hover:bg-slate-100">
+                  <TableHead>Advocate Name</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
-              ) : documents?.length > 0 ? (
-                documents.map((doc, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{doc.advocateName}</TableCell>
-                    <TableCell>
-                      <Button
-                        className="bg-blue-100 hover:bg-blue-200 text-sm text-blue-600"
-                        onClick={() => handleUnassign(doc)}
-                        disabled={isUnassigning}
-                      >
-                        <Trash className="text-blue-600 mr-2 h-4 w-4" />
-                        {isUnassigning ? "Please Wait..." : "Remove"}
-                      </Button>
-                    </TableCell>
+              </TableHeader>
+              <TableBody>
+                {isLoadingDocumentTable ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center">Loading...</TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center">No Advocates Assigned</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+                ) : documents?.length > 0 ? (
+                  documents.map((doc, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{doc.advocateName}</TableCell>
+                      <TableCell>
+                        <Button
+                          className="bg-blue-100 hover:bg-blue-200 text-sm text-blue-600"
+                          onClick={() => handleUnassign(doc)}
+                          disabled={isUnassigning}
+                        >
+                          <Trash className="text-blue-600 mr-2 h-4 w-4" />
+                          {isUnassigning ? "Please Wait..." : "Remove"}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center">No Advocates Assigned</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </>
   )
 }

@@ -8,8 +8,13 @@ import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { PlusCircle } from "lucide-react"
 import { postRequest } from "@/app/commonAPI"
 import { ProgressModal } from "./progress-modal"
+import { useSelector } from "react-redux"
+import { decrypt } from "@/utils/crypto"
 
 const UnassignedDeptTable = ({ identity }) => {
+  const [user, setUser] = useState(null)
+  const encryptedUser = useSelector((state) => state.auth.user)
+  const token = useSelector((state) => state.auth.token)
   const [districts, setDistricts] = useState([])
   const [policeStations, setPoliceStations] = useState([])
   const [selectedDistrict, setSelectedDistrict] = useState("")
@@ -19,6 +24,19 @@ const UnassignedDeptTable = ({ identity }) => {
   const [progressModalOpen, setProgressModalOpen] = useState(false)
   const [progressSteps, setProgressSteps] = useState([])
   const [isProcessComplete, setIsProcessComplete] = useState(false)
+
+  const [formData, setFormData] = useState({
+    EntryUserID: "",
+  })
+
+  useEffect(() => {
+    const decoded_user = JSON.parse(decrypt(encryptedUser))
+    setUser(decoded_user)
+    setFormData((prevState) => ({
+      ...prevState,
+      EntryUserID: decoded_user.AuthorityUserID,
+    }))
+  }, [encryptedUser])
 
   useEffect(() => {
     fetchDistricts()
@@ -114,7 +132,7 @@ const UnassignedDeptTable = ({ identity }) => {
         caseId: identity,
         districtId: selectedDistrict,
         psId: selectedPoliceStation,
-        EntryUserId: "2", // Should be dynamic based on logged-in user
+        EntryUserId: formData.EntryUserID,
       })
 
       if (response.status === 0) {

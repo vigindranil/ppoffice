@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
@@ -9,14 +9,32 @@ import { Button } from "./ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { postRequest } from "@/app/commonAPI"
 import { ProgressModal } from "./progress-modal"
+import { useSelector } from "react-redux"
+import { decrypt } from "@/utils/crypto"
 
 const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
+  const [user, setUser] = useState(null)
+  const encryptedUser = useSelector((state) => state.auth.user)
+  const token = useSelector((state) => state.auth.token)
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
   const { toast } = useToast()
   const [isAssigning, setIsAssigning] = useState(false)
   const [progressModalOpen, setProgressModalOpen] = useState(false)
   const [progressSteps, setProgressSteps] = useState([])
   const [isProcessComplete, setIsProcessComplete] = useState(false)
+
+  const [formData, setFormData] = useState({
+    EntryUserID: "",
+  })
+
+  useEffect(() => {
+    const decoded_user = JSON.parse(decrypt(encryptedUser))
+    setUser(decoded_user)
+    setFormData((prevState) => ({
+      ...prevState,
+      EntryUserID: decoded_user.AuthorityUserID,
+    }))
+  }, [encryptedUser])
 
   // Helper function to update a specific step's status
   const updateStepStatus = (stepId, status, errorMessage) => {
@@ -53,7 +71,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
         caseId: identity,
         districtId: "0",
         psId: "0",
-        EntryUserId: "2",
+        EntryUserId: formData.EntryUserID,
       })
 
       // Mark assign step as success or error
