@@ -33,7 +33,7 @@ const cardData = [
     value: "28",
     icon: CheckCircle,
     color: "#22c55e", // green-500
-    link: "/pp-office-admin-assigned-cases",
+    link: "/pp-head-assigned-cases",
     type: "assignedCases"
   }
 ]

@@ -10,7 +10,8 @@ import { useSelector } from 'react-redux'
 
 const generateRandomColor = () => {
   const hue = Math.floor(Math.random() * 360)
-  return `hsl(${hue}, 80%, 60%)`
+  return `hsl(${hue}, 80%, 80%)`
+  // return `hsl(${hue}, 80%, 60%)`
 }
 
 const generateGradient = () => {

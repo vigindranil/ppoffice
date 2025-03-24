@@ -328,9 +328,9 @@ export default function CaseTable() {
                                           <p>
                                             <strong>IPC Section:</strong> {selectedCase.IPCSection}
                                           </p>
-                                          <p>
+                                          {/* <p>
                                             <strong>Reference:</strong> {selectedCase.CRMName}
-                                          </p>
+                                          </p> */}
                                           {/* <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
                                           <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p> */}
                                         </div>
