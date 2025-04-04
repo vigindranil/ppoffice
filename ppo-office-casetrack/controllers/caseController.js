@@ -1,6 +1,7 @@
 const db = require("../config/db"); // Import your database connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
 const path = require("path");
+import validateFields from '../utils/validators.js';
 // const basePath = `D:\\CaseTrack\\ppoffice\\ppo-office-casetrack\\`;
 
 const basePath = `D:\\git\\ppoffice\\ppo-office-casetrack\\`;
@@ -205,6 +206,112 @@ class CaseController {
             return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
         }
     }
+
+    static async createCaseV1(req, res) {
+        try {
+            console.log("Request Payload:", req.body);
+    
+            // ✅ Validate required fields using `validateFields`
+            try {
+                validateFields(req.body, [
+                    "CaseNumber",
+                    "EntryUserID",
+                    "CaseDate",
+                    "districtId",
+                    "psId",
+                    "caseTypeId",
+                    "filingDate",
+                    "petitionName",
+                    "hearingDate"
+                ]);
+            } catch (error) {
+                return res.status(400).json({ status: 1, message: `${error.message}. ErrorCode: ERR_03` });
+            }
+    
+            // ✅ Extract fields from request body
+            const {
+                CaseNumber,
+                EntryUserID,
+                CaseDate,
+                districtId,
+                psId,
+                caseTypeId,
+                filingDate,
+                petitionName,
+                hearingDate,
+                refferences = [],
+                ipcSections = []
+            } = req.body;
+    
+            // ✅ Call sp_Createcase to save the case and get CaseID
+            const caseQuery = "CALL sp_Createcase(?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
+            const caseParams = [
+                CaseNumber,
+                CaseDate,
+                districtId,
+                psId,
+                caseTypeId,
+                filingDate,
+                petitionName,
+                hearingDate,
+                EntryUserID
+            ];
+    
+            console.log("Executing sp_Createcase with params:", caseParams);
+            await db.queryAsync(caseQuery, caseParams);
+    
+            // ✅ Fetch the output CaseID and ErrorCode
+            const caseOutput = await db.queryAsync("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode");
+            const { CaseID, ErrorCode } = caseOutput[0];
+    
+            // ✅ Handle stored procedure errors
+            const errorMessages = {
+                1: "An error occurred while executing the procedure.",
+                2: "Case already exists.",
+                3: "User does not have permission to create a case."
+            };
+            if (ErrorCode && errorMessages[ErrorCode]) {
+                return ResponseHelper.error(res, errorMessages[ErrorCode]);
+            }
+    
+            console.log("Case created successfully with CaseID:", CaseID);
+    
+            // ✅ Save multiple reference numbers
+            if (Array.isArray(refferences) && refferences.length > 0) {
+                for (const { crmID, refferenceNumber, refferenceyear } of refferences) {
+                    console.log("Saving reference:", { crmID, refferenceNumber, refferenceyear });
+    
+                    const refQuery = "CALL sp_saveRefferenceNumberByCaseId(?, ?, ?, ?, ?, @ErrorCode)";
+                    const refParams = [CaseID, crmID, refferenceNumber, refferenceyear, EntryUserID];
+    
+                    await db.queryAsync(refQuery, refParams);
+                }
+            }
+    
+            // ✅ Save multiple IPC sections
+            if (Array.isArray(ipcSections) && ipcSections.length > 0) {
+                for (const bnsId of ipcSections) {
+                    console.log("Saving IPC section for BnsId:", bnsId);
+    
+                    const ipcQuery = "CALL sp_saveipcsectionBycaseId(?, ?, ?, @ErrorCode)";
+                    const ipcParams = [CaseID, bnsId, EntryUserID];
+    
+                    await db.queryAsync(ipcQuery, ipcParams);
+                }
+            }
+    
+            // ✅ Final success response
+            return res.status(201).json({
+                status: 0,
+                message: "Case created successfully with associated reference numbers and IPC sections.",
+                data: { CaseID }
+            });
+    
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+        }
+    }    
     
 
     static async createCaseWithDocument(req, res) {
