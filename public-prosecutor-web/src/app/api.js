@@ -500,7 +500,6 @@ export const createCaseOfficeAdmin = async (req_body) => {
   });
 };
 
-
 export const uploadCaseDocuments = async (caseId, documents, entryUserId) => {
   return new Promise(async (resolve, reject) => {
     try {

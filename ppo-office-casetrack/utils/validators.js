@@ -4,5 +4,5 @@
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
   };
-  export default validateFields;
+  module.exports = validateFields;
   

@@ -1,7 +1,7 @@
 const db = require("../config/db"); // Import your database connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
 const path = require("path");
-import validateFields from '../utils/validators.js';
+const validateFields = require('../utils/validators.js');
 // const basePath = `D:\\CaseTrack\\ppoffice\\ppo-office-casetrack\\`;
 
 const basePath = `D:\\git\\ppoffice\\ppo-office-casetrack\\`;
@@ -258,21 +258,44 @@ class CaseController {
             ];
     
             console.log("Executing sp_Createcase with params:", caseParams);
-            await db.queryAsync(caseQuery, caseParams);
+            // await new Promise((resolve, reject) => {
+            // await db.query(caseQuery, caseParams);
+
+            await new Promise((resolve, reject) => {
+                db.query(caseQuery, caseParams, (err) => {
+                    if (err) {
+                        console.error("Error executing stored procedure:", err);
+                        return reject(err);
+                    }
+                    resolve();
+                });
+            });
     
             // ✅ Fetch the output CaseID and ErrorCode
-            const caseOutput = await db.queryAsync("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode");
-            const { CaseID, ErrorCode } = caseOutput[0];
+            // const caseOutput = await db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode");
+            // const { CaseID, ErrorCode } = caseOutput[0];
+
+            const caseOutput = await new Promise((resolve, reject) => {
+                db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode", (outputErr, results) => {
+                    if (outputErr) {
+                        console.error("Error fetching output parameters:", outputErr);
+                        return reject(outputErr);
+                    }
+                    resolve(results);
+                });
+            });
+
+            const { CaseID } = caseOutput[0];
     
             // ✅ Handle stored procedure errors
-            const errorMessages = {
-                1: "An error occurred while executing the procedure.",
-                2: "Case already exists.",
-                3: "User does not have permission to create a case."
-            };
-            if (ErrorCode && errorMessages[ErrorCode]) {
-                return ResponseHelper.error(res, errorMessages[ErrorCode]);
-            }
+            // const errorMessages = {
+            //     1: "An error occurred while executing the procedure.",
+            //     2: "Case already exists.",
+            //     3: "User does not have permission to create a case."
+            // };
+            // if (ErrorCode && errorMessages[ErrorCode]) {
+            //     return ResponseHelper.error(res, errorMessages[ErrorCode]);
+            // }
     
             console.log("Case created successfully with CaseID:", CaseID);
     
@@ -284,7 +307,17 @@ class CaseController {
                     const refQuery = "CALL sp_saveRefferenceNumberByCaseId(?, ?, ?, ?, ?, @ErrorCode)";
                     const refParams = [CaseID, crmID, refferenceNumber, refferenceyear, EntryUserID];
     
-                    await db.queryAsync(refQuery, refParams);
+                    // await db.query(refQuery, refParams);
+
+                    await new Promise((resolve, reject) => {
+                        db.query(refQuery, refParams, (err) => {
+                            if (err) {
+                                console.error("Error executing stored procedure:", err);
+                                return reject(err);
+                            }
+                            resolve();
+                        });
+                    });
                 }
             }
     
@@ -296,7 +329,17 @@ class CaseController {
                     const ipcQuery = "CALL sp_saveipcsectionBycaseId(?, ?, ?, @ErrorCode)";
                     const ipcParams = [CaseID, bnsId, EntryUserID];
     
-                    await db.queryAsync(ipcQuery, ipcParams);
+                    // await db.query(ipcQuery, ipcParams);
+
+                    await new Promise((resolve, reject) => {
+                        db.query(ipcQuery, ipcParams, (err) => {
+                            if (err) {
+                                console.error("Error executing stored procedure:", err);
+                                return reject(err);
+                            }
+                            resolve();
+                        });
+                    });
                 }
             }
     
