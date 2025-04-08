@@ -1507,6 +1507,7 @@ const AddCasePage = () => {
         startDate: null,
         endDate: null,
         isAssign: 2,
+        EntryUserID: user.AuthorityUserID
       })
 
       if (response.status === 0) {
@@ -1857,7 +1858,7 @@ const AddCasePage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="font-bold" htmlFor="CaseNumber">
-                        Case Number <span className="text-red-500">*</span>
+                        PS Case Number <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         icon={Hash}
@@ -1870,7 +1871,7 @@ const AddCasePage = () => {
                     </div>
                     <div className="space-y-2">
                       <Label className="font-bold" htmlFor="CaseDate">
-                        Case Date <span className="text-red-500">*</span>
+                        PS Case Date <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         icon={Calendar}

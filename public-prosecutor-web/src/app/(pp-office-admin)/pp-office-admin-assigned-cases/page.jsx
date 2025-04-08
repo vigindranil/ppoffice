@@ -185,7 +185,6 @@ const PPAllCaseList = () => {
                       <TableHead className="font-bold hidden md:table-cell">Case Date</TableHead>
                       <TableHead className="font-bold hidden lg:table-cell">Case Type</TableHead>
                       <TableHead className="font-bold hidden lg:table-cell">Case Hearing Date</TableHead>
-                      <TableHead className="font-bold hidden lg:table-cell">IPC Section</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -203,9 +202,6 @@ const PPAllCaseList = () => {
                           </TableCell>
                           <TableCell className="flex space-x-2">
                             <Skeleton className="bg-slate-300 h-8 w-16" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="bg-slate-300 h-4 w-20" />
                           </TableCell>
                           <TableCell>
                             <Skeleton className="bg-slate-300 h-4 w-20" />
@@ -274,7 +270,6 @@ const PPAllCaseList = () => {
                             <TableCell className="hidden md:table-cell">{formatDate(head.CaseDate)}</TableCell>
                             <TableCell className="hidden lg:table-cell">{head.CaseType}</TableCell>
                             <TableCell className="hidden lg:table-cell">{formatDate(head.CaseHearingDate)}</TableCell>
-                            <TableCell className="hidden lg:table-cell">{head.IPCSection}</TableCell>
                           </TableRow>
                           {expandedRows[index] && (
                             <TableRow className="bg-gray-50 lg:hidden">
@@ -320,9 +315,6 @@ const PPAllCaseList = () => {
                                   )}
                                   {head.CaseHearingDate && (
                                     <div className="lg:hidden"><strong>Case Hearing Date:</strong> {formatDate(head.CaseHearingDate)}</div>
-                                  )}
-                                  {head.IPCSection && (
-                                    <div className="lg:hidden"><strong>IPC Section:</strong> {head.IPCSection}</div>
                                   )}
                                 </div>
                               </TableCell>

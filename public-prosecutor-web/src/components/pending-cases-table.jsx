@@ -17,6 +17,7 @@ import { Input } from './ui/input'
 import { DatePicker } from './date-picker'
 import { Badge } from './ui/badge'
 import { Label } from "@/components/ui/label"
+import { postRequest } from '@/app/commonAPI'
 
 
 export default function CaseTable() {
@@ -57,35 +58,25 @@ export default function CaseTable() {
 
   const showallCaseBetweenRange = async (start, end) => {
 
-    try {
-      setLoading(true)
-      const token = sessionStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}showallCaseBetweenRange`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          "startDate": formatDate(start),
-          "endDate": formatDate(end),
-          "isAssign": 0
-        }),
-      })
-      if (!response.ok) {
-        throw new Error('Failed to fetch data')
-      }
-      const result = await response.json()
-      if (result.status === 0) {
-        setAllCases(result.data)
-      } else {
-        throw new Error(result.message || 'Failed to fetch data')
-      }
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+   try {
+         setLoading(true)
+         const token = sessionStorage.getItem('token');
+         const response = await postRequest("showallCaseBetweenRange", {
+           startDate: formatDate(start),
+           endDate: formatDate(end),
+           isAssign: 2,
+           EntryUserID: user.AuthorityUserID
+         })
+         if (response.status === 0) {
+           setAllCases(response.data)
+         } else {
+           throw new Error(response.message || 'Failed to fetch data')
+         }
+       } catch (err) {
+         setError(err.message)
+       } finally {
+         setLoading(false)
+       }
   }
 
   useEffect(() => {
@@ -235,8 +226,12 @@ export default function CaseTable() {
                                       <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
                                       <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
                                       <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
-                                      <p><strong>IPC Section:</strong> {selectedCase.IPCSection}</p>
-                                      <p><strong>Begin Reference:</strong> {selectedCase.BeginReferenceName}</p>
+                                      <p>
+                                          <strong>IPC Sections:</strong>{' '}
+                                          {selectedCase.ipcSections && selectedCase.ipcSections.length > 0
+                                            ? selectedCase.ipcSections.map(ipc => ipc.IpcSection).filter(Boolean).join(', ')
+                                            : 'None'}
+                                      </p>
                                       <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
                                       <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p>
                                     </div>

@@ -113,9 +113,6 @@ const PPAllCaseList = () => {
                       <TableHead className="font-bold">Case Date</TableHead>
                       <TableHead className="font-bold">Case Type</TableHead>
                       <TableHead className="font-bold">Case Hearing Date</TableHead>
-                      <TableHead className="font-bold">IPC Section</TableHead>
-                      {/* <TableHead className="font-bold">Reference</TableHead>
-                      <TableHead className="font-bold">Document</TableHead> */}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -127,15 +124,6 @@ const PPAllCaseList = () => {
                         <TableCell>{formatDate(head.CaseDate)}</TableCell>
                         <TableCell>{head.CaseType}</TableCell>
                         <TableCell>{formatDate(head.CaseHearingDate)}</TableCell>
-                        <TableCell>{head.IPCSection}</TableCell>
-                        {/* <TableCell>{head.BeginReferenceName}</TableCell>
-                        <TableCell>
-                          {head.Document && (
-                            <Link href={`${PORT_URL}${head.Document}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              View Document
-                            </Link>
-                          )}
-                        </TableCell> */}
                       </TableRow>
                     ))}
                   </TableBody>
