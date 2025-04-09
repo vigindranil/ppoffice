@@ -242,13 +242,33 @@ class EmailController {
                 }
     
                 // ✅ Generate email content
+                // const emailTemplate = new EmailTemplate({
+                //     CaseNumber,
+                //     CaseDate,
+                //     IPCSection,
+                //     BNSSection,
+                //     HearingDate,
+                //     AssignedPPs
+                // });
+
+                console.log("📧 Template input:", {
+                    crm: BNSSection,
+                    psCaseNo: CaseNumber,
+                    dated: CaseDate,
+                    ipcSection: IPCSection,
+                    hearingDate: HearingDate,
+                    PPName: AssignedPPs
+                  });
+
                 const emailTemplate = new EmailTemplate({
-                    CaseNumber,
-                    CaseDate,
-                    IPCSection,
-                    BNSSection,
-                    HearingDate,
-                    AssignedPPs
+                    crm: BNSSection, 
+                    psCaseNo: CaseNumber,
+                    dated: CaseDate,
+                    ipcSection: IPCSection,
+                    hearingDate: HearingDate,
+                    PPName: AssignedPPs,       
+                    SPName: emailDetails.SPName || "Unknown", 
+                    PSName: emailDetails.PSName || "Unknown",  
                 });
     
                 const transporter = nodemailer.createTransport({
@@ -596,16 +616,26 @@ class EmailController {
                 }
     
                 // ✅ Generate email content for PP
+                // const emailTemplatePP = new EmailTemplate({
+                //     CaseNumber,
+                //     CaseDate,
+                //     IPCSection,
+                //     BNSSection,
+                //     HearingDate,
+                //     Districts,
+                //     casePoliceStationName,
+                //     PoliceStations
+                // });
                 const emailTemplatePP = new EmailTemplate({
-                    CaseNumber,
-                    CaseDate,
-                    IPCSection,
-                    BNSSection,
-                    HearingDate,
-                    Districts,
-                    casePoliceStationName,
-                    PoliceStations
-                });
+                    crm: BNSSection,
+                    psCaseNo: CaseNumber,
+                    dated: CaseDate,
+                    ipcSection: IPCSection,
+                    hearingDate: HearingDate,
+                    SPName: Districts,      
+                    PSName: casePoliceStationName || PoliceStations,  
+                    PPName: "You", 
+                  });
     
                 const transporter = nodemailer.createTransport({
                     host: "smtp.gmail.com",
