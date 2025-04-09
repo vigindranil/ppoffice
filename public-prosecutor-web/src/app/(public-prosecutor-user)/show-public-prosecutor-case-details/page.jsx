@@ -4,6 +4,11 @@ import React, { useState, useEffect } from 'react'
 import { showCaseDetailsUser } from '@/app/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent
+} from "@/components/ui/hover-card"
 import { ClipboardPlus, LoaderCircle, Search } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useDispatch, useSelector } from 'react-redux'
@@ -30,6 +35,7 @@ const PPAllCaseList = () => {
 
   useEffect(() => {
     if (user) {
+      setIsLoading(true)
       showCaseDetailsUser(user?.AuthorityUserID)
         .then((result) => {
           // console.log(result);
@@ -45,11 +51,28 @@ const PPAllCaseList = () => {
     }
   }, [user])
 
-  const filteredData = allCaseList?.filter((data) =>
-    Object?.values(data)?.some((value) =>
-      value?.toString()?.toLowerCase()?.includes(searchTerm?.toLowerCase())
-    )
-  )
+  const filteredData = allCaseList?.filter((data) => {
+    const lowerSearch = searchTerm.toLowerCase();
+  
+    const matchesCaseFields = Object?.values(data)?.some((value) =>
+      value?.toString()?.toLowerCase()?.includes(lowerSearch)
+    );
+  
+    const matchesReferences = data.references?.some(ref =>
+      `${ref.RefferenceNumber} ${ref.CrmName} ${ref.RefferenceYear}`
+        .toLowerCase()
+        .includes(lowerSearch)
+    );
+  
+    const matchesIPC = data.ipcSections?.some(ipc =>
+      `${ipc.IpcSection} ${ipc.BnsSection} ${ipc.BnsId}`
+        .toLowerCase()
+        .includes(lowerSearch)
+    );
+  
+    return matchesCaseFields || matchesReferences || matchesIPC;
+  });
+  
 
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
@@ -76,9 +99,9 @@ const PPAllCaseList = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
-          <CardHeader>
-            <CardTitle>Case Details List</CardTitle>
-          </CardHeader>
+        <CardHeader className="mb-5 bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3">
+  <CardTitle className="text-white text-xl">All Case List</CardTitle>
+</CardHeader>
           <CardContent>
             {isLoading ? (
               <p className="text-center">Loading...</p>
@@ -104,29 +127,55 @@ const PPAllCaseList = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                    <TableHead className="font-bold">PP User Name</TableHead>
-                    <TableHead className="font-bold">Case Number</TableHead>
-                    <TableHead className="font-bold">SP Name</TableHead>
-                    <TableHead className="font-bold">PS Name</TableHead>
-                    <TableHead className="font-bold">Case Date</TableHead>
-                    <TableHead className="font-bold">Case Type</TableHead>
-                    <TableHead className="font-bold">Case Hearing Date</TableHead>
-                    <TableHead className="font-bold">IPC Section</TableHead>
-                    <TableHead className="font-bold">Reference</TableHead>
+                      <TableHead className="font-bold">Case Number</TableHead>
+                      <TableHead className="font-bold">Dept./Dist. Name</TableHead>
+                      <TableHead className="font-bold">PS Name</TableHead>
+                      <TableHead className="font-bold">Case Date</TableHead>
+                      <TableHead className="font-bold">Case Type</TableHead>
+                      <TableHead className="font-bold">Case Hearing Date</TableHead>
+                      <TableHead className="font-bold">IPC Section</TableHead>
+                      <TableHead className="font-bold">Reference</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {currentAllCaseList?.map((head, index) => (
                       <TableRow key={index}>
-                        <TableCell>{head.PPuserName}</TableCell>
                         <TableCell>{head.CaseNumber}</TableCell>
                         <TableCell>{head.SpName}</TableCell>
                         <TableCell>{head.PsName}</TableCell>
                         <TableCell>{formatDate(head.CaseDate)}</TableCell>
                         <TableCell>{head.CaseType}</TableCell>
                         <TableCell>{formatDate(head.CaseHearingDate)}</TableCell>
-                        <TableCell>{head.IPCSection}</TableCell>
-                        <TableCell>{head.BeginReferenceName}</TableCell>
+                        <TableCell>{head.ipcSections && head.ipcSections.length > 0
+                          ? head.ipcSections.map(ipc => ipc.IpcSection).filter(Boolean).join(', ')
+                          : 'None'}</TableCell>
+                        <TableCell>
+                          {head.references && head.references.length > 0 ? (
+                            <HoverCard>
+                              <HoverCardTrigger asChild>
+                                <span className="cursor-pointer hover:text-blue-600 hover:underline transition-colors duration-200">
+                                  {
+                                    head.references
+                                      .slice(0, 1)
+                                      .map((ref, idx) => `${idx + 1}. ${ref.RefferenceNumber} - ${ref.CrmName} (${ref.RefferenceYear})`)
+                                  }
+                                  {head.references.length > 1 ? '...' : ''}
+                                </span>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-80">
+                                <ol className="list-decimal list-inside text-sm">
+                                  {head.references.map((ref, idx) => (
+                                    <li key={idx}>
+                                      {ref.RefferenceNumber} - {ref.CrmName} ({ref.RefferenceYear})
+                                    </li>
+                                  ))}
+                                </ol>
+                              </HoverCardContent>
+                            </HoverCard>
+                          ) : (
+                            <span>No references</span>
+                          )}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

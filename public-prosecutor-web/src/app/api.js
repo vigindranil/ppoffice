@@ -1,4 +1,5 @@
 import { BASE_URL } from '@/app/constants'; 
+import { postRequest } from "@/app/commonAPI";
 
 ////////////////////////////////////////////
 
@@ -706,25 +707,20 @@ export const handleNotifyFromPPOfficeAdmin = async (CaseID) => {
 // fetch case details for public prosecutor user
 export const showCaseDetailsUser = async (userID) => {
   return new Promise(async (resolve, reject) => {
+    
     try {
-      const token = sessionStorage.getItem('token');
-      const response = await fetch(`${BASE_URL}caseDetailsByPPuserId?ppuserID=${userID}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.status === 0) {
-        // console.log(result.data)
-        resolve(result.data);
+      const response = await postRequest("caseDetailsByPPuserId", {
+        ppuserID: userID
+      })
+      if (response.status === 0) {
+        resolve(response.data)
       } else {
-        reject(result.message || 'An error occurred');
+        reject(response.message || 'Failed to fetch data')
       }
-    } catch (error) {
-      reject(`Fetch error: ${error.message}`);
+    } catch (err) {
+      reject(err.message)
     }
+
   });
 };
 

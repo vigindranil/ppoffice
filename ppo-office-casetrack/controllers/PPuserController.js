@@ -90,26 +90,64 @@ class PPuserController {
   }
 
   // PP user can see their assigned cases
-  static caseDetailsByPPuserId(req, res) {
-    const ppuserID = req.query.ppuserID;
-
-    if (!ppuserID) {
-      return ResponseHelper.error(res, "ppuserID is required");
+  static async caseDetailsByPPuserId(req, res) {
+    try {
+      const { ppuserID } = req.body;
+  
+      if (!ppuserID ) {
+        return ResponseHelper.error(res, "ppuserID is required");
+      }
+  
+      const baseCases = await new Promise((resolve, reject) => {
+        db.query('CALL sp_getCaseDetailsByPPUserId(?)', [ppuserID], (err, results) => {
+          if (err) {
+            console.error("Error fetching base case data:", err);
+            return reject("An error occurred while fetching case details.");
+          }
+          resolve(results[0] || []);
+        });
+      });
+  
+      const enrichedCases = await Promise.all(
+        baseCases.map(async (caseItem) => {
+          const { CaseId, UserId } = caseItem;
+  
+          // Get references
+          const references = await new Promise((resolve, reject) => {
+            db.query('CALL sp_getRefferenceNumberByCaseId(?, ?)', [CaseId, UserId || ppuserID], (err, results) => {
+              if (err) {
+                console.error("Error fetching references:", err);
+                return resolve([]); // Fallback to empty array
+              }
+              resolve(results[0] || []);
+            });
+          });
+  
+          // Get IPC sections
+          const ipcSections = await new Promise((resolve, reject) => {
+            db.query('CALL sp_getIpcSectionByCaseId(?, ?)', [CaseId, UserId || ppuserID], (err, results) => {
+              if (err) {
+                console.error("Error fetching IPC sections:", err);
+                return resolve([]); // Fallback to empty array
+              }
+              resolve(results[0] || []);
+            });
+          });
+  
+          return {
+            ...caseItem,
+            references,
+            ipcSections,
+          };
+        })
+      );
+  
+      return ResponseHelper.success_reponse(res, "Data found", enrichedCases);
+    } catch (error) {
+      console.error("Unexpected error in caseDetailsByPPuserId:", error);
+      return ResponseHelper.error(res, "An unexpected error occurred", error);
     }
-
-    const query = 'CALL sp_getCaseDetailsByPPUserId(?)';
-    db.query(query, [ppuserID], (err, results) => {
-      if (err) {
-        return ResponseHelper.error(res, "An error occurred while fetching the case details.");
-      }
-
-      if (results[0] && results[0].length > 0) {
-        return ResponseHelper.success_reponse(res, "Data found", results[0]);
-      } else {
-        return ResponseHelper.error(res, "No data found");
-      }
-    });
-  }
+  }  
 
   // Assign a case to a PPUser by PP head
   static assignCasetoppuser(req, res) {

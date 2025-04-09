@@ -214,9 +214,13 @@ const SearchComponent = () => {
               <div key={type} className="space-y-2">
                 <label
                   htmlFor={type}
-                  className="text-sm font-medium capitalize"
+                  className="text-sm font-bold capitalize"
                 >
-                  {type}
+                  {type === "bnsSection"
+                    ? "BNS Section"
+                    : type === "ipcSection"
+                      ? "IPC Section"
+                      : type}
                 </label>
                 <Popover
                   open={openCombobox[type]}

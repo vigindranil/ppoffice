@@ -75,33 +75,99 @@ static showpsstaff(req, res) {
   }
   
   // Show all Case By policeID
-  static async showallcasesBypoliceID(req, res) {
-    try {
-      // Retrieve the psId from the query parameters or request body
-      const psId = req.query.psId; 
+  // static async showallcasesBypoliceID(req, res) {
+  //   try {
+  //     // Retrieve the psId from the query parameters or request body
+  //     const psId = req.query.psId; 
 
       
-      if (!psId) {
-        return ResponseHelper.error(res, "psId is required");
+  //     if (!psId) {
+  //       return ResponseHelper.error(res, "psId is required");
+  //     }
+
+  //     // SQL query to call the stored procedure with the district_id parameter
+  //     const query = 'CALL sp_ShowallCaseBypoliceID(?)';
+  //     // Pass the districtId as an argument to the stored procedure
+  //     db.query(query, [psId], (err, results) => {
+  //       if (err) {
+  //         console.error('Error executing stored procedure:', err);
+  //         return ResponseHelper.error(res, "An error occurred while fetching data");
+  //       }
+
+  //       // Assuming your stored procedure returns data in results[0]
+  //       return ResponseHelper.success_reponse(res, "Data found", results[0]);
+  //     });
+  //   } catch (error) {
+  //     console.error('Unexpected error:', error);
+  //     return ResponseHelper.error(res, "An unexpected error occurred");
+  //   }
+  // } 
+
+  static async showallcasesBypoliceID(req, res) {
+    try {
+      const { psId, EntryUserID } = req.body;
+  
+      if (!psId || !EntryUserID) {
+        return ResponseHelper.error(res, "Both psId and EntryUserID are required");
       }
-
-      // SQL query to call the stored procedure with the district_id parameter
-      const query = 'CALL sp_ShowallCaseBypoliceID(?)';
-      // Pass the districtId as an argument to the stored procedure
-      db.query(query, [psId], (err, results) => {
-        if (err) {
-          console.error('Error executing stored procedure:', err);
-          return ResponseHelper.error(res, "An error occurred while fetching data");
-        }
-
-        // Assuming your stored procedure returns data in results[0]
-        return ResponseHelper.success_reponse(res, "Data found", results[0]);
+  
+      const mainQuery = "CALL sp_ShowallCaseBypoliceID(?,?)";
+      const mainParams = [psId,EntryUserID];
+  
+      // Step 1: Get all cases for the given PS ID
+      const [caseResults] = await new Promise((resolve, reject) => {
+        db.query(mainQuery, mainParams, (err, results) => {
+          if (err) {
+            console.error("Error executing sp_ShowallCaseBypoliceID:", err);
+            return reject(err);
+          }
+          resolve(results);
+        });
       });
+  
+      // Step 2: Enrich each case with references and IPC sections
+      const enrichedCases = await Promise.all(
+        caseResults.map(async (caseItem) => {
+          const { CaseId, UserId } = caseItem;
+  
+          // Reference numbers
+          const references = await new Promise((resolve, reject) => {
+            db.query(
+              "CALL sp_getRefferenceNumberByCaseId(?, ?)",
+              [CaseId, UserId || EntryUserID],
+              (err, results) => {
+                if (err) return reject(err);
+                resolve(results[0]);
+              }
+            );
+          });
+  
+          // IPC Sections
+          const ipcSections = await new Promise((resolve, reject) => {
+            db.query(
+              "CALL sp_getIpcSectionByCaseId(?, ?)",
+              [CaseId, UserId || EntryUserID],
+              (err, results) => {
+                if (err) return reject(err);
+                resolve(results[0]);
+              }
+            );
+          });
+  
+          return {
+            ...caseItem,
+            references,
+            ipcSections,
+          };
+        })
+      );
+  
+      return ResponseHelper.success_reponse(res, "Data found", enrichedCases);
     } catch (error) {
-      console.error('Unexpected error:', error);
-      return ResponseHelper.error(res, "An unexpected error occurred");
+      console.error("Unexpected error:", error);
+      return ResponseHelper.error(res, "An unexpected error occurred", error);
     }
-  } 
+  }  
 
   static async showpsuserById(req, res) {
     try {

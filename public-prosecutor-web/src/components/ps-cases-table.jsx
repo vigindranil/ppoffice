@@ -21,6 +21,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent
+} from "@/components/ui/hover-card"
 import { Eye, FileSpreadsheet, LoaderCircle, Search } from "lucide-react"
 import { useSelector } from "react-redux"
 import { decrypt } from "@/utils/crypto"
@@ -66,28 +71,6 @@ export default function CaseTable() {
     return `${year}-${month}-${day}`
   }
 
-  const fetchCrm = async (identity) => {
-    try {
-      setIsLoading(true);
-      const response = await postRequest("crm-list-case", { caseId: identity });
-      console.log(response);
-  
-      if (response.status === 0 && Array.isArray(response.data)) {
-        setReference(response.data); // Store array in state
-      } else {
-        setReference([]); // Handle empty response
-      }
-    } catch (error) {
-      console.error("Error fetching CRM:", error);
-      setReference([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }  
- const handleOpenCrm = (identity) => {
-    fetchCrm(identity)
-  }
-
   const viewHearingSummary = (caseItem) => {
     setCaseDetails({
       CaseDate: caseItem.CaseDate,
@@ -125,45 +108,54 @@ export default function CaseTable() {
     setSelectedPPUser("")
   }
 
-  const showallCaseBetweenRange = useCallback(async (ps_id) => {
-    try {
-      // console.log(ps_id)
-      const token = sessionStorage.getItem("token")
-      const response = await fetch(`${BASE_URL}showallCasesBypsId?psId=${ps_id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      if (!response.ok) {
-        throw new Error("Failed to fetch data")
-      }
-      const result = await response.json()
-      if (result.status === 0) {
-        // console.log(result);
+  useEffect(() => {
+    const decoded_user = JSON.parse(decrypt(userDetails))
+    setUser(decoded_user)
+  }, [userDetails])
 
-        setAllCases(result.data)
+  const showallCaseBetweenRange = async (ps_id) => {
+
+    try {
+      setLoading(true)
+      const response = await postRequest("showallCasesBypsId", {
+        psId: ps_id,
+        EntryUserID: user.AuthorityUserID
+      })
+      if (response.status === 0) {
+        setAllCases(response.data)
       } else {
-        throw new Error(result.message || "Failed to fetch data")
+        throw new Error(response.message || 'Failed to fetch data')
       }
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [])
-
-  useEffect(() => {
-    const decoded_user = JSON.parse(decrypt(userDetails))
-    setUser(decoded_user)
-  }, [userDetails])
+  }
 
   useEffect(() => {
     user && showallCaseBetweenRange(user?.BoundaryID)
-  }, [user, showallCaseBetweenRange])
+  }, [user])
 
-  const filteredData = allCases?.filter((data) =>
-    Object?.values(data)?.some((value) => value?.toString()?.toLowerCase()?.includes(searchTerm?.toLowerCase())),
-  )
+  const filteredData = allCases?.filter((data) => {
+    const lowerSearch = searchTerm.toLowerCase();
+  
+    const matchesCaseFields = Object?.values(data)?.some((value) =>
+      value?.toString()?.toLowerCase()?.includes(lowerSearch)
+    );
+  
+    const matchesReferences = data.references?.some(ref =>
+      `${ref.RefferenceNumber} ${ref.CrmName} ${ref.RefferenceYear}`
+        .toLowerCase()
+        .includes(lowerSearch)
+    );
+  
+    const matchesIPC = data.ipcSections?.some(ipc =>
+      ipc?.IpcSection?.toLowerCase().includes(lowerSearch)
+    );
+  
+    return matchesCaseFields || matchesReferences || matchesIPC;
+  });
 
   const indexOfLastCase = currentPage * casesPerPage
   const indexOfFirstCase = indexOfLastCase - casesPerPage
@@ -242,42 +234,31 @@ export default function CaseTable() {
                           <TableCell>{caseItem.CaseNumber}</TableCell>
                           <TableCell>{caseItem.PsName}</TableCell>
                           <TableCell>
-                            <Button
-                              variant="outline"
-                              onClick={() => handleOpenCrm(caseItem.CaseId)}
-                            >
-                              View Reference
-                            </Button>
-
-                            {/* Modal for displaying reference details */}
-                            <Dialog open={reference.length > 0} onOpenChange={() => setReference([])}>
-                              <DialogContent className="sm:max-w-auto">
-                                <DialogHeader>
-                                  <DialogTitle>Reference Details</DialogTitle>
-                                </DialogHeader>
-                                <div className="text-sm text-muted-foreground">
-                                  {isLoading ? (
-                                    <div className="text-center py-10">
-                                      <LoaderCircle className="animate-spin mx-auto" />
-                                    </div>
-                                  ) : reference.length > 0 ? (
-                                    <Card>
-                                      <CardContent>
-                                      <ol className="list-decimal list-inside space-y-2">
-                                        {reference.map((crm, index) => (
-                                          <li key={index} className="border-b pb-2">
-                                            {crm.crmName}
-                                          </li>
-                                        ))}
-                                      </ol>
-                                      </CardContent>
-                                    </Card>
-                                  ) : (
-                                    <p>No reference details found.</p>
-                                  )}
-                                </div>
-                              </DialogContent>
-                            </Dialog>
+                            {caseItem.references && caseItem.references.length > 0 ? (
+                              <HoverCard>
+                                <HoverCardTrigger asChild>
+                                  <span className="cursor-pointer hover:text-blue-600 hover:underline transition-colors duration-200">
+                                    {
+                                      caseItem.references
+                                        .slice(0, 1)
+                                        .map((ref, idx) => `${idx + 1}. ${ref.RefferenceNumber} - ${ref.CrmName} (${ref.RefferenceYear})`)
+                                    }
+                                    {caseItem.references.length > 1 ? '...' : ''}
+                                  </span>
+                                </HoverCardTrigger>
+                                <HoverCardContent className="w-80">
+                                  <ol className="list-decimal list-inside text-sm">
+                                    {caseItem.references.map((ref, idx) => (
+                                      <li key={idx}>
+                                        {ref.RefferenceNumber} - {ref.CrmName} ({ref.RefferenceYear})
+                                      </li>
+                                    ))}
+                                  </ol>
+                                </HoverCardContent>
+                              </HoverCard>
+                            ) : (
+                              <span>No references</span>
+                            )}
                           </TableCell>
                           <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
                           <TableCell>
@@ -326,7 +307,10 @@ export default function CaseTable() {
                                             {formatDate(selectedCase.CaseHearingDate)}
                                           </p>
                                           <p>
-                                            <strong>IPC Section:</strong> {selectedCase.IPCSection}
+                                            <strong>IPC Sections:</strong>{' '}
+                                            {selectedCase.ipcSections && selectedCase.ipcSections.length > 0
+                                              ? selectedCase.ipcSections.map(ipc => ipc.IpcSection).filter(Boolean).join(', ')
+                                              : 'None'}
                                           </p>
                                           {/* <p>
                                             <strong>Reference:</strong> {selectedCase.CRMName}

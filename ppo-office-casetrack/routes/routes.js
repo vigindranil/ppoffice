@@ -31,7 +31,7 @@ router.post('/api/addppUser', authMiddleware.verifyToken,ppuserController.create
 router.get('/api/getppuser', authMiddleware.verifyToken,ppuserController.showppuser); // show ppuser
 router.post('/api/assigned-advocates', authMiddleware.verifyToken,ppuserController.getAssignedAdvocatesByCaseId); // show assigned ppuser
 router.post('/api/unassigned-advocates', authMiddleware.verifyToken,ppuserController.getUnassignedAdvocatesByCaseId); // show unassigned ppuser
-router.get('/api/caseDetailsByPPuserId', authMiddleware.verifyToken,ppuserController.caseDetailsByPPuserId); // show ppstaffdetails by Id
+router.post('/api/caseDetailsByPPuserId', authMiddleware.verifyToken,ppuserController.caseDetailsByPPuserId); // show ppstaffdetails by Id
 router.post('/api/assigncase', authMiddleware.verifyToken,ppuserController.assignOrUnAdvocateToCase); // show ppstaffdetails by Id
 router.get('/api/getppuserDetailsById', authMiddleware.verifyToken,ppuserController.getppuserDetailsById);
 
@@ -66,7 +66,7 @@ router.post("/api/send-email-caseDetails", authMiddleware.verifyToken,EmailContr
 const PsController = require("../controllers/psController");
 router.post("/api/addpsStaff",authMiddleware.verifyToken,PsController.createPsStaff);
 router.get("/api/getpsStaff",authMiddleware.verifyToken,PsController.showpsstaff);
-router.get("/api/showallCasesBypsId",authMiddleware.verifyToken,PsController.showallcasesBypoliceID);
+router.post("/api/showallCasesBypsId",authMiddleware.verifyToken,PsController.showallcasesBypoliceID);
 router.post("/api/showpsUserById",authMiddleware.verifyToken,PsController.showpsuserById);
 router.get('/api/showpoliceBydistrict', authMiddleware.verifyToken,PsController.showallpsBydistrict);
 
