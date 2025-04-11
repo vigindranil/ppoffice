@@ -64,7 +64,7 @@ export default function CaseTable() {
          const response = await postRequest("showallCaseBetweenRange", {
            startDate: formatDate(start),
            endDate: formatDate(end),
-           isAssign: 2,
+           isAssign: 0,
            EntryUserID: user.AuthorityUserID
          })
          if (response.status === 0) {
@@ -232,8 +232,8 @@ export default function CaseTable() {
                                             ? selectedCase.ipcSections.map(ipc => ipc.IpcSection).filter(Boolean).join(', ')
                                             : 'None'}
                                       </p>
-                                      <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
-                                      <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p>
+                                      {/* <p><strong>Whether SP seen the mail:</strong> {selectedCase?.SP_Status ? 'Yes' : 'No'}</p>
+                                      <p><strong>Whether PS seen the mail:</strong> {selectedCase?.PS_Status ? 'Yes' : 'No'}</p> */}
                                     </div>
                                   </>
                                 )}

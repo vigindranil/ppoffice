@@ -64,7 +64,7 @@ export default function CaseTable() {
       const response = await postRequest("showallCaseBetweenRange", {
         startDate: formatDate(start),
         endDate: formatDate(end),
-        isAssign: 2,
+        isAssign: 1,
         EntryUserID: user.AuthorityUserID
       })
       if (response.status === 0) {

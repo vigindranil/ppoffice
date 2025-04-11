@@ -626,16 +626,30 @@ class EmailController {
                 //     casePoliceStationName,
                 //     PoliceStations
                 // });
+
+                // const emailTemplatePP = new EmailTemplate({
+                //     crm: BNSSection,
+                //     psCaseNo: CaseNumber,
+                //     dated: CaseDate,
+                //     ipcSection: IPCSection,
+                //     hearingDate: HearingDate,
+                //     SPName: Districts,      
+                //     PSName: casePoliceStationName || PoliceStations,  
+                //     PPName: "You", 
+                //   });
+
+                console.log(emailDetails); // debug
+
                 const emailTemplatePP = new EmailTemplate({
-                    crm: BNSSection,
-                    psCaseNo: CaseNumber,
-                    dated: CaseDate,
-                    ipcSection: IPCSection,
-                    hearingDate: HearingDate,
-                    SPName: Districts,      
-                    PSName: casePoliceStationName || PoliceStations,  
-                    PPName: "You", 
-                  });
+                crm: emailDetails.BNSSection || emailDetails.bnssection,
+                psCaseNo: "emailDetails.CaseNumber || emailDetails.casenumber",
+                dated: emailDetails.CaseDate || emailDetails.casedate,
+                ipcSection: emailDetails.IPCSection || emailDetails.ipcsection,
+                hearingDate: emailDetails.HearingDate || emailDetails.hearingdate,
+                SPName: emailDetails.Districts || emailDetails.districts,
+                PSName: emailDetails.casePoliceStationName || emailDetails.PoliceStations,
+                PPName: "You"
+                });
     
                 const transporter = nodemailer.createTransport({
                     host: "smtp.gmail.com",
