@@ -766,32 +766,34 @@ class CaseController {
     static async getDashboardCounts(req, res) {
         try {
             const { EntryuserID } = req.body;
-
+    
             // Validate input
             if (!EntryuserID) {
                 return ResponseHelper.error(res, "EntryuserID is required");
             }
-
+    
             // Call the stored procedure
-            const query = 'CALL sp_DashBoardCount(?)';
-
+            const query = 'CALL sp_DashBoardCount_V1(?)';
+    
             db.query(query, [EntryuserID], (err, results) => {
                 if (err) {
                     console.error("Error executing stored procedure:", err);
                     return ResponseHelper.error(res, "An error occurred while fetching data");
                 }
-
+    
                 // The SP returns data in results[0], typically an array of rows
                 const caseData = results[0];
-
+    
                 // Initialize counts
                 let unassignedCases = 0;
                 let assignedCases = 0;
                 let totalCases = 0;
-
+    
                 // Check if we got at least one row from the SP
                 if (!caseData || !caseData.length) {
-                    // Possibly the SP exited early or returned no data
+                    // Handle the case where the stored procedure returns no data.
+                    //  This is important, as the SP might return an empty result set
+                    //  in some scenarios.  Return 0 for all counts.
                     const response = {
                         unassignedCases: 0,
                         assignedCases: 0,
@@ -799,47 +801,27 @@ class CaseController {
                     };
                     return ResponseHelper.success_reponse(
                         res,
-                        "No data returned from sp_DashBoardCount",
+                        "No data returned from sp_DashBoardCount_V1",
                         response
                     );
                 }
-
-                // The SP returns exactly one row with columns:
-                //    TotalUnassignedCase, TotalAssignedCase, TotalCases
-                const spRow = caseData[0];
-
-                // Transform that single row into the array structure your loop expects:
-                const transformedData = [
-                    {
-                        caseTypeName: 0,
-                        CaseCount: spRow.TotalUnassignedCase || 0
-                    },
-                    {
-                        caseTypeName: 1,
-                        CaseCount: spRow.TotalAssignedCase || 0
-                    }
-                ];
-
-                // Use the existing loop logic on the transformed data
-                transformedData.forEach(row => {
-                    if (row.caseTypeName === 0) {
-                        unassignedCases = row.CaseCount;
-                    } else if (row.caseTypeName === 1) {
-                        assignedCases = row.CaseCount;
-                    }
-                    totalCases += row.CaseCount;
-                });
-
-                // Or you can directly take spRow.TotalCases if you trust it:
-                // totalCases = spRow.TotalCases || 0;
-
+    
+                // The SP now returns a single row with the counts.  Access the properties directly.
+                const spRow = caseData[0];  // Get the first (and only) row.
+    
+                // Extract the counts from the row.  Use 0 as a default in case any value is null.
+                unassignedCases = spRow.TotalUnassignedCase || 0;
+                assignedCases = spRow.TotalAssignedCase || 0;
+                totalCases = spRow.TotalCases || 0;
+    
+    
                 // Prepare the final response
                 const response = {
                     unassignedCases,
                     assignedCases,
                     totalCases
                 };
-
+    
                 // Send the response
                 return ResponseHelper.success_reponse(
                     res,

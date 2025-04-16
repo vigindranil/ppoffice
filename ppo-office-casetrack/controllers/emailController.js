@@ -251,14 +251,25 @@ class EmailController {
                 //     AssignedPPs
                 // });
 
-                console.log("📧 Template input:", {
-                    crm: BNSSection,
+                // console.log("📧 Template input:", {
+                //     crm: BNSSection,
+                //     psCaseNo: CaseNumber,
+                //     dated: CaseDate,
+                //     ipcSection: IPCSection,
+                //     hearingDate: HearingDate,
+                //     PPName: AssignedPPs
+                //   });
+
+                console.log({
+                    crm: BNSSection, 
                     psCaseNo: CaseNumber,
                     dated: CaseDate,
                     ipcSection: IPCSection,
                     hearingDate: HearingDate,
-                    PPName: AssignedPPs
-                  });
+                    PPName: AssignedPPs,       
+                    SPName: emailDetails.SPName || "Unknown", 
+                    PSName: emailDetails.PSName || "Unknown",  
+                });
 
                 const emailTemplate = new EmailTemplate({
                     crm: BNSSection, 
@@ -640,14 +651,25 @@ class EmailController {
 
                 console.log(emailDetails); // debug
 
+                console.log("debugging...", {
+                    crm: emailDetails.BNSSection || emailDetails.bnssection,
+                    psCaseNo: "emailDetails.CaseNumber || emailDetails.casenumber",
+                    dated: emailDetails.CaseDate || emailDetails.casedate,
+                    ipcSection: emailDetails.IPCSection || emailDetails.ipcsection,
+                    hearingDate: emailDetails.HearingDate || emailDetails.hearingdate,
+                    SPName: emailDetails.Districts || emailDetails.districts,
+                    PSName: emailDetails.casePoliceStationName || emailDetails.PoliceStations,
+                    PPName: "You"
+                    });
+                
                 const emailTemplatePP = new EmailTemplate({
-                crm: emailDetails.BNSSection || emailDetails.bnssection,
-                psCaseNo: "emailDetails.CaseNumber || emailDetails.casenumber",
-                dated: emailDetails.CaseDate || emailDetails.casedate,
-                ipcSection: emailDetails.IPCSection || emailDetails.ipcsection,
-                hearingDate: emailDetails.HearingDate || emailDetails.hearingdate,
-                SPName: emailDetails.Districts || emailDetails.districts,
-                PSName: emailDetails.casePoliceStationName || emailDetails.PoliceStations,
+                crm: emailDetails.BNSSection,
+                psCaseNo: emailDetails.psCaseNo,
+                dated: emailDetails.dated,
+                ipcSection: emailDetails.IPCSection,
+                hearingDate: emailDetails.hearingDate,
+                SPName: emailDetails.SPName,
+                PSName: emailDetails.PSName,
                 PPName: "You"
                 });
     

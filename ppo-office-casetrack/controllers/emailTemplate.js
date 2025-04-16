@@ -87,10 +87,8 @@ class EmailTemplate {
             Advocate  
             From: The Public Prosecutor, High Court, Calcutta.  
 
-            Begins Ref. (${this.crm}/24)  
             P.S. Case No: ${this.psCaseNo}  
             Dated: ${this.dated}  
-            U/S IPC ${this.ipcSection} 
             S.P.Name : ${this.SPName}
             P.S.Name : ${this.PSName}
             M/S VS: State  
