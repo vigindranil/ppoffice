@@ -652,13 +652,13 @@ class EmailController {
                 console.log(emailDetails); // debug
 
                 console.log("debugging...", {
-                    crm: emailDetails.BNSSection || emailDetails.bnssection,
-                    psCaseNo: "emailDetails.CaseNumber || emailDetails.casenumber",
-                    dated: emailDetails.CaseDate || emailDetails.casedate,
-                    ipcSection: emailDetails.IPCSection || emailDetails.ipcsection,
-                    hearingDate: emailDetails.HearingDate || emailDetails.hearingdate,
-                    SPName: emailDetails.Districts || emailDetails.districts,
-                    PSName: emailDetails.casePoliceStationName || emailDetails.PoliceStations,
+                    crm: emailDetails.BNSSection,
+                    psCaseNo: emailDetails.psCaseNo,
+                    dated: emailDetails.dated,
+                    ipcSection: emailDetails.IPCSection,
+                    hearingDate: emailDetails.hearingDate,
+                    SPName: emailDetails.SPName,
+                    PSName: emailDetails.PSName,
                     PPName: "You"
                     });
                 
@@ -690,7 +690,7 @@ class EmailController {
                 const mailOptions = {
                     from: process.env.EMAIL_USER,
                     to: recipient.email,
-                    subject: `Case Update: ${CaseNumber}`,
+                    subject: `Case Update: ${emailDetails.psCaseNo}`,
                     html: `<pre>${emailContentPP}</pre>`,
                     dsn: {
                         id: `dsn-${CaseID}`,
