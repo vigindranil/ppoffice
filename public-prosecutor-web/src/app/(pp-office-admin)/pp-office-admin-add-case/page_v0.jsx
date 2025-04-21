@@ -10,8 +10,7 @@ import {
   showpoliceBydistrict,
   showIpcSection,
   showBnsSection,
-  showIbsByBnsId
-} from "@/app/api"
+  showIbsByBnsId } from "@/app/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -19,15 +18,15 @@ import { Label } from "@/components/ui/label"
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { useSelector } from "react-redux"
-import { Calendar, FileText, Hash, Clock, Trash, Plus, X } from "lucide-react"
+import { Calendar, FileText, Hash, Clock, Trash } from "lucide-react"
 import { decrypt } from "@/utils/crypto"
+import { Switch } from "@/components/ui/switch"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { postRequest } from "@/app/commonAPI"
-import { Badge } from "@/components/ui/badge"
 
 const AddCasePage = () => {
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
@@ -39,13 +38,15 @@ const AddCasePage = () => {
   const [allDistrictList, setAllDistrictList] = useState([])
   const [allPSList, setAllPSList] = useState([])
   const [caseTypeList, setCaseTypeList] = useState([])
-  const [bnsSectionList, setBnsSectionList] = useState([])
   const [ipcActList, setIpcActList] = useState([])
+  const [bnsSectionList, setBnsSectionList] = useState([])
+  const [ibsReceivedDataIPC, setIbsReceivedDataIPC] = useState(null)
+  const [ibsReceivedDataBNS, setIbsReceivedDataBNS] = useState(null)
+  const [isCurrentBnsId, setIsCurrentBnsId] = useState(null)
+  const [useIpcAct, setUseIpcAct] = useState(true)
   const [documents, setDocuments] = useState([])
   const [activeTab, setActiveTab] = useState("add")
   const [openCaseSelect, setOpenCaseSelect] = useState(false)
-  const [useIpcDisplay, setUseIpcDisplay] = useState(true)
-  const [ipcToBnsMap, setIpcToBnsMap] = useState({})
 
   // Dropdown state
   const [openDistrict, setOpenDistrict] = useState(false)
@@ -53,16 +54,7 @@ const AddCasePage = () => {
   const [openCaseType, setOpenCaseType] = useState(false)
   const [openReference, setOpenReference] = useState(false)
   const [openIpcAct, setOpenIpcAct] = useState(false)
-  const [openYear, setOpenYear] = useState(false)
-
-  // Multiple selections
-  const [selectedIpcSections, setSelectedIpcSections] = useState([])
-  const [selectedReferences, setSelectedReferences] = useState([])
-  const [currentReference, setCurrentReference] = useState({
-    crmID: "",
-    refferenceNumber: "",
-    refferenceyear: new Date().getFullYear().toString(),
-  })
+  const [openBnsSection, setOpenBnsSection] = useState(false)
 
   // Form data for adding new case
   const [addFormData, setAddFormData] = useState({
@@ -72,8 +64,9 @@ const AddCasePage = () => {
     districtId: "",
     psId: "",
     caseTypeId: "",
-    filingDate: "",
-    petitionName: "",
+    refNumber: "",
+    ipcAct: "",
+    bnsNumber: "",
     hearingDate: "",
   })
 
@@ -86,14 +79,21 @@ const AddCasePage = () => {
     districtId: "",
     psId: "",
     caseTypeId: "",
-    filingDate: "",
-    petitionName: "",
+    refNumber: "",
+    ipcAct: "",
+    bnsNumber: "",
     hearingDate: "",
   })
 
-  // Years for reference dropdown
-  const currentYear = new Date().getFullYear()
-  const years = Array.from({ length: 10 }, (_, i) => (currentYear - i).toString())
+  const [selectedValues, setSelectedValues] = useState({
+    ipcAct: "",
+    bnsNumber: "",
+  })
+
+  const [updateSelectedValues, setUpdateSelectedValues] = useState({
+    ipcAct: "",
+    bnsNumber: "",
+  })
 
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(encryptedUser))
@@ -101,12 +101,10 @@ const AddCasePage = () => {
     setAddFormData((prevState) => ({
       ...prevState,
       EntryUserID: decoded_user.AuthorityUserID,
-      filingDate: new Date().toISOString().split("T")[0],
     }))
     setUpdateFormData((prevState) => ({
       ...prevState,
       EntryUserID: decoded_user.AuthorityUserID,
-      filingDate: new Date().toISOString().split("T")[0],
     }))
   }, [encryptedUser])
 
@@ -137,6 +135,7 @@ const AddCasePage = () => {
     }
   }, [user])
 
+
   const fetchCases = async () => {
     try {
       setIsLoading(true)
@@ -144,7 +143,6 @@ const AddCasePage = () => {
         startDate: null,
         endDate: null,
         isAssign: 2,
-        EntryUserID: user.AuthorityUserID
       })
 
       if (response.status === 0) {
@@ -170,11 +168,71 @@ const AddCasePage = () => {
     }
   }, [addFormData.districtId])
 
-  const handleAddSelectChange = (name, value) => {
-    setAddFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+  const handleAddSelectChange = async (name, value) => {
+    if (name === "ipcAct" && useIpcAct) {
+      const selectedIpc = ipcActList.find((ipc) => ipc.bnsId.toString() === value)
+      if (!selectedIpc) return
+
+      setAddFormData((prev) => ({
+        ...prev,
+        ipcAct: selectedIpc.ipcSection,
+        bnsNumber: "",
+      }))
+
+      setSelectedValues((prev) => ({
+        ...prev,
+        ipcAct: value,
+      }))
+
+      setIsCurrentBnsId(value)
+
+      try {
+        const result = await showIbsByBnsId(value)
+        if (Array.isArray(result) && result.length > 0) {
+          setAddFormData((prev) => ({
+            ...prev,
+            bnsNumber: result[0].BnsSection || "",
+          }))
+          setIbsReceivedDataBNS(result[0])
+        }
+      } catch (error) {
+        openAlert("error", "Failed to fetch corresponding BNS Section")
+      }
+    } else if (name === "bnsNumber" && !useIpcAct) {
+      const selectedBns = bnsSectionList.find((bns) => bns.bnsId.toString() === value)
+      if (!selectedBns) return
+
+      setAddFormData((prev) => ({
+        ...prev,
+        bnsNumber: selectedBns.bnsSection,
+        ipcAct: "",
+      }))
+
+      setSelectedValues((prev) => ({
+        ...prev,
+        bnsNumber: value,
+      }))
+
+      setIsCurrentBnsId(value)
+
+      try {
+        const result = await showIbsByBnsId(value)
+        if (Array.isArray(result) && result.length > 0) {
+          setAddFormData((prev) => ({
+            ...prev,
+            ipcAct: result[0].IpcSection || "",
+          }))
+          setIbsReceivedDataIPC(result[0])
+        }
+      } catch (error) {
+        openAlert("error", "Failed to fetch corresponding IPC Act")
+      }
+    } else {
+      setAddFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
   }
 
   const handleUpdateSelectChange = async (name, value) => {
@@ -183,7 +241,7 @@ const AddCasePage = () => {
       if (!selectedCase) return
 
       // Find the district ID based on SpId
-      const districtId = selectedCase.SpId ? selectedCase.SpId.toString() : ""
+      const districtId = selectedCase.SpId.toString()
 
       // Get police stations for this district
       try {
@@ -220,16 +278,83 @@ const AddCasePage = () => {
         EntryUserID: user.AuthorityUserID,
         CaseDate: formatDate(selectedCase.CaseDate),
         districtId: districtId,
-        psId: selectedCase.PsId ? selectedCase.PsId.toString() : "",
-        caseTypeId: selectedCase.caseTypeID ? selectedCase.caseTypeID.toString() : "",
+        psId: selectedCase.PsId.toString(),
+        caseTypeId: selectedCase.caseTypeID.toString(),
+        refNumber: "",
+        ipcAct: selectedCase.IPCSection || "",
+        bnsNumber: "",
         hearingDate: formatHearingDate(selectedCase.CaseHearingDate),
-        filingDate: formatDate(selectedCase.CaseDate),
-        petitionName: selectedCase.CaseNumber,
       })
 
-      // Reset selected IPC sections and references
-      setSelectedIpcSections([])
-      setSelectedReferences([])
+      // If IPC section exists, try to find the corresponding BNS section
+      if (selectedCase.IPCSection) {
+        const ipcSection = ipcActList.find((ipc) => ipc.ipcSection === selectedCase.IPCSection)
+        if (ipcSection) {
+          try {
+            const result = await showIbsByBnsId(ipcSection.bnsId.toString())
+            if (Array.isArray(result) && result.length > 0) {
+              setUpdateFormData((prev) => ({
+                ...prev,
+                bnsNumber: result[0].BnsSection || "",
+              }))
+            }
+          } catch (error) {
+            console.error("Failed to fetch BNS section:", error)
+          }
+        }
+      }
+    } else if (name === "ipcAct" && useIpcAct) {
+      const selectedIpc = ipcActList.find((ipc) => ipc.bnsId.toString() === value)
+      if (!selectedIpc) return
+
+      setUpdateFormData((prev) => ({
+        ...prev,
+        ipcAct: selectedIpc.ipcSection,
+        bnsNumber: "",
+      }))
+
+      setUpdateSelectedValues((prev) => ({
+        ...prev,
+        ipcAct: value,
+      }))
+
+      try {
+        const result = await showIbsByBnsId(value)
+        if (Array.isArray(result) && result.length > 0) {
+          setUpdateFormData((prev) => ({
+            ...prev,
+            bnsNumber: result[0].BnsSection || "",
+          }))
+        }
+      } catch (error) {
+        openAlert("error", "Failed to fetch corresponding BNS Section")
+      }
+    } else if (name === "bnsNumber" && !useIpcAct) {
+      const selectedBns = bnsSectionList.find((bns) => bns.bnsId.toString() === value)
+      if (!selectedBns) return
+
+      setUpdateFormData((prev) => ({
+        ...prev,
+        bnsNumber: selectedBns.bnsSection,
+        ipcAct: "",
+      }))
+
+      setUpdateSelectedValues((prev) => ({
+        ...prev,
+        bnsNumber: value,
+      }))
+
+      try {
+        const result = await showIbsByBnsId(value)
+        if (Array.isArray(result) && result.length > 0) {
+          setUpdateFormData((prev) => ({
+            ...prev,
+            ipcAct: result[0].IpcSection || "",
+          }))
+        }
+      } catch (error) {
+        openAlert("error", "Failed to fetch corresponding IPC Act")
+      }
     } else {
       setUpdateFormData((prev) => ({
         ...prev,
@@ -246,108 +371,15 @@ const AddCasePage = () => {
     setUpdateFormData({ ...updateFormData, [e.target.name]: e.target.value })
   }
 
-  const handleReferenceChange = (field, value) => {
-    setCurrentReference((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-  }
-
-  const addIpcSection = async (bnsId) => {
-    if (selectedIpcSections.length >= 5) {
-      openAlert("error", "Maximum 5 sections allowed")
-      return
-    }
-
-    if (selectedIpcSections.some((item) => item.bnsId === bnsId)) {
-      openAlert("error", "This section is already added")
-      return
-    }
-
-    // Find in both IPC and BNS lists to support dropdown toggle
-    const ipcItem = ipcActList.find((ipc) => ipc.bnsId.toString() === bnsId)
-    const bnsItem = bnsSectionList.find((bns) => bns.bnsId.toString() === bnsId)
-
-    const label = useIpcDisplay ? ipcItem?.ipcSection : bnsItem?.bnsSection
-    if (!label) {
-      openAlert("error", "Invalid section selection")
-      return
-    }
-
-    // Always store the ipcActList item structure for consistency
-    const selectedData = ipcItem || {
-      bnsId: bnsItem.bnsId,
-      ipcSection: bnsItem.bnsSection,
-    }
-
-    setSelectedIpcSections((prev) => [...prev, selectedData])
-
-    // Fetch conversion mapping
-    try {
-      const result = await showIbsByBnsId(bnsId)
-      if (Array.isArray(result) && result.length > 0) {
-        const mapped =
-          useIpcDisplay ? result[0].BnsSection : result[0].IpcSection
-        setIpcToBnsMap((prev) => ({
-          ...prev,
-          [bnsId]: mapped || "",
-        }))
-      }
-    } catch (err) {
-      console.error("Failed to fetch mapping", err)
-      openAlert("error", "Failed to fetch conversion mapping")
-    }
-  }
-
-  const removeIpcSection = (bnsId) => {
-    setSelectedIpcSections((prev) => prev.filter((item) => item.bnsId !== bnsId))
-  }
-
-  const addReference = () => {
-    if (selectedReferences.length >= 5) {
-      openAlert("error", "Maximum 5 references allowed")
-      return
-    }
-
-    if (!currentReference.crmID || !currentReference.refferenceNumber) {
-      openAlert("error", "Please fill all reference fields")
-      return
-    }
-
-    if (
-      selectedReferences.some(
-        (ref) =>
-          ref.crmID === currentReference.crmID &&
-          ref.refferenceNumber === currentReference.refferenceNumber &&
-          ref.refferenceyear === currentReference.refferenceyear,
-      )
-    ) {
-      openAlert("error", "This reference is already added")
-      return
-    }
-
-    setSelectedReferences((prev) => [...prev, { ...currentReference }])
-    setCurrentReference({
-      crmID: "",
-      refferenceNumber: "",
-      refferenceyear: new Date().getFullYear().toString(),
-    })
-  }
-
-  const removeReference = (index) => {
-    setSelectedReferences((prev) => prev.filter((_, i) => i !== index))
-  }
-
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files)
     const validFiles = files.filter((file) => {
-      if (file.size > 50000 * 1024) {
-        openAlert("error", `${file.name} exceeds 50 MB`)
+      if (file.size > 15000 * 1024) {
+        openAlert("error", `${file.name} exceeds 15 MB`)
         return false
       }
-      // if (!["image/jpeg", "image/jpg", "application/pdf"].includes(file.type)) {
-      if (!["application/pdf"].includes(file.type)) {
-        openAlert("error", `${file.name} is not a valid format (PDF only)`)
+      if (!["image/jpeg", "image/jpg", "application/pdf"].includes(file.type)) {
+        openAlert("error", `${file.name} is not a valid format (JPG, JPEG, PDF only)`)
         return false
       }
       return true
@@ -372,8 +404,6 @@ const AddCasePage = () => {
         { field: "psId", label: "Police Station" },
         { field: "caseTypeId", label: "Case Type" },
         { field: "hearingDate", label: "Hearing Date" },
-        { field: "filingDate", label: "Filing Date" },
-        { field: "petitionName", label: "Petition Name" },
       ]
 
       const missingFields = requiredFields.filter(({ field }) => !addFormData[field])
@@ -382,18 +412,11 @@ const AddCasePage = () => {
         throw `Please fill in the following required fields: ${missingFields.map((f) => f.label).join(", ")}`
       }
 
-      if (selectedIpcSections.length === 0) {
-        throw "Please add at least one IPC section"
+      if (!addFormData.ipcAct && !addFormData.bnsNumber) {
+        throw "Please select either an IPC Act or BNS Section"
       }
 
-      // Prepare data for API
-      const apiData = {
-        ...addFormData,
-        ipcSections: selectedIpcSections.map((section) => section.bnsId.toString()),
-        refferences: selectedReferences.length > 0 ? selectedReferences : [],
-      }
-
-      const caseResult = await createCaseOfficeAdmin(apiData)
+      const caseResult = await createCaseOfficeAdmin(addFormData)
       const caseId = caseResult.data.CaseID
 
       // Upload documents if any
@@ -411,13 +434,16 @@ const AddCasePage = () => {
         districtId: "",
         psId: "",
         caseTypeId: "",
-        filingDate: new Date().toISOString().split("T")[0],
-        petitionName: "",
+        refNumber: "",
+        ipcAct: "",
+        bnsNumber: "",
         hearingDate: "",
       })
 
-      setSelectedIpcSections([])
-      setSelectedReferences([])
+      setIbsReceivedDataIPC(null)
+      setIbsReceivedDataBNS(null)
+      setIsCurrentBnsId(null)
+      setSelectedValues({ ipcAct: "", bnsNumber: "" })
       setDocuments([])
 
       // Refresh case list
@@ -442,19 +468,12 @@ const AddCasePage = () => {
         throw "Please provide a hearing date"
       }
 
-      if (selectedIpcSections.length === 0) {
-        throw "Please add at least one IPC section"
-      }
-
-      // Prepare data for API
-      const apiData = {
-        ...updateFormData,
-        ipcSections: selectedIpcSections.map((section) => section.bnsId.toString()),
-        refferences: selectedReferences.length > 0 ? selectedReferences : [],
+      if (!updateFormData.ipcAct && !updateFormData.bnsNumber) {
+        throw "Please select either an IPC Act or BNS Section"
       }
 
       // Call update API
-      await createCaseOfficeAdmin(apiData)
+      await createCaseOfficeAdmin(updateFormData)
 
       // Upload documents if any
       if (documents.length > 0) {
@@ -472,13 +491,13 @@ const AddCasePage = () => {
         districtId: "",
         psId: "",
         caseTypeId: "",
-        filingDate: "",
-        petitionName: "",
+        refNumber: "",
+        ipcAct: "",
+        bnsNumber: "",
         hearingDate: "",
       })
 
-      setSelectedIpcSections([])
-      setSelectedReferences([])
+      setUpdateSelectedValues({ ipcAct: "", bnsNumber: "" })
       setDocuments([])
 
       // Refresh case list
@@ -525,7 +544,7 @@ const AddCasePage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="font-bold" htmlFor="CaseNumber">
-                        PS Case Number <span className="text-red-500">*</span>
+                        Case Number <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         icon={Hash}
@@ -538,7 +557,7 @@ const AddCasePage = () => {
                     </div>
                     <div className="space-y-2">
                       <Label className="font-bold" htmlFor="CaseDate">
-                        PS Case Date <span className="text-red-500">*</span>
+                        Case Date <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         icon={Calendar}
@@ -546,35 +565,6 @@ const AddCasePage = () => {
                         name="CaseDate"
                         type="date"
                         value={addFormData.CaseDate}
-                        onChange={handleAddChange}
-                        max={new Date().toISOString().split("T")[0]}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="font-bold" htmlFor="petitionName">
-                        Petition Name <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="petitionName"
-                        name="petitionName"
-                        placeholder="Enter petition name"
-                        value={addFormData.petitionName}
-                        onChange={handleAddChange}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-bold" htmlFor="filingDate">
-                        Filing Date <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        icon={Calendar}
-                        id="filingDate"
-                        name="filingDate"
-                        type="date"
-                        value={addFormData.filingDate}
                         onChange={handleAddChange}
                         max={new Date().toISOString().split("T")[0]}
                       />
@@ -596,8 +586,8 @@ const AddCasePage = () => {
                           >
                             {addFormData.districtId
                               ? allDistrictList.find(
-                                (district) => district.districtId.toString() === addFormData.districtId,
-                              )?.districtName
+                                  (district) => district.districtId.toString() === addFormData.districtId,
+                                )?.districtName
                               : "Select District"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -698,8 +688,8 @@ const AddCasePage = () => {
                           >
                             {addFormData.caseTypeId
                               ? caseTypeList.find(
-                                (caseType) => caseType.CasetypeId.toString() === addFormData.caseTypeId,
-                              )?.CasetypeName
+                                  (caseType) => caseType.CasetypeId.toString() === addFormData.caseTypeId,
+                                )?.CasetypeName
                               : "Select Case Type"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -736,6 +726,91 @@ const AddCasePage = () => {
                       </Popover>
                     </div>
                     <div className="space-y-2">
+                      <Label className="font-bold" htmlFor="refNumber">
+                        Reference
+                      </Label>
+                      <Popover open={openReference} onOpenChange={setOpenReference}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openReference}
+                            className="w-full justify-between"
+                          >
+                            {addFormData.refNumber
+                              ? referenceList.find((ref) => ref.refferenceId.toString() === addFormData.refNumber)
+                                  ?.refferenceName
+                              : "Select Reference"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Search reference..." />
+                            <CommandList>
+                              <CommandEmpty>No reference found.</CommandEmpty>
+                              <CommandGroup>
+                                {referenceList.map((ref) => (
+                                  <CommandItem
+                                    key={ref.refferenceId}
+                                    onSelect={() => {
+                                      handleAddSelectChange("refNumber", ref.refferenceId.toString())
+                                      setOpenReference(false)
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        addFormData.refNumber === ref.refferenceId.toString()
+                                          ? "opacity-100"
+                                          : "opacity-0",
+                                      )}
+                                    />
+                                    {ref.refferenceName}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="font-bold" htmlFor="preference">
+                        Choose your Preference <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <div
+                          className={`relative w-20 h-8 rounded-full flex items-center cursor-pointer transition-all 
+                          ${useIpcAct ? "bg-blue-600" : "bg-green-600"}`}
+                          onClick={() => {
+                            setUseIpcAct((prev) => !prev)
+                            setAddFormData((prev) => ({
+                              ...prev,
+                              ipcAct: "",
+                              bnsNumber: "",
+                            }))
+                            setSelectedValues({ ipcAct: "", bnsNumber: "" })
+                            setIbsReceivedDataIPC(null)
+                            setIbsReceivedDataBNS(null)
+                            setIsCurrentBnsId(null)
+                          }}
+                        >
+                          <span className="absolute w-full text-xs font-bold text-white flex justify-center transition-all">
+                            {useIpcAct ? "IPC  --" : "--   BNS"}
+                          </span>
+                          <div
+                            className={`absolute w-7 h-7 bg-white rounded-full shadow-md transform transition-all 
+                            ${useIpcAct ? "translate-x-12" : "translate-x-1"}`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
                       <Label className="font-bold" htmlFor="hearingDate">
                         Hearing Date <span className="text-red-500">*</span>
                       </Label>
@@ -751,214 +826,137 @@ const AddCasePage = () => {
                     </div>
                   </div>
 
-                  {/* IPC/BNS Sections */}
-                  <div className="space-y-2 mt-2">
-                    <Label className="font-bold">
-                      IPC / BNS Sections <span className="text-red-500">*</span> (Max 5)
-                    </Label>
-
-                    {/* Display Mode Switch (Styled like v0) */}
-                    <div
-                      className={`relative w-20 h-8 rounded-full flex items-center cursor-pointer transition-all 
-    ${useIpcDisplay ? "bg-blue-600" : "bg-green-600"} mb-2`}
-                      onClick={() => setUseIpcDisplay((prev) => !prev)}
-                    >
-                      <span className="absolute w-full text-xs font-bold text-white flex justify-center transition-all">
-                        {useIpcDisplay ? "IPC" : "BNS"}
-                      </span>
-                      <div
-                        className={`absolute w-7 h-7 bg-white rounded-full shadow-md transform transition-all 
-      ${useIpcDisplay ? "translate-x-1" : "translate-x-12"}`}
-                      />
-                    </div>
-
-                    {/* Selected badges with conversion */}
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {selectedIpcSections.map((section) => (
-                        <Badge key={section.bnsId} variant="secondary" className="flex items-center gap-2 py-2 px-3">
-                          <div className="text-xs font-semibold">
-                            {useIpcDisplay
-                              ? section.ipcSection
-                              : ipcToBnsMap[section.bnsId] || "Loading..."}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-4 w-4 p-0 ml-1"
-                            onClick={() => removeIpcSection(section.bnsId)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {/* Dropdown changes based on mode */}
-                    <Popover open={openIpcAct} onOpenChange={setOpenIpcAct}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={openIpcAct}
-                          className="w-full justify-between"
-                        >
-                          {useIpcDisplay ? "Select IPC Section" : "Select BNS Section"}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
-                          <CommandInput placeholder={`Search ${useIpcDisplay ? "IPC" : "BNS"}...`} />
-                          <CommandList>
-                            <CommandEmpty>No match found.</CommandEmpty>
-                            <CommandGroup>
-                              {(useIpcDisplay ? ipcActList : bnsSectionList)
-                                .filter(
-                                  (entry) =>
-                                    !selectedIpcSections.some((s) => s.bnsId.toString() === entry.bnsId.toString())
-                                )
-                                .map((entry) => (
-                                  <CommandItem
-                                    key={entry.bnsId}
-                                    onSelect={() => {
-                                      addIpcSection(entry.bnsId.toString())
-                                      setOpenIpcAct(false)
-                                    }}
-                                  >
-                                    {useIpcDisplay ? entry.ipcSection : entry.bnsSection}
-                                  </CommandItem>
-                                ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  {/* References */}
-                  <div className="space-y-2 mt-2">
-                    <Label className="font-bold">References (Max 5)</Label>
-
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {selectedReferences.map((ref, index) => (
-                        <Badge key={index} variant="secondary" className="flex items-center gap-1 py-2">
-                          {referenceList.find((r) => r.refferenceId.toString() === ref.crmID)?.refferenceName} -
-                          {ref.refferenceNumber} ({ref.refferenceyear})
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-4 w-4 p-0 ml-1"
-                            onClick={() => removeReference(index)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {/* ✅ Separate line for Reference Type */}
-                    <div className="w-full">
-                      <Popover open={openReference} onOpenChange={setOpenReference}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={openReference}
-                            className="w-full justify-between"
-                          >
-                            {currentReference.crmID
-                              ? referenceList.find((ref) => ref.refferenceId.toString() === currentReference.crmID)
-                                ?.refferenceName
-                              : "Select Reference Type"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[280px] z-50" side="bottom" align="start">
-                          <Command>
-                            <CommandInput placeholder="Search reference..." />
-                            <CommandList>
-                              <CommandEmpty>No reference found.</CommandEmpty>
-                              <CommandGroup>
-                                {referenceList.map((ref) => (
-                                  <CommandItem
-                                    key={ref.refferenceId}
-                                    onSelect={() => {
-                                      handleReferenceChange("crmID", ref.refferenceId.toString());
-                                      setOpenReference(false);
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        currentReference.crmID === ref.refferenceId.toString()
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                    {ref.refferenceName}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-
-                    {/* ✅ The remaining two inputs side by side */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <Input
-                        placeholder="Reference Number"
-                        value={currentReference.refferenceNumber}
-                        onChange={(e) => handleReferenceChange("refferenceNumber", e.target.value)}
-                      />
-                      <Popover open={openYear} onOpenChange={setOpenYear}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={openYear}
-                            className="w-full justify-between"
-                          >
-                            {currentReference.refferenceyear || "Select Year"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0">
-                          <Command>
-                            <CommandInput placeholder="Search year..." />
-                            <CommandList>
-                              <CommandEmpty>No year found.</CommandEmpty>
-                              <CommandGroup>
-                                {years.map((year) => (
-                                  <CommandItem
-                                    key={year}
-                                    onSelect={() => {
-                                      handleReferenceChange("refferenceyear", year);
-                                      setOpenYear(false);
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        currentReference.refferenceyear === year ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    {year}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <Button type="button" size="sm" onClick={addReference} className="mt-2">
-                        <Plus className="h-4 w-4 mr-1" /> Add Reference
-                      </Button>
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {useIpcAct ? (
+                      <>
+                        <div className="space-y-2">
+                          <Label className="font-bold" htmlFor="ipcAct">
+                            IPC Act <span className="text-red-500">*</span>
+                          </Label>
+                          <Popover open={openIpcAct} onOpenChange={setOpenIpcAct}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={openIpcAct}
+                                className="w-full justify-between"
+                              >
+                                {selectedValues.ipcAct
+                                  ? ipcActList.find((ipc) => ipc.bnsId.toString() === selectedValues.ipcAct)?.ipcSection
+                                  : "Select IPC Act"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0">
+                              <Command>
+                                <CommandInput placeholder="Search IPC Act..." />
+                                <CommandList>
+                                  <CommandEmpty>No IPC Act found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {ipcActList.map((ipc) => (
+                                      <CommandItem
+                                        key={ipc.bnsId}
+                                        onSelect={() => {
+                                          handleAddSelectChange("ipcAct", ipc.bnsId.toString())
+                                          setOpenIpcAct(false)
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            selectedValues.ipcAct === ipc.bnsId.toString()
+                                              ? "opacity-100"
+                                              : "opacity-0",
+                                          )}
+                                        />
+                                        {ipc.ipcSection}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="font-bold" htmlFor="bnsNumber">
+                            Corresponding BNS Section
+                          </Label>
+                          <Input
+                            id="bnsNumber"
+                            name="bnsNumber"
+                            value={ibsReceivedDataBNS?.BnsSection || ""}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <Label className="font-bold" htmlFor="bnsNumber">
+                            BNS Section <span className="text-red-500">*</span>
+                          </Label>
+                          <Popover open={openBnsSection} onOpenChange={setOpenBnsSection}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={openBnsSection}
+                                className="w-full justify-between"
+                              >
+                                {selectedValues.bnsNumber
+                                  ? bnsSectionList.find((bns) => bns.bnsId.toString() === selectedValues.bnsNumber)
+                                      ?.bnsSection
+                                  : "Select BNS Section"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0">
+                              <Command>
+                                <CommandInput placeholder="Search BNS Section..." />
+                                <CommandList>
+                                  <CommandEmpty>No BNS Section found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {bnsSectionList.map((bns) => (
+                                      <CommandItem
+                                        key={bns.bnsId}
+                                        onSelect={() => {
+                                          handleAddSelectChange("bnsNumber", bns.bnsId.toString())
+                                          setOpenBnsSection(false)
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            selectedValues.bnsNumber === bns.bnsId.toString()
+                                              ? "opacity-100"
+                                              : "opacity-0",
+                                          )}
+                                        />
+                                        {bns.bnsSection}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="font-bold" htmlFor="ipcAct">
+                            Corresponding IPC Act
+                          </Label>
+                          <Input
+                            id="ipcAct"
+                            name="ipcAct"
+                            value={ibsReceivedDataIPC?.IpcSection || ""}
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <div className="space-y-2 mt-2">
@@ -991,7 +989,7 @@ const AddCasePage = () => {
                         </ul>
                       </div>
                     )}
-                    <p className="text-sm text-gray-500">Max file size: 50 MB. Allowed formats: PDF</p>
+                    <p className="text-sm text-gray-500">Max file size: 15 MB. Allowed formats: JPG, JPEG, PDF</p>
                   </div>
 
                   <div className="flex justify-center mt-6">
@@ -1090,33 +1088,6 @@ const AddCasePage = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="font-bold" htmlFor="updatePetitionName">
-                        Petition Name <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="updatePetitionName"
-                        name="petitionName"
-                        value={updateFormData.petitionName}
-                        onChange={handleUpdateChange}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-bold" htmlFor="updateFilingDate">
-                        Filing Date <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        icon={Calendar}
-                        id="updateFilingDate"
-                        name="filingDate"
-                        type="date"
-                        value={updateFormData.filingDate}
-                        onChange={handleUpdateChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
                       <Label className="font-bold" htmlFor="updateDistrictId">
                         District
                       </Label>
@@ -1143,103 +1114,25 @@ const AddCasePage = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="font-bold" htmlFor="updateCaseTypeId">
-                      Case Type
-                    </Label>
-                    <Input
-                      id="updateCaseTypeId"
-                      value={
-                        caseTypeList.find((ct) => ct.CasetypeId.toString() === updateFormData.caseTypeId)
-                          ?.CasetypeName || ""
-                      }
-                      readOnly
-                      className="bg-gray-50"
-                    />
-                  </div>
-
-                  {/* IPC Sections */}
-                  <div className="space-y-2 mt-2">
-                    <Label className="font-bold">
-                      IPC Sections <span className="text-red-500">*</span> (Max 5)
-                    </Label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {selectedIpcSections.map((section) => (
-                        <Badge key={section.bnsId} variant="secondary" className="flex items-center gap-1 py-2">
-                          {section.ipcSection}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-4 w-4 p-0 ml-1"
-                            onClick={() => removeIpcSection(section.bnsId)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </Badge>
-                      ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="font-bold" htmlFor="updateCaseTypeId">
+                        Case Type
+                      </Label>
+                      <Input
+                        id="updateCaseTypeId"
+                        value={
+                          caseTypeList.find((ct) => ct.CasetypeId.toString() === updateFormData.caseTypeId)
+                            ?.CasetypeName || ""
+                        }
+                        readOnly
+                        className="bg-gray-50"
+                      />
                     </div>
-                    <div className="flex gap-2">
-                      <Popover open={openIpcAct} onOpenChange={setOpenIpcAct}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={openIpcAct}
-                            className="w-full justify-between"
-                          >
-                            Select IPC Section
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0">
-                          <Command>
-                            <CommandInput placeholder="Search IPC section..." />
-                            <CommandList>
-                              <CommandEmpty>No IPC section found.</CommandEmpty>
-                              <CommandGroup>
-                                {ipcActList
-                                  .filter(
-                                    (ipc) => !selectedIpcSections.some((selected) => selected.bnsId === ipc.bnsId),
-                                  )
-                                  .map((ipc) => (
-                                    <CommandItem
-                                      key={ipc.bnsId}
-                                      onSelect={() => {
-                                        addIpcSection(ipc.bnsId.toString())
-                                        setOpenIpcAct(false)
-                                      }}
-                                    >
-                                      {ipc.ipcSection}
-                                    </CommandItem>
-                                  ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-
-                  {/* References */}
-                  <div className="space-y-2 mt-2">
-                    <Label className="font-bold">References (Max 5)</Label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {selectedReferences.map((ref, index) => (
-                        <Badge key={index} variant="secondary" className="flex items-center gap-1 py-2">
-                          {referenceList.find((r) => r.refferenceId.toString() === ref.crmID)?.refferenceName} -
-                          {ref.refferenceNumber} ({ref.refferenceyear})
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-4 w-4 p-0 ml-1"
-                            onClick={() => removeReference(index)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="w-full">
+                    <div className="space-y-2">
+                      <Label className="font-bold" htmlFor="updateRefNumber">
+                        Reference
+                      </Label>
                       <Popover open={openReference} onOpenChange={setOpenReference}>
                         <PopoverTrigger asChild>
                           <Button
@@ -1248,14 +1141,14 @@ const AddCasePage = () => {
                             aria-expanded={openReference}
                             className="w-full justify-between"
                           >
-                            {currentReference.crmID
-                              ? referenceList.find((ref) => ref.refferenceId.toString() === currentReference.crmID)
-                                ?.refferenceName
-                              : "Select Reference Type"}
+                            {updateFormData.refNumber
+                              ? referenceList.find((ref) => ref.refferenceId.toString() === updateFormData.refNumber)
+                                  ?.refferenceName
+                              : "Select Reference"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0 z-50" style={{ width: "300px" }}>
+                        <PopoverContent className="w-full p-0">
                           <Command>
                             <CommandInput placeholder="Search reference..." />
                             <CommandList>
@@ -1265,14 +1158,14 @@ const AddCasePage = () => {
                                   <CommandItem
                                     key={ref.refferenceId}
                                     onSelect={() => {
-                                      handleReferenceChange("crmID", ref.refferenceId.toString())
+                                      handleUpdateSelectChange("refNumber", ref.refferenceId.toString())
                                       setOpenReference(false)
                                     }}
                                   >
                                     <Check
                                       className={cn(
                                         "mr-2 h-4 w-4",
-                                        currentReference.crmID === ref.refferenceId.toString()
+                                        updateFormData.refNumber === ref.refferenceId.toString()
                                           ? "opacity-100"
                                           : "opacity-0",
                                       )}
@@ -1286,63 +1179,142 @@ const AddCasePage = () => {
                         </PopoverContent>
                       </Popover>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <Input
-                        placeholder="Reference Number"
-                        value={currentReference.refferenceNumber}
-                        onChange={(e) => handleReferenceChange("refferenceNumber", e.target.value)}
-                      />
-                      <Popover open={openYear} onOpenChange={setOpenYear}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={openYear}
-                            className="w-full justify-between"
-                          >
-                            {currentReference.refferenceyear || "Select Year"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0">
-                          <Command>
-                            <CommandInput placeholder="Search year..." />
-                            <CommandList>
-                              <CommandEmpty>No year found.</CommandEmpty>
-                              <CommandGroup>
-                                {years.map((year) => (
-                                  <CommandItem
-                                    key={year}
-                                    onSelect={() => {
-                                      handleReferenceChange("refferenceyear", year)
-                                      setOpenYear(false)
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        currentReference.refferenceyear === year ? "opacity-100" : "opacity-0",
-                                      )}
-                                    />
-                                    {year}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="font-bold" htmlFor="updatePreference">
+                        Choose your Preference <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <div
+                          className={`relative w-20 h-8 rounded-full flex items-center cursor-pointer transition-all 
+                          ${useIpcAct ? "bg-blue-600" : "bg-green-600"}`}
+                          onClick={() => {
+                            setUseIpcAct((prev) => !prev)
+                            setUpdateFormData((prev) => ({
+                              ...prev,
+                              ipcAct: "",
+                              bnsNumber: "",
+                            }))
+                            setUpdateSelectedValues({ ipcAct: "", bnsNumber: "" })
+                          }}
+                        >
+                          <span className="absolute w-full text-xs font-bold text-white flex justify-center transition-all">
+                            {useIpcAct ? "IPC  --" : "--   BNS"}
+                          </span>
+                          <div
+                            className={`absolute w-7 h-7 bg-white rounded-full shadow-md transform transition-all 
+                            ${useIpcAct ? "translate-x-12" : "translate-x-1"}`}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-end">
-                      <Button type="button" size="sm" onClick={addReference} className="mt-2">
-                        <Plus className="h-4 w-4 mr-1" /> Add Reference
-                      </Button>
+
+                    <div className="space-y-2">
+                      {useIpcAct ? (
+                        <div className="space-y-2">
+                          <Label className="font-bold" htmlFor="updateIpcAct">
+                            IPC Act <span className="text-red-500">*</span>
+                          </Label>
+                          <Popover open={openIpcAct} onOpenChange={setOpenIpcAct}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={openIpcAct}
+                                className="w-full justify-between"
+                              >
+                                {updateFormData.ipcAct || "Select IPC Act"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0">
+                              <Command>
+                                <CommandInput placeholder="Search IPC Act..." />
+                                <CommandList>
+                                  <CommandEmpty>No IPC Act found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {ipcActList.map((ipc) => (
+                                      <CommandItem
+                                        key={ipc.bnsId}
+                                        onSelect={() => {
+                                          handleUpdateSelectChange("ipcAct", ipc.bnsId.toString())
+                                          setOpenIpcAct(false)
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            updateSelectedValues.ipcAct === ipc.bnsId.toString()
+                                              ? "opacity-100"
+                                              : "opacity-0",
+                                          )}
+                                        />
+                                        {ipc.ipcSection}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Label className="font-bold" htmlFor="updateBnsNumber">
+                            BNS Section <span className="text-red-500">*</span>
+                          </Label>
+                          <Popover open={openBnsSection} onOpenChange={setOpenBnsSection}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={openBnsSection}
+                                className="w-full justify-between"
+                              >
+                                {updateFormData.bnsNumber || "Select BNS Section"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0">
+                              <Command>
+                                <CommandInput placeholder="Search BNS Section..." />
+                                <CommandList>
+                                  <CommandEmpty>No BNS Section found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {bnsSectionList.map((bns) => (
+                                      <CommandItem
+                                        key={bns.bnsId}
+                                        onSelect={() => {
+                                          handleUpdateSelectChange("bnsNumber", bns.bnsId.toString())
+                                          setOpenBnsSection(false)
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            updateSelectedValues.bnsNumber === bns.bnsId.toString()
+                                              ? "opacity-100"
+                                              : "opacity-0",
+                                          )}
+                                        />
+                                        {bns.bnsSection}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="space-y-2 mt-2">
                     <Label>Upload Additional Documents</Label>
-                    <Input type="file" multiple onChange={handleFileChange} accept=".pdf" />
+                    <Input type="file" multiple onChange={handleFileChange} accept=".jpg,.jpeg,.pdf" />
 
                     {documents.length > 0 && (
                       <div className="mt-3">
@@ -1370,7 +1342,7 @@ const AddCasePage = () => {
                         </ul>
                       </div>
                     )}
-                    <p className="text-sm text-gray-500">Max file size: 50 MB. Allowed formats: PDF</p>
+                    <p className="text-sm text-gray-500">Max file size: 15 MB. Allowed formats: JPG, JPEG, PDF</p>
                   </div>
 
                   <div className="flex justify-center mt-6">

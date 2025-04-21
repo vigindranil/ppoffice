@@ -172,20 +172,20 @@ export default function CaseTable({ps}) {
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-100">
+          <TableHead className="font-bold">Case Date</TableHead>
             <TableHead className="font-bold">PP User Name</TableHead>
             <TableHead className="font-bold">Case Number</TableHead>
             <TableHead className="font-bold">PS Name</TableHead>
-            <TableHead className="font-bold">Case Date</TableHead>
             <TableHead className="font-bold">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {currentCases.map((caseItem, index) => (
             <TableRow key={index}>
+              <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
               <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell>
               <TableCell>{caseItem.CaseNumber}</TableCell>
               <TableCell>{caseItem.PsName}</TableCell>
-              <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
               <TableCell>
                 <Dialog open={isCaseSelected} onOpenChange={setIsCaseSelected}>
                   <DialogTrigger asChild>
@@ -213,11 +213,11 @@ export default function CaseTable({ps}) {
                         {selectedCase && (
                           <>
                             <div className="space-y-2">
+                              <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
                               <p><strong>PP User Name:</strong> {selectedCase.PPuserName || 'Not Assigned' }</p>
                               <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
                               <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
                               <p><strong>PS Name:</strong> {selectedCase.PsName}</p>
-                              <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
                               <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
                               <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
                               <p><strong>IPC Section:</strong> {selectedCase.IPCSection}</p>

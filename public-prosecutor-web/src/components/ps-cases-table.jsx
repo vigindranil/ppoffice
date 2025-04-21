@@ -218,10 +218,10 @@ export default function CaseTable() {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-slate-100">
+                        <TableHead className="font-bold">Case Date</TableHead>
                         <TableHead className="font-bold">Case Number</TableHead>
                         <TableHead className="font-bold">PS Name</TableHead>
                         <TableHead className="font-bold">Reference</TableHead>
-                        <TableHead className="font-bold">Case Date</TableHead>
                         <TableHead className="font-bold">More Details</TableHead>
                         <TableHead className="font-bold">Case Resources</TableHead>
                         <TableHead className="font-bold">Hearing Summaries</TableHead>
@@ -231,6 +231,7 @@ export default function CaseTable() {
                       {currentCases.map((caseItem, index) => (
                         <TableRow key={index}>
                           {/* <TableCell>{caseItem.PPuserName || 'Not Assigned'}</TableCell> */}
+                          <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
                           <TableCell>{caseItem.CaseNumber}</TableCell>
                           <TableCell>{caseItem.PsName}</TableCell>
                           <TableCell>
@@ -260,7 +261,6 @@ export default function CaseTable() {
                               <span>No references</span>
                             )}
                           </TableCell>
-                          <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
                           <TableCell>
                             <Dialog open={isCaseSelected} onOpenChange={setIsCaseSelected}>
                               <DialogTrigger asChild>
@@ -288,6 +288,9 @@ export default function CaseTable() {
                                       <>
                                         <div className="space-y-2">
                                           <p>
+                                            <strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}
+                                          </p>
+                                          <p>
                                             <strong>Case Number:</strong> {selectedCase.CaseNumber}
                                           </p>
                                           <p>
@@ -295,9 +298,6 @@ export default function CaseTable() {
                                           </p>
                                           <p>
                                             <strong>PS Name:</strong> {selectedCase.PsName}
-                                          </p>
-                                          <p>
-                                            <strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}
                                           </p>
                                           <p>
                                             <strong>Case Type:</strong> {selectedCase.CaseType}

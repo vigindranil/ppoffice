@@ -22,6 +22,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
   const [progressModalOpen, setProgressModalOpen] = useState(false)
   const [progressSteps, setProgressSteps] = useState([])
   const [isProcessComplete, setIsProcessComplete] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
 
   const [formData, setFormData] = useState({
     EntryUserID: "",
@@ -44,6 +45,10 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
       ),
     )
   }
+
+  const filteredDocuments = documents?.filter((doc) =>
+    doc.AdvocateName.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const handleAssign = async (doc) => {
     try {
@@ -92,13 +97,13 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
         if (assignedAdvResponse?.data?.length > 0) {
           let allEmailsSent = true
 
-          for (const adv of assignedAdvResponse.data) {
+          for (const adv of assignedAdvResponse.data.filter(a => a.advocateId !== doc.AdvocateId)) {
             try {
               const advEmailRes = await postRequest("send-email-pp", {
                 CaseID: identity,
                 PPuserID: adv.advocateId,
               })
-
+          
               if (!advEmailRes) {
                 allEmailsSent = false
                 console.log(`Failed to send email to advocate ${adv.advocateName}`)
@@ -259,6 +264,15 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
       <Card className="m-5">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
+            <div className="flex justify-end px-4 pt-4 pb-4">
+              <input
+                type="text"
+                placeholder="Search advocate..."
+                className="border border-gray-300 rounded px-3 py-1 text-sm w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-100 hover:bg-slate-100">
@@ -274,7 +288,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
                     </TableCell>
                   </TableRow>
                 ) : documents?.length > 0 ? (
-                  documents.map((doc, index) => (
+                  filteredDocuments.map((doc, index) => (
                     <TableRow key={index}>
                       <TableCell>{doc.AdvocateName}</TableCell>
                       <TableCell>

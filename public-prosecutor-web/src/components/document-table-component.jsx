@@ -91,12 +91,12 @@ const DocumentTable = ({ documents, isLoadingDocumentTable, identity }) => {
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     const validFiles = files.filter(file => {
-      if (file.size > 15000 * 1024) {
-        openAlert("error", `${file.name} exceeds 15 MB.`);
+      if (file.size > 50000 * 1024) {
+        openAlert("error", `${file.name} exceeds 50 MB.`);
         return false;
       }
-      if (!["image/jpeg", "image/jpg", "application/pdf"].includes(file.type)) {
-        openAlert("error", `${file.name} is not a valid format (JPG, JPEG, PDF only).`);
+      if (!["application/pdf"].includes(file.type)) {
+        openAlert("error", `${file.name} is not a valid format (PDF only).`);
         return false;
       }
       return true;
@@ -226,7 +226,7 @@ const DocumentTable = ({ documents, isLoadingDocumentTable, identity }) => {
                     </ul>
                   </div>
                 )}
-                <p className="text-sm text-gray-500">Max file size: 15 MB. Allowed formats: JPG, JPEG, PDF</p>
+                <p className="text-sm text-gray-500">Max file size: 50 MB. Allowed formats: PDF</p>
               </div>
             </div>
             <Button onClick={handleAddDoc} className="max-w-min bg-blue-500 mx-auto my-5 mt-5" disabled={isLoading}>

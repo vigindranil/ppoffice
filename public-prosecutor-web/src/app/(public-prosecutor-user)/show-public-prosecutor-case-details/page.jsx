@@ -127,10 +127,10 @@ const PPAllCaseList = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="font-bold">Case Date</TableHead>
                       <TableHead className="font-bold">Case Number</TableHead>
                       <TableHead className="font-bold">Dept./Dist. Name</TableHead>
                       <TableHead className="font-bold">PS Name</TableHead>
-                      <TableHead className="font-bold">Case Date</TableHead>
                       <TableHead className="font-bold">Case Type</TableHead>
                       <TableHead className="font-bold">Case Hearing Date</TableHead>
                       <TableHead className="font-bold">IPC Section</TableHead>
@@ -140,10 +140,10 @@ const PPAllCaseList = () => {
                   <TableBody>
                     {currentAllCaseList?.map((head, index) => (
                       <TableRow key={index}>
+                        <TableCell>{formatDate(head.CaseDate)}</TableCell>
                         <TableCell>{head.CaseNumber}</TableCell>
                         <TableCell>{head.SpName}</TableCell>
                         <TableCell>{head.PsName}</TableCell>
-                        <TableCell>{formatDate(head.CaseDate)}</TableCell>
                         <TableCell>{head.CaseType}</TableCell>
                         <TableCell>{formatDate(head.CaseHearingDate)}</TableCell>
                         <TableCell>{head.ipcSections && head.ipcSections.length > 0

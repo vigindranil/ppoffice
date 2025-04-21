@@ -10,6 +10,17 @@ import { postRequest } from "@/app/commonAPI"
 import { ProgressModal } from "./progress-modal"
 import { useSelector } from "react-redux"
 import { decrypt } from "@/utils/crypto"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command"
+import { ChevronsUpDown, Check } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 const UnassignedDeptTable = ({ identity }) => {
   const [user, setUser] = useState(null)
@@ -311,40 +322,98 @@ const UnassignedDeptTable = ({ identity }) => {
               <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">
                 Select District
               </label>
-              <select
-                id="district"
-                value={selectedDistrict}
-                onChange={handleDistrictChange}
-                disabled={isLoading}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              >
-                <option value="">Select a district</option>
-                {districts.map((district) => (
-                  <option key={district.districtId} value={district.districtId}>
-                    {district.districtName}
-                  </option>
-                ))}
-              </select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between"
+                    disabled={isLoading}
+                  >
+                    {selectedDistrict
+                      ? districts.find((d) => d.districtId.toString() === selectedDistrict)?.districtName
+                      : "Select a district"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Search district..." />
+                    <CommandList>
+                      <CommandEmpty>No district found.</CommandEmpty>
+                      <CommandGroup>
+                        {districts.map((district) => (
+                          <CommandItem
+                            key={district.districtId}
+                            onSelect={() => {
+                              setSelectedDistrict(district.districtId.toString())
+                              setSelectedPoliceStation("")
+                              fetchPoliceStations(district.districtId)
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedDistrict === district.districtId.toString()
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {district.districtName}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div>
               <label htmlFor="policeStation" className="block text-sm font-medium text-gray-700 mb-1">
                 Select Police Station
               </label>
-              <select
-                id="policeStation"
-                value={selectedPoliceStation}
-                onChange={handlePoliceStationChange}
-                disabled={!selectedDistrict || isLoading}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              >
-                <option value="">Select a police station</option>
-                {policeStations.map((station) => (
-                  <option key={station.policeStationId} value={station.policeStationId}>
-                    {station.policeStationName}
-                  </option>
-                ))}
-              </select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between"
+                    disabled={!selectedDistrict || isLoading}
+                  >
+                    {selectedPoliceStation
+                      ? policeStations.find((p) => p.policeStationId.toString() === selectedPoliceStation)?.policeStationName
+                      : "Select a police station"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Search police station..." />
+                    <CommandList>
+                      <CommandEmpty>No station found.</CommandEmpty>
+                      <CommandGroup>
+                        {policeStations.map((station) => (
+                          <CommandItem
+                            key={station.policeStationId}
+                            onSelect={() => setSelectedPoliceStation(station.policeStationId.toString())}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedPoliceStation === station.policeStationId.toString()
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {station.policeStationName}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <Button

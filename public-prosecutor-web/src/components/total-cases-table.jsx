@@ -200,10 +200,10 @@ export default function CaseTable() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-slate-100">
+                      <TableHead className="font-bold">Case Date</TableHead>
                       <TableHead className="font-bold">Case Number</TableHead>
                       <TableHead className="font-bold">PS Name</TableHead>
                       <TableHead className="font-bold">Reference</TableHead>
-                      <TableHead className="font-bold">Case Date</TableHead>
                       <TableHead className="font-bold">Case Status</TableHead>
                       <TableHead className="font-bold">View</TableHead>
                       <TableHead className="font-bold">Actions</TableHead>
@@ -212,6 +212,7 @@ export default function CaseTable() {
                   <TableBody>
                     {currentCases.map((caseItem, index) => (
                       <TableRow key={index}>
+                        <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
                         <TableCell>{caseItem.CaseNumber}</TableCell>
                         <TableCell>{caseItem.PsName}</TableCell>
                         <TableCell>
@@ -241,7 +242,6 @@ export default function CaseTable() {
                             <span>No references</span>
                           )}
                         </TableCell>
-                        <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
                         <TableCell>{caseItem.IsAssigned ? <Badge className='bg-emerald-400'>Assigned</Badge> : <Badge className='bg-orange-300'>Pending</Badge>}</TableCell>
                         <TableCell>
                           <Dialog open={isCaseSelected} onOpenChange={setIsCaseSelected}>
@@ -268,10 +268,10 @@ export default function CaseTable() {
                                   {selectedCase && (
                                     <>
                                       <div className="space-y-2">
+                                      <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
                                         <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
                                         <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
                                         <p><strong>PS Name:</strong> {selectedCase.PsName}</p>
-                                        <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
                                         <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
                                         <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
                                         <p>

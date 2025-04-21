@@ -127,13 +127,13 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0]
     if (file) {
-      if (file.size > 15000 * 1024) {
+      if (file.size > 50000 * 1024) {
         // 15 MB in bytes
-        openAlert("error", "File size should not exceed 15 MB")
+        openAlert("error", "File size should not exceed 50 MB")
         return
       }
-      if (!["image/jpeg", "image/jpg", "application/pdf"].includes(file.type)) {
-        openAlert("error", "Only JPG, JPEG, or PDF files are allowed")
+      if (!["application/pdf"].includes(file.type)) {
+        openAlert("error", "Only PDF files are allowed")
         return
       }
       setFormData((prevState) => ({
@@ -333,10 +333,10 @@ const AddHearingPage = ({ onBack, caseDetails }) => {
                     id="caseuploadDocumentPath"
                     name="caseuploadDocumentPath"
                     type="file"
-                    accept=".jpg,.jpeg,.pdf"
+                    accept=".pdf"
                     onChange={handleFileChange}
                   />
-                  <p className="text-sm text-gray-500">Max file size: 15 MB. Allowed formats: JPG, JPEG, PDF</p>
+                  <p className="text-sm text-gray-500">Max file size: 50 MB. Allowed formats: PDF</p>
                 </div>
                 <div className="flex-1 space-y-2">
                   <Label className="font-bold" htmlFor="nexthearingDate">Next Hearing Date</Label>
