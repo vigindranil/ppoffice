@@ -14,8 +14,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useDispatch, useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
 import { Input } from '@/components/ui/input'
+import { useRouter } from "next/navigation"
+import { Button } from '@/components/ui/button'
 
 const PPAllCaseList = () => {
+  const router = useRouter()
   const [allCaseList, setAllCaseList] = useState([])
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -53,26 +56,26 @@ const PPAllCaseList = () => {
 
   const filteredData = allCaseList?.filter((data) => {
     const lowerSearch = searchTerm.toLowerCase();
-  
+
     const matchesCaseFields = Object?.values(data)?.some((value) =>
       value?.toString()?.toLowerCase()?.includes(lowerSearch)
     );
-  
+
     const matchesReferences = data.references?.some(ref =>
       `${ref.RefferenceNumber} ${ref.CrmName} ${ref.RefferenceYear}`
         .toLowerCase()
         .includes(lowerSearch)
     );
-  
+
     const matchesIPC = data.ipcSections?.some(ipc =>
       `${ipc.IpcSection} ${ipc.BnsSection} ${ipc.BnsId}`
         .toLowerCase()
         .includes(lowerSearch)
     );
-  
+
     return matchesCaseFields || matchesReferences || matchesIPC;
   });
-  
+
 
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
@@ -99,9 +102,9 @@ const PPAllCaseList = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
       <main className="relative flex-1 p-6 w-full min-h-screen">
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4">
-        <CardHeader className="mb-5 bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3">
-  <CardTitle className="text-white text-xl">All Case List</CardTitle>
-</CardHeader>
+          <CardHeader className="mb-5 bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3">
+            <CardTitle className="text-white text-xl">All Case List</CardTitle>
+          </CardHeader>
           <CardContent>
             {isLoading ? (
               <p className="text-center">Loading...</p>
@@ -135,6 +138,7 @@ const PPAllCaseList = () => {
                       <TableHead className="font-bold">Case Hearing Date</TableHead>
                       <TableHead className="font-bold">IPC Section</TableHead>
                       <TableHead className="font-bold">Reference</TableHead>
+                      <TableHead className="font-bold">Case Resources</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -175,6 +179,18 @@ const PPAllCaseList = () => {
                           ) : (
                             <span>No references</span>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            className="bg-green-100 hover:bg-green-200 text-sm text-green-600"
+                            onClick={() => {
+                              const enc_caseId = btoa(head.CaseId)
+                              router.push(`/adv-case-library/${enc_caseId}`)
+                            }}
+                          >
+                            <ClipboardPlus className="h-4 w-4 mr-2" />
+                            View
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
