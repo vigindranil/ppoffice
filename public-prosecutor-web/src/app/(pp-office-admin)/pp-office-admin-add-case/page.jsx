@@ -75,6 +75,7 @@ const AddCasePage = () => {
     filingDate: "",
     petitionName: "",
     hearingDate: "",
+    CourtCaseDescription: "",
   })
 
   // Form data for updating existing case
@@ -374,6 +375,7 @@ const AddCasePage = () => {
         { field: "hearingDate", label: "Hearing Date" },
         { field: "filingDate", label: "Filing Date" },
         { field: "petitionName", label: "Petition Name" },
+        { field: "CourtCaseDescription", label: "Court Case Description" },
       ]
 
       const missingFields = requiredFields.filter(({ field }) => !addFormData[field])
@@ -414,6 +416,7 @@ const AddCasePage = () => {
         filingDate: new Date().toISOString().split("T")[0],
         petitionName: "",
         hearingDate: "",
+        CourtCaseDescription: "",
       })
 
       setSelectedIpcSections([])
@@ -749,6 +752,29 @@ const AddCasePage = () => {
                         min={addFormData.CaseDate || undefined}
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="font-bold" htmlFor="CourtCaseDescription">
+                      Court Case Description <span className="text-red-500">*</span> (Max 50 words)
+                    </Label>
+                    <textarea
+                      id="CourtCaseDescription"
+                      name="CourtCaseDescription"
+                      rows={4}
+                      value={addFormData.CourtCaseDescription}
+                      onChange={(e) => {
+                        const wordCount = e.target.value.trim().split(/\s+/).length
+                        if (wordCount <= 50) {
+                          setAddFormData({ ...addFormData, CourtCaseDescription: e.target.value })
+                        }
+                      }}
+                      placeholder="Enter a brief summary of the case (max 50 words)"
+                      className="w-full border rounded-md px-3 py-2 text-sm"
+                    />
+                    <p className="text-xs text-gray-500">
+                      {addFormData.CourtCaseDescription.trim().split(/\s+/).filter(Boolean).length} / 50 words
+                    </p>
                   </div>
 
                   {/* IPC/BNS Sections */}

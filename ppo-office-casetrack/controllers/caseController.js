@@ -222,7 +222,8 @@ class CaseController {
                     "caseTypeId",
                     "filingDate",
                     "petitionName",
-                    "hearingDate"
+                    "hearingDate",
+                    "CourtCaseDescription"
                 ]);
             } catch (error) {
                 return res.status(400).json({ status: 1, message: `${error.message}. ErrorCode: ERR_03` });
@@ -239,12 +240,13 @@ class CaseController {
                 filingDate,
                 petitionName,
                 hearingDate,
+                CourtCaseDescription,
                 refferences = [],
                 ipcSections = []
             } = req.body;
 
             // ✅ Call sp_Createcase to save the case and get CaseID
-            const caseQuery = "CALL sp_Createcase(?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
+            const caseQuery = "CALL sp_Createcase(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
             const caseParams = [
                 CaseNumber,
                 CaseDate,
@@ -254,6 +256,7 @@ class CaseController {
                 filingDate,
                 petitionName,
                 hearingDate,
+                CourtCaseDescription,
                 EntryUserID
             ];
 
