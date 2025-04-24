@@ -6,8 +6,8 @@ class PPuserController {
     const { Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber } = req.body;
 
     // Validate the required input fields
-    if (!Username || !UserPassword || !FullName || !ContractNo || !Email || !LicenseNumber) {
-      return ResponseHelper.error(res, "Username, UserPassword, EntryUserID, FullName, ContractNo, Email, LicenseNumber are required");
+    if (!Username || !UserPassword || !FullName || !ContractNo || !Email ) {
+      return ResponseHelper.error(res, "Some fields are missing!");
     }
 
     try {

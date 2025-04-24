@@ -11,33 +11,265 @@ import { postRequest } from "@/app/commonAPI"
 import { ProgressModal } from "./progress-modal"
 import { useSelector } from "react-redux"
 import { decrypt } from "@/utils/crypto"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import { addPPUser } from '@/app/api'
+import { isValidIndianPhoneNumber, isValidEmail } from '@/utils/validation'
+import { Eye, EyeOff } from 'lucide-react';
+
+const AddAdvocateModal = ({
+  isOpen,
+  onOpenChange,
+  formData,
+  formErrors,
+  handleChange,
+  handleSubmit,
+  isLoading,
+  showPassword,
+  setShowPassword
+}) => (
+  <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px] bg-white">
+          <DialogHeader>
+              <DialogTitle>Add New Advocate</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+               {/* Row 1: Full Name & Contact Number */}
+               <div className="flex space-x-4">
+                   <div className="flex-1 space-y-1">
+                       <Label className="font-bold text-sm" htmlFor="modalFullName">Full Name</Label>
+                       <Input
+                           id="modalFullName"
+                           name="FullName"
+                           placeholder="Enter full name"
+                           value={formData.FullName}
+                           onChange={handleChange}
+                           required
+                           maxLength={30}
+                           className="text-sm"
+                       />
+                       {formErrors.FullName && <p className="text-xs text-red-500">{formErrors.FullName}</p>}
+                   </div>
+                   <div className="flex-1 space-y-1">
+                       <Label className="font-bold text-sm" htmlFor="modalContractNo">Contact Number</Label>
+                       <Input
+                           id="modalContractNo"
+                           name="ContractNo"
+                           type="tel"
+                           placeholder="Enter contact number"
+                           value={formData.ContractNo}
+                           onChange={handleChange}
+                           required
+                           maxLength={10}
+                           className={`text-sm ${formErrors.ContractNo ? 'border-red-500' : ''}`}
+                       />
+                       {formErrors.ContractNo && <p className="text-xs text-red-500">{formErrors.ContractNo}</p>}
+                   </div>
+               </div>
+
+              {/* Row 2: Username & Password */}
+               <div className="flex space-x-4">
+                   <div className="flex-1 space-y-1">
+                      <Label className="font-bold text-sm" htmlFor="modalUsername">Username</Label>
+                      <Input
+                          id="modalUsername"
+                          name="Username"
+                          placeholder="Enter username"
+                          value={formData.Username}
+                          onChange={handleChange}
+                          required
+                           className="text-sm"
+                      />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                       <Label className="font-bold text-sm" htmlFor="modalUserPassword">Password</Label>
+                       <div className="relative">
+                          <Input
+                              id="modalUserPassword"
+                              name="UserPassword"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Enter password"
+                              value={formData.UserPassword}
+                              onChange={handleChange}
+                              required
+                              className="text-sm"
+                           />
+                           <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-0 h-full px-3 py-1 hover:bg-transparent"
+                              // Use onMouseDown/Up/Leave to toggle showPassword via the passed setter
+                              onMouseDown={() => setShowPassword(true)}
+                              onMouseUp={() => setShowPassword(false)}
+                              onMouseLeave={() => setShowPassword(false)}
+                          >
+                               {showPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                              ) : (
+                                  <Eye className="h-4 w-4" />
+                              )}
+                           </Button>
+                       </div>
+                   </div>
+               </div>
+
+               {/* Row 3: Email & License Number */}
+               <div className="flex space-x-4">
+                   <div className="flex-1 space-y-1">
+                       <Label className="font-bold text-sm" htmlFor="modalEmail">Email</Label>
+                       <Input
+                           id="modalEmail"
+                           name="Email"
+                           type="email"
+                           placeholder="Enter e-mail address"
+                           value={formData.Email}
+                           onChange={handleChange}
+                           required
+                           className={`text-sm ${formErrors.Email ? 'border-red-500' : ''}`}
+                       />
+                       {formErrors.Email && <p className="text-xs text-red-500">{formErrors.Email}</p>}
+                   </div>
+                  <div className="flex-1 space-y-1">
+                       <Label className="font-bold text-sm" htmlFor="modalLicenseNumber">License Number</Label>
+                       <Input
+                           id="modalLicenseNumber"
+                           name="LicenseNumber"
+                           placeholder="Enter license number"
+                           value={formData.LicenseNumber}
+                           onChange={handleChange}
+                           required // Assuming license is required, adjust if not
+                           className="text-sm"
+                       />
+                   </div>
+               </div>
+          </div>
+          <DialogFooter>
+              <DialogClose asChild>
+                  <Button type="button" variant="outline" disabled={isLoading}>Cancel</Button>
+              </DialogClose>
+              <Button onClick={handleSubmit} disabled={isLoading || Object.values(formErrors).some(error => error !== '')}>
+                  {isLoading ? 'Adding...' : 'Add Advocate'}
+              </Button>
+          </DialogFooter>
+      </DialogContent>
+  </Dialog>
+);
 
 const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
-  const [user, setUser] = useState(null)
-  const encryptedUser = useSelector((state) => state.auth.user)
-  const token = useSelector((state) => state.auth.token)
-  const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
-  const { toast } = useToast()
-  const [isAssigning, setIsAssigning] = useState(false)
-  const [progressModalOpen, setProgressModalOpen] = useState(false)
-  const [progressSteps, setProgressSteps] = useState([])
-  const [isProcessComplete, setIsProcessComplete] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [user, setUser] = useState(null);
+  const encryptedUser = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
+  const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog();
+  const { toast } = useToast();
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [progressModalOpen, setProgressModalOpen] = useState(false);
+  const [progressSteps, setProgressSteps] = useState([]);
+  const [isProcessComplete, setIsProcessComplete] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [formData, setFormData] = useState({
-    EntryUserID: "",
-  })
+  // State specifically for the Add Advocate Modal
+  const [isAddAdvocateModalOpen, setIsAddAdvocateModalOpen] = useState(false);
+  const [isAddingAdvocate, setIsAddingAdvocate] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Keep password visibility state here
+  const [newAdvocateFormData, setNewAdvocateFormData] = useState({
+      Username: '', UserPassword: '', EntryUserID: '',
+      FullName: '', ContractNo: '', Email: '', LicenseNumber: ''
+  });
+  const [newAdvocateFormErrors, setNewAdvocateFormErrors] = useState({
+      FullName: '', ContractNo: '', Email: '',
+  });
+
+  // State for assigning cases (original functionality)
+  const [formData, setFormData] = useState({ EntryUserID: "" });
 
   useEffect(() => {
-    const decoded_user = JSON.parse(decrypt(encryptedUser))
-    setUser(decoded_user)
-    setFormData((prevState) => ({
-      ...prevState,
-      EntryUserID: decoded_user.AuthorityUserID,
-    }))
-  }, [encryptedUser])
+          if (encryptedUser) {
+              try {
+                  const decoded_user = JSON.parse(decrypt(encryptedUser));
+                  setUser(decoded_user);
+                  // Set EntryUserID for BOTH forms
+                  setFormData((prevState) => ({ ...prevState, EntryUserID: decoded_user.AuthorityUserID }));
+                  setNewAdvocateFormData(prevState => ({ ...prevState, EntryUserID: decoded_user.AuthorityUserID }));
+              } catch (error) {
+                  console.error("Failed to decode user:", error);
+              }
+          }
+      }, [encryptedUser]);
 
-  // Helper function to update a specific step's status
+      const handleNewAdvocateChange = (e) => {
+        const { name, value } = e.target;
+        setNewAdvocateFormData(prevState => ({ ...prevState, [name]: value }));
+        if (newAdvocateFormErrors[name]) {
+            setNewAdvocateFormErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
+        }
+    };
+
+    const validateNewAdvocateForm = () => {
+     const errors = { FullName: '', ContractNo: '', Email: '' };
+     let isValid = true;
+
+     if (!newAdvocateFormData.FullName.trim()) {
+         errors.FullName = 'Full Name is required';
+         isValid = false;
+     }
+     if (!newAdvocateFormData.Username.trim()) {
+         errors.Username = 'Username is required';
+         isValid = false;
+     }
+     if (!newAdvocateFormData.UserPassword.trim()) {
+          errors.Password = 'Password is required';
+          isValid = false;
+     }
+     if (!newAdvocateFormData.ContractNo.trim()) {
+         errors.ContractNo = 'Contact Number is required';
+         isValid = false;
+     } else if (!isValidIndianPhoneNumber(newAdvocateFormData.ContractNo)) {
+         errors.ContractNo = 'Invalid Indian phone number';
+         isValid = false;
+     }
+     if (!newAdvocateFormData.Email.trim()) {
+         errors.Email = 'Email is required';
+         isValid = false;
+     } else if (!isValidEmail(newAdvocateFormData.Email)) {
+         errors.Email = 'Invalid email address';
+         isValid = false;
+     }
+     // Add check for LicenseNumber if required
+      // if (!newAdvocateFormData.LicenseNumber.trim()) {
+      //     errors.LicenseNumber = 'License Number is required';
+      //     isValid = false;
+      // }
+
+     setNewAdvocateFormErrors(errors);
+     return isValid;
+  };
+
+  const handleAddAdvocateSubmit = async () => {
+          if (!validateNewAdvocateForm()) {
+              return;
+          }
+          setIsAddingAdvocate(true);
+          try {
+              // Ensure EntryUserID is set correctly before API call
+              const payload = { ...newAdvocateFormData, EntryUserID: user.AuthorityUserID };
+              const result = await addPPUser(payload);
+              setIsAddingAdvocate(false);
+              setIsAddAdvocateModalOpen(false);
+              setNewAdvocateFormData({ // Reset form
+                  Username: '', UserPassword: '', EntryUserID: user.AuthorityUserID,
+                  FullName: '', ContractNo: '', Email: '', LicenseNumber: ''
+              });
+              setNewAdvocateFormErrors({ FullName: '', ContractNo: '', Email: '' });
+              openAlert('success', 'Advocate added successfully!');
+          } catch (err) {
+              setIsAddingAdvocate(false);
+              console.error("Error adding advocate:", err);
+              openAlert('error', err?.message || err || "Failed to add advocate. Please try again.");
+          }
+      };
+
   const updateStepStatus = (stepId, status, errorMessage) => {
     setProgressSteps((currentSteps) =>
       currentSteps.map((step) =>
@@ -48,7 +280,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
 
   const filteredDocuments = documents?.filter((doc) =>
     doc.AdvocateName.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  ) || [];
 
   const handleAssign = async (doc) => {
     try {
@@ -103,7 +335,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
                 CaseID: identity,
                 PPuserID: adv.advocateId,
               })
-          
+
               if (!advEmailRes) {
                 allEmailsSent = false
                 console.log(`Failed to send email to advocate ${adv.advocateName}`)
@@ -236,9 +468,19 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
   }
 
   const handleConfirm = () => {
-    closeAlert()
-    window.location.reload()
-  }
+    // (Keep existing logic with delay for advocate add)
+    const shouldReloadAfterAdd = alertType === 'success' && alertMessage === 'Advocate added successfully!';
+    const shouldReloadAfterAssign = alertType === 'success' || alertType === 'info'; // Reload on assignment success/info
+
+    closeAlert();
+
+    if (shouldReloadAfterAdd) {
+         setTimeout(() => { window.location.reload(); }, 1000); // 1 sec delay
+    } else if (shouldReloadAfterAssign) {
+        window.location.reload(); // Immediate reload for assignment
+    }
+    // No reload for other alert types (e.g., errors) unless explicitly needed
+};
 
   const closeProgressModal = () => {
     setProgressModalOpen(false)
@@ -261,10 +503,30 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
         title="Assigning Advocate"
         isComplete={isProcessComplete}
       />
+      <AddAdvocateModal
+                isOpen={isAddAdvocateModalOpen}
+                onOpenChange={setIsAddAdvocateModalOpen}
+                formData={newAdvocateFormData}
+                formErrors={newAdvocateFormErrors}
+                handleChange={handleNewAdvocateChange}
+                handleSubmit={handleAddAdvocateSubmit}
+                isLoading={isAddingAdvocate}
+                showPassword={showPassword}        // Pass showPassword state
+                setShowPassword={setShowPassword}  // Pass its setter
+            />
       <Card className="m-5">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <div className="flex justify-end px-4 pt-4 pb-4">
+            <div className="flex justify-between items-center px-4 pt-4 pb-4 gap-4">
+              <Button
+                variant="outline"
+                className="text-sm"
+                onClick={() => setIsAddAdvocateModalOpen(true)}
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Advocate
+              </Button>
+              {/* Search Input */}
               <input
                 type="text"
                 placeholder="Search advocate..."
@@ -283,11 +545,9 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
               <TableBody>
                 {isLoadingDocumentTable ? (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center">
-                      Loading...
-                    </TableCell>
+                    <TableCell colSpan={2} className="text-center">Loading...</TableCell>
                   </TableRow>
-                ) : documents?.length > 0 ? (
+                ) : filteredDocuments.length > 0 ? (
                   filteredDocuments.map((doc, index) => (
                     <TableRow key={index}>
                       <TableCell>{doc.AdvocateName}</TableCell>
@@ -303,6 +563,18 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
                       </TableCell>
                     </TableRow>
                   ))
+                ) : searchTerm && !isLoadingDocumentTable ? (
+                  <TableRow>
+                    <TableCell colSpan={2}>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-left text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsAddAdvocateModalOpen(true)}
+                      >
+                        Other...
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   <TableRow>
                     <TableCell colSpan={2} className="text-center">
@@ -310,6 +582,19 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
                     </TableCell>
                   </TableRow>
                 )}
+                {/* {!isLoadingDocumentTable && (documents?.length > 0 || !searchTerm) && (
+                  <TableRow>
+                    <TableCell colSpan={2}>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-left text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsAddAdvocateModalOpen(true)} // Trigger modal
+                      >
+                        Other...
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )} */}
               </TableBody>
             </Table>
           </div>
