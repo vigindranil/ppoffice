@@ -518,7 +518,7 @@ const AddCasePage = () => {
           <Tabs defaultValue="add" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-2 mx-6 mt-4">
               <TabsTrigger value="add">Add New Case</TabsTrigger>
-              <TabsTrigger value="update">Update Existing Case</TabsTrigger>
+              {/* <TabsTrigger value="update">Update Existing Case</TabsTrigger> */}
             </TabsList>
 
             {/* Add New Case Tab */}
