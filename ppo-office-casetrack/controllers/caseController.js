@@ -245,6 +245,11 @@ class CaseController {
                 ipcSections = []
             } = req.body;
 
+            // Additional validation for ipcSections structure (optional but recommended)
+         if (!Array.isArray(ipcSections) || !ipcSections.every(sec => typeof sec === 'object' && sec !== null && 'bnsId' in sec && 'OtherAct' in sec)) {
+            return res.status(400).json({ status: 1, message: "Invalid format for ipcSections. Expected array of objects with bnsId and OtherAct. ErrorCode: ERR_IPC_FORMAT" });
+        }
+
             // ✅ Call sp_Createcase to save the case and get CaseID
             const caseQuery = "CALL sp_Createcase(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
             const caseParams = [
@@ -288,6 +293,14 @@ class CaseController {
                 });
             });
 
+            // Basic error handling for Case Creation SP (Example)
+        if (!caseOutput || caseOutput.length === 0 || !caseOutput[0].CaseID) {
+            console.error("Failed to retrieve CaseID after sp_Createcase call.");
+            // Check ErrorCode if available from SP for more specific message
+            const spErrorCode = caseOutput && caseOutput.length > 0 ? caseOutput[0].ErrorCode : null;
+            return res.status(500).json({ status: 1, message: `Failed to create case (SP ErrorCode: ${spErrorCode || 'N/A'}). ErrorCode: ERR_CASE_ID` });
+        }
+
             const { CaseID } = caseOutput[0];
 
             // ✅ Handle stored procedure errors
@@ -326,19 +339,29 @@ class CaseController {
 
             // ✅ Save multiple IPC sections
             if (Array.isArray(ipcSections) && ipcSections.length > 0) {
-                for (const bnsId of ipcSections) {
-                    console.log("Saving IPC section for BnsId:", bnsId);
-
-                    const ipcQuery = "CALL sp_saveipcsectionBycaseId(?, ?, ?, @ErrorCode)";
-                    const ipcParams = [CaseID, bnsId, EntryUserID];
-
-                    // await db.query(ipcQuery, ipcParams);
-
+                // Note: Assumes sp_saveipcsectionBycaseId now accepts OtherAct as the 4th IN parameter
+                const ipcQuery = "CALL sp_saveipcsectionBycaseId(?, ?, ?, ?, @ErrorCode)"; // Added '?' for OtherAct
+    
+                for (const section of ipcSections) {
+                    const { bnsId, OtherAct } = section; // Destructure the object
+    
+                     // Basic validation for the destructured values
+                     if (bnsId === undefined || bnsId === null || OtherAct === undefined || OtherAct === null) {
+                        console.warn("Skipping invalid IPC section object:", section);
+                        continue; // Skip this iteration
+                     }
+    
+    
+                    console.log("Saving IPC/BNS section for CaseID:", CaseID, "with bnsId:", bnsId, "and OtherAct:", OtherAct);
+    
+                    const ipcParams = [CaseID, bnsId, OtherAct, EntryUserID]; // Pass OtherAct to SP
+    
                     await new Promise((resolve, reject) => {
                         db.query(ipcQuery, ipcParams, (err) => {
                             if (err) {
-                                console.error("Error executing stored procedure:", err);
-                                return reject(err);
+                                console.error("Error executing sp_saveipcsectionBycaseId:", err);
+                                // Decide if you want to stop or just log the error
+                                // return reject(err); // Stops if one section fails
                             }
                             resolve();
                         });
@@ -354,8 +377,9 @@ class CaseController {
             });
 
         } catch (error) {
-            console.error("Unexpected error:", error);
-            return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+            console.error("Unexpected error in createCaseV1:", error);
+            // return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+            return res.status(500).json({ status: 1, message: "An unexpected error occurred while processing the request. ErrorCode: ERR_UNEXPECTED" });
         }
     }
 

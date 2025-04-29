@@ -21,7 +21,7 @@ import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { useSelector } from "react-redux"
 import { Calendar, FileText, Hash, Clock, Trash, Plus, X } from "lucide-react"
 import { decrypt } from "@/utils/crypto"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -46,6 +46,9 @@ const AddCasePage = () => {
   const [openCaseSelect, setOpenCaseSelect] = useState(false)
   const [useIpcDisplay, setUseIpcDisplay] = useState(true)
   const [ipcToBnsMap, setIpcToBnsMap] = useState({})
+
+  // ---> New State for Other Sections <---
+  const [otherIpcSections, setOtherIpcSections] = useState([{ id: Date.now(), value: "", isReadOnly: false }])
 
   // Dropdown state
   const [openDistrict, setOpenDistrict] = useState(false)
@@ -255,12 +258,12 @@ const AddCasePage = () => {
   }
 
   const addIpcSection = async (bnsId) => {
-    if (selectedIpcSections.length >= 5) {
-      openAlert("error", "Maximum 5 sections allowed")
+    if (selectedIpcSections.length + otherIpcSections.filter(s => s.value && s.isReadOnly).length >= 10) {
+      openAlert("error", "Maximum 10 sections (including Other) allowed")
       return
     }
 
-    if (selectedIpcSections.some((item) => item.bnsId === bnsId)) {
+    if (selectedIpcSections.some((item) => item.bnsId.toString() === bnsId)) {
       openAlert("error", "This section is already added")
       return
     }
@@ -296,12 +299,64 @@ const AddCasePage = () => {
       }
     } catch (err) {
       console.error("Failed to fetch mapping", err)
-      openAlert("error", "Failed to fetch conversion mapping")
+      setIpcToBnsMap((prev) => ({
+        ...prev,
+        [bnsId]: `BNS ID: ${bnsId}`, // Fallback display
+      }))
     }
   }
 
   const removeIpcSection = (bnsId) => {
     setSelectedIpcSections((prev) => prev.filter((item) => item.bnsId !== bnsId))
+    setIpcToBnsMap(prev => {
+      const newMap = { ...prev };
+      delete newMap[bnsId];
+      return newMap;
+    })
+  }
+
+  // ---> New Functions for Other Sections <---
+  const handleOtherSectionChange = (id, value) => {
+    setOtherIpcSections(prev =>
+      prev.map(section => section.id === id ? { ...section, value } : section)
+    )
+  }
+
+  const addOtherSectionField = () => {
+    // Keep the limit check for combined sections
+    if (selectedIpcSections.length + otherIpcSections.filter(s => s.value && s.isReadOnly).length >= 10) {
+      openAlert("error", "Maximum 10 sections (including Other) allowed")
+      return
+    }
+
+    // Make the last one read-only if it has value
+    const lastSection = otherIpcSections[otherIpcSections.length - 1];
+    if (lastSection && lastSection.value.trim() !== "") {
+      setOtherIpcSections(prev =>
+        prev.map(section => section.id === lastSection.id ? { ...section, isReadOnly: true } : section)
+      );
+      // Add the new empty field
+      setOtherIpcSections(prev => [...prev, { id: Date.now(), value: "", isReadOnly: false }]);
+    } else {
+      openAlert("error", "Please enter a value in the current 'Other Section' field before adding a new one.")
+    }
+  }
+
+  const removeOtherSection = (id) => {
+    setOtherIpcSections(prev => prev.filter(section => section.id !== id))
+    // If removing the last empty input, ensure there's always one empty input left, unless all are removed.
+    setOtherIpcSections(prev => {
+      const remaining = prev.filter(section => section.id !== id);
+      if (remaining.length === 0 || remaining.every(s => s.isReadOnly)) {
+        // If no sections left, or all remaining are read-only, add a new empty one
+        return [...remaining, { id: Date.now(), value: "", isReadOnly: false }];
+      }
+      // If the last one is now read-only add a new one
+      if (remaining.length > 0 && remaining[remaining.length - 1].isReadOnly) {
+        return [...remaining, { id: Date.now(), value: "", isReadOnly: false }];
+      }
+      return remaining; // Otherwise, just return the filtered list
+    });
   }
 
   const addReference = () => {
@@ -388,10 +443,34 @@ const AddCasePage = () => {
         throw "Please add at least one IPC section"
       }
 
+      // ---> New VALIDATIONS for Other Sections <---
+      const finalOtherSections = otherIpcSections
+        .filter(section => section.value.trim() !== "" && section.isReadOnly) // Only take filled, read-only ones
+        .map(section => ({
+          bnsId: 534, // Fixed ID for other sections
+          OtherAct: section.value.trim() // The user input
+        }));
+
+      const finalSelectedSections = selectedIpcSections.map(section => ({
+        bnsId: section.bnsId.toString(), // Use the selected bnsId
+        OtherAct: "" // Empty string for standard sections
+      }));
+
+      const combinedIpcSections = [...finalSelectedSections, ...finalOtherSections];
+
+
+      if (combinedIpcSections.length === 0) { // Check combined length
+        throw "Please add at least one IPC/BNS or Other section"
+      }
+      if (combinedIpcSections.length > 10) { // Redundant check, but safe
+        throw "Maximum 10 sections (including Other) allowed"
+      }
+
       // Prepare data for API
       const apiData = {
         ...addFormData,
-        ipcSections: selectedIpcSections.map((section) => section.bnsId.toString()),
+        // ipcSections: selectedIpcSections.map((section) => section.bnsId.toString()), // <-- OLD way
+        ipcSections: combinedIpcSections, // <-- NEW way with objects
         refferences: selectedReferences.length > 0 ? selectedReferences : [],
       }
 
@@ -420,13 +499,16 @@ const AddCasePage = () => {
       })
 
       setSelectedIpcSections([])
+      setOtherIpcSections([{ id: Date.now(), value: "", isReadOnly: false }]) // Reset other sections
       setSelectedReferences([])
       setDocuments([])
+      setIpcToBnsMap({})
 
       // Refresh case list
       fetchCases()
     } catch (err) {
-      openAlert("error", err instanceof Array ? err.join(", ") : err)
+      const errorMessage = err instanceof Error ? err.message : (typeof err === 'string' ? err : "An unknown error occurred");
+      openAlert("error", errorMessage instanceof Array ? errorMessage.join(", ") : errorMessage);
     } finally {
       setIsLoading(false)
     }
@@ -449,10 +531,33 @@ const AddCasePage = () => {
         throw "Please add at least one IPC section"
       }
 
+      const finalOtherSections = otherIpcSections
+        .filter(section => section.value.trim() !== "" && section.isReadOnly)
+        .map(section => ({
+          bnsId: 534,
+          OtherAct: section.value.trim()
+        }));
+
+      const finalSelectedSections = selectedIpcSections.map(section => ({
+        bnsId: section.bnsId.toString(),
+        OtherAct: ""
+      }));
+
+      const combinedIpcSections = [...finalSelectedSections, ...finalOtherSections];
+
+
+      if (combinedIpcSections.length === 0) {
+        throw "Please add at least one IPC/BNS or Other section";
+      }
+      if (combinedIpcSections.length > 10) {
+        throw "Maximum 10 sections (including Other) allowed";
+      }
+
       // Prepare data for API
       const apiData = {
         ...updateFormData,
-        ipcSections: selectedIpcSections.map((section) => section.bnsId.toString()),
+        // ipcSections: selectedIpcSections.map((section) => section.bnsId.toString()),
+        ipcSections: combinedIpcSections, // <-- NEW way
         refferences: selectedReferences.length > 0 ? selectedReferences : [],
       }
 
@@ -481,13 +586,16 @@ const AddCasePage = () => {
       })
 
       setSelectedIpcSections([])
+      setOtherIpcSections([{ id: Date.now(), value: "", isReadOnly: false }]);
       setSelectedReferences([])
       setDocuments([])
+      setIpcToBnsMap({})
 
       // Refresh case list
       fetchCases()
     } catch (err) {
-      openAlert("error", err instanceof Array ? err.join(", ") : err)
+      const errorMessage = err instanceof Error ? err.message : (typeof err === 'string' ? err : "An unknown error occurred");
+      openAlert("error", errorMessage instanceof Array ? errorMessage.join(", ") : errorMessage);
     } finally {
       setIsLoading(false)
     }
@@ -786,7 +894,7 @@ const AddCasePage = () => {
                     {/* Display Mode Switch (Styled like v0) */}
                     <div
                       className={`relative w-20 h-8 rounded-full flex items-center cursor-pointer transition-all 
-    ${useIpcDisplay ? "bg-blue-600" : "bg-green-600"} mb-2`}
+                      ${useIpcDisplay ? "bg-blue-600" : "bg-green-600"} mb-2`}
                       onClick={() => setUseIpcDisplay((prev) => !prev)}
                     >
                       <span className="absolute w-full text-xs font-bold text-white flex justify-center transition-all">
@@ -794,7 +902,7 @@ const AddCasePage = () => {
                       </span>
                       <div
                         className={`absolute w-7 h-7 bg-white rounded-full shadow-md transform transition-all 
-      ${useIpcDisplay ? "translate-x-1" : "translate-x-12"}`}
+                        ${useIpcDisplay ? "translate-x-1" : "translate-x-12"}`}
                       />
                     </div>
 
@@ -859,6 +967,53 @@ const AddCasePage = () => {
                         </Command>
                       </PopoverContent>
                     </Popover>
+                  </div>
+
+                  {/* --- Other IPC/BNS Sections --- */}
+                  <div className="mt-4 space-y-2">
+                    <Label className="font-bold">Other IPC/BNS Section (Max 5)</Label>
+                    {otherIpcSections.map((section, index) => (
+                      <div key={section.id} className="flex items-center gap-2">
+                        <Input
+                          placeholder="Enter other section details"
+                          value={section.value}
+                          onChange={(e) => handleOtherSectionChange(section.id, e.target.value)}
+                          readOnly={section.isReadOnly}
+                          className={section.isReadOnly ? "bg-gray-100" : ""}
+                        />
+                        {section.isReadOnly ? (
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => removeOtherSection(section.id)}
+                            className="h-9 w-9" // Match input height
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            size="icon"
+                            onClick={addOtherSectionField}
+                            disabled={!section.value.trim() || selectedIpcSections.length + otherIpcSections.filter(s => s.value && s.isReadOnly).length >= 10}
+                            className="h-9 w-9" // Match input height
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {/* Add a delete button also for the active input field if there's more than one field OR if it's filled*/}
+                        {(otherIpcSections.length > 1 || section.value.trim() !== '') && !section.isReadOnly && (
+                          <Button
+                            variant="ghost" // Less prominent delete for active input
+                            size="icon"
+                            onClick={() => removeOtherSection(section.id)}
+                            className="h-9 w-9 text-gray-500 hover:text-red-600"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+
                   </div>
 
                   {/* References */}
