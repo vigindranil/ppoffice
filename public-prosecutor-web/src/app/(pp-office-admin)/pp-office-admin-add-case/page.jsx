@@ -21,13 +21,14 @@ import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { useSelector } from "react-redux"
 import { Calendar, FileText, Hash, Clock, Trash, Plus, X } from "lucide-react"
 import { decrypt } from "@/utils/crypto"
-import { Check, ChevronsUpDown} from "lucide-react"
+import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { postRequest } from "@/app/commonAPI"
 import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 const AddCasePage = () => {
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
@@ -49,6 +50,17 @@ const AddCasePage = () => {
 
   // ---> New State for Other Sections <---
   const [otherIpcSections, setOtherIpcSections] = useState([{ id: Date.now(), value: "", isReadOnly: false }])
+  // Holds the list of added "other" row entries
+  const [otherSectionsList, setOtherSectionsList] = useState([]) // Array of { id: number, ipcValue: string, bnsValue: string }
+  // Holds the current input values for the two fields
+  const [currentOtherIpc, setCurrentOtherIpc] = useState("")
+  const [currentOtherBns, setCurrentOtherBns] = useState("")
+
+  const OTHER_SECTION_BNS_ID = 534;
+
+  const MAX_STANDARD_SECTIONS = 10; // Max standard dropdown sections
+  const MAX_OTHER_ROWS = 10; // Max rows of other IPC/BNS pairs
+  const MAX_TOTAL_ENTRIES = 20;
 
   // Dropdown state
   const [openDistrict, setOpenDistrict] = useState(false)
@@ -258,16 +270,22 @@ const AddCasePage = () => {
   }
 
   const addIpcSection = async (bnsId) => {
-    if (selectedIpcSections.length + otherIpcSections.filter(s => s.value && s.isReadOnly).length >= 10) {
-      openAlert("error", "Maximum 10 sections (including Other) allowed")
-      return
+    // Calculate current total entries
+    const currentTotal = selectedIpcSections.length + otherSectionsList.length;
+
+    if (currentTotal >= MAX_TOTAL_ENTRIES) {
+      openAlert("error", `Maximum ${MAX_TOTAL_ENTRIES} total entries (Standard + Other Rows) allowed.`);
+      return;
+    }
+    if (selectedIpcSections.length >= MAX_STANDARD_SECTIONS) {
+      openAlert("error", `Maximum ${MAX_STANDARD_SECTIONS} standard IPC/BNS sections allowed.`);
+      return;
     }
 
     if (selectedIpcSections.some((item) => item.bnsId.toString() === bnsId)) {
       openAlert("error", "This section is already added")
       return
     }
-
     // Find in both IPC and BNS lists to support dropdown toggle
     const ipcItem = ipcActList.find((ipc) => ipc.bnsId.toString() === bnsId)
     const bnsItem = bnsSectionList.find((bns) => bns.bnsId.toString() === bnsId)
@@ -316,52 +334,91 @@ const AddCasePage = () => {
   }
 
   // ---> New Functions for Other Sections <---
-  const handleOtherSectionChange = (id, value) => {
-    setOtherIpcSections(prev =>
-      prev.map(section => section.id === id ? { ...section, value } : section)
-    )
-  }
+  // const handleOtherSectionChange = (id, value) => {
+  //   setOtherIpcSections(prev =>
+  //     prev.map(section => section.id === id ? { ...section, value } : section)
+  //   )
+  // }
 
-  const addOtherSectionField = () => {
-    // Keep the limit check for combined sections
-    if (selectedIpcSections.length + otherIpcSections.filter(s => s.value && s.isReadOnly).length >= 10) {
-      openAlert("error", "Maximum 10 sections (including Other) allowed")
-      return
+  // const addOtherSectionField = () => {
+  //   // Keep the limit check for combined sections
+  //   if (selectedIpcSections.length + otherIpcSections.filter(s => s.value && s.isReadOnly).length >= 10) {
+  //     openAlert("error", "Maximum 10 sections (including Other) allowed")
+  //     return
+  //   }
+
+  //   // Make the last one read-only if it has value
+  //   const lastSection = otherIpcSections[otherIpcSections.length - 1];
+  //   if (lastSection && lastSection.value.trim() !== "") {
+  //     setOtherIpcSections(prev =>
+  //       prev.map(section => section.id === lastSection.id ? { ...section, isReadOnly: true } : section)
+  //     );
+  //     // Add the new empty field
+  //     setOtherIpcSections(prev => [...prev, { id: Date.now(), value: "", isReadOnly: false }]);
+  //   } else {
+  //     openAlert("error", "Please enter a value in the current 'Other Section' field before adding a new one.")
+  //   }
+  // }
+
+  const addOtherSectionRow = () => {
+    const ipcInput = currentOtherIpc.trim();
+    const bnsInput = currentOtherBns.trim();
+
+    if (!ipcInput && !bnsInput) {
+      openAlert("error", "Please enter at least an 'Other IPC Act' or a 'Corresponding BNS Section'.");
+      return;
     }
 
-    // Make the last one read-only if it has value
-    const lastSection = otherIpcSections[otherIpcSections.length - 1];
-    if (lastSection && lastSection.value.trim() !== "") {
-      setOtherIpcSections(prev =>
-        prev.map(section => section.id === lastSection.id ? { ...section, isReadOnly: true } : section)
-      );
-      // Add the new empty field
-      setOtherIpcSections(prev => [...prev, { id: Date.now(), value: "", isReadOnly: false }]);
-    } else {
-      openAlert("error", "Please enter a value in the current 'Other Section' field before adding a new one.")
+    // Check limits
+    const currentTotal = selectedIpcSections.length + otherSectionsList.length;
+    if (currentTotal >= MAX_TOTAL_ENTRIES) {
+      openAlert("error", `Maximum ${MAX_TOTAL_ENTRIES} total entries (Standard + Other Rows) allowed.`);
+      return;
     }
+    if (otherSectionsList.length >= MAX_OTHER_ROWS) {
+      openAlert("error", `Maximum ${MAX_OTHER_ROWS} rows for Other sections allowed.`);
+      return;
+    }
+
+    // Add the new row to the list
+    setOtherSectionsList(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        ipcValue: ipcInput,
+        bnsValue: bnsInput
+      }
+    ]);
+
+    // Clear the input fields
+    setCurrentOtherIpc("");
+    setCurrentOtherBns("");
   }
 
-  const removeOtherSection = (id) => {
-    setOtherIpcSections(prev => prev.filter(section => section.id !== id))
-    // If removing the last empty input, ensure there's always one empty input left, unless all are removed.
-    setOtherIpcSections(prev => {
-      const remaining = prev.filter(section => section.id !== id);
-      if (remaining.length === 0 || remaining.every(s => s.isReadOnly)) {
-        // If no sections left, or all remaining are read-only, add a new empty one
-        return [...remaining, { id: Date.now(), value: "", isReadOnly: false }];
-      }
-      // If the last one is now read-only add a new one
-      if (remaining.length > 0 && remaining[remaining.length - 1].isReadOnly) {
-        return [...remaining, { id: Date.now(), value: "", isReadOnly: false }];
-      }
-      return remaining; // Otherwise, just return the filtered list
-    });
+  // const removeOtherSection = (id) => {
+  //   setOtherIpcSections(prev => prev.filter(section => section.id !== id))
+  //   // If removing the last empty input, ensure there's always one empty input left, unless all are removed.
+  //   setOtherIpcSections(prev => {
+  //     const remaining = prev.filter(section => section.id !== id);
+  //     if (remaining.length === 0 || remaining.every(s => s.isReadOnly)) {
+  //       // If no sections left, or all remaining are read-only, add a new empty one
+  //       return [...remaining, { id: Date.now(), value: "", isReadOnly: false }];
+  //     }
+  //     // If the last one is now read-only add a new one
+  //     if (remaining.length > 0 && remaining[remaining.length - 1].isReadOnly) {
+  //       return [...remaining, { id: Date.now(), value: "", isReadOnly: false }];
+  //     }
+  //     return remaining; // Otherwise, just return the filtered list
+  //   });
+  // }
+
+  const removeOtherSectionRow = (idToRemove) => {
+    setOtherSectionsList(prev => prev.filter(section => section.id !== idToRemove));
   }
 
   const addReference = () => {
-    if (selectedReferences.length >= 5) {
-      openAlert("error", "Maximum 5 references allowed")
+    if (selectedReferences.length >= MAX_STANDARD_SECTIONS) {
+      openAlert("error", `Maximum ${MAX_STANDARD_SECTIONS} references allowed!`);
       return
     }
 
@@ -420,7 +477,7 @@ const AddCasePage = () => {
     setIsLoading(true)
 
     try {
-      // Validate required fields
+      // ... existing validations for main form fields ...
       const requiredFields = [
         { field: "CaseNumber", label: "Case Number" },
         { field: "CaseDate", label: "Case Date" },
@@ -429,50 +486,47 @@ const AddCasePage = () => {
         { field: "caseTypeId", label: "Case Type" },
         { field: "hearingDate", label: "Hearing Date" },
         { field: "filingDate", label: "Filing Date" },
-        { field: "petitionName", label: "Petition Name" },
+        { field: "petitionName", label: "Petitioner Name" },
         { field: "CourtCaseDescription", label: "Court Case Description" },
       ]
-
       const missingFields = requiredFields.filter(({ field }) => !addFormData[field])
-
       if (missingFields.length > 0) {
         throw `Please fill in the following required fields: ${missingFields.map((f) => f.label).join(", ")}`
       }
+      // --- End of main field validations ---
 
-      if (selectedIpcSections.length === 0) {
-        throw "Please add at least one IPC section"
-      }
-
-      // ---> New VALIDATIONS for Other Sections <---
-      const finalOtherSections = otherIpcSections
-        .filter(section => section.value.trim() !== "" && section.isReadOnly) // Only take filled, read-only ones
-        .map(section => ({
-          bnsId: 534, // Fixed ID for other sections
-          OtherAct: section.value.trim() // The user input
-        }));
-
-      const finalSelectedSections = selectedIpcSections.map(section => ({
-        bnsId: section.bnsId.toString(), // Use the selected bnsId
-        OtherAct: "" // Empty string for standard sections
+      // ---> IPC/BNS sections data <---
+      const finalStandardSections = selectedIpcSections.map(section => ({
+        bnsId: section.bnsId.toString(), // The ID from dropdown
+        otherIpcAct: "", // Empty for standard sections
+        otherBnsAct: ""  // Empty for standard sections
       }));
 
-      const combinedIpcSections = [...finalSelectedSections, ...finalOtherSections];
+      const finalOtherSections = otherSectionsList.map(row => ({
+        bnsId: OTHER_SECTION_BNS_ID.toString(), // Use the designated 'other' ID
+        otherIpcAct: row.ipcValue, // Value from the IPC input for this row
+        otherBnsAct: row.bnsValue  // Value from the BNS input for this row
+      }));
 
+      const combinedIpcSections = [...finalStandardSections, ...finalOtherSections];
 
-      if (combinedIpcSections.length === 0) { // Check combined length
-        throw "Please add at least one IPC/BNS or Other section"
+      // Validating total number of sections/rows
+      if (combinedIpcSections.length === 0) {
+        throw "Please add at least one Standard IPC/BNS Section or one Other Section row."
       }
-      if (combinedIpcSections.length > 10) { // Redundant check, but safe
-        throw "Maximum 10 sections (including Other) allowed"
+      if (combinedIpcSections.length > MAX_TOTAL_ENTRIES) { // Just a double-check
+        throw `Maximum ${MAX_TOTAL_ENTRIES} total entries (Standard + Other Rows) allowed.`
       }
 
-      // Prepare data for API
+
+      // Data for API
       const apiData = {
         ...addFormData,
-        // ipcSections: selectedIpcSections.map((section) => section.bnsId.toString()), // <-- OLD way
-        ipcSections: combinedIpcSections, // <-- NEW way with objects
+        ipcSections: combinedIpcSections,
         refferences: selectedReferences.length > 0 ? selectedReferences : [],
       }
+
+      //console.log("Submitting API Data:", apiData); // For debugging
 
       const caseResult = await createCaseOfficeAdmin(apiData)
       const caseId = caseResult.data.CaseID
@@ -484,28 +538,24 @@ const AddCasePage = () => {
 
       openAlert("success", "Case and documents added successfully")
 
-      // Reset form
+      // Reset form including the new other section states
       setAddFormData({
-        CaseNumber: "",
-        EntryUserID: user.AuthorityUserID,
-        CaseDate: "",
-        districtId: "",
-        psId: "",
-        caseTypeId: "",
+        CaseNumber: "", EntryUserID: user.AuthorityUserID, CaseDate: "",
+        districtId: "", psId: "", caseTypeId: "",
         filingDate: new Date().toISOString().split("T")[0],
-        petitionName: "",
-        hearingDate: "",
-        CourtCaseDescription: "",
+        petitionName: "", hearingDate: "", CourtCaseDescription: "",
       })
-
       setSelectedIpcSections([])
-      setOtherIpcSections([{ id: Date.now(), value: "", isReadOnly: false }]) // Reset other sections
+      setOtherSectionsList([]) // Reset the list of other rows
+      setCurrentOtherIpc("")  // Reset current input
+      setCurrentOtherBns("")  // Reset current input
       setSelectedReferences([])
       setDocuments([])
       setIpcToBnsMap({})
 
       // Refresh case list
       fetchCases()
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : (typeof err === 'string' ? err : "An unknown error occurred");
       openAlert("error", errorMessage instanceof Array ? errorMessage.join(", ") : errorMessage);
@@ -515,91 +565,81 @@ const AddCasePage = () => {
   }
 
   const handleUpdateCase = async () => {
-    setIsLoading(true)
-
+    setIsLoading(true);
     try {
-      // Validate required fields
-      if (!updateFormData.CaseId) {
-        throw "Please select a case to update"
-      }
+      // ... existing validations for update form fields ...
+      if (!updateFormData.CaseId) throw "Please select a case to update";
+      if (!updateFormData.hearingDate) throw "Please provide a hearing date";
+      // ... other update specific validations ...
 
-      if (!updateFormData.hearingDate) {
-        throw "Please provide a hearing date"
-      }
 
-      if (selectedIpcSections.length === 0) {
-        throw "Please add at least one IPC section"
-      }
-
-      const finalOtherSections = otherIpcSections
-        .filter(section => section.value.trim() !== "" && section.isReadOnly)
-        .map(section => ({
-          bnsId: 534,
-          OtherAct: section.value.trim()
-        }));
-
-      const finalSelectedSections = selectedIpcSections.map(section => ({
+      // ---> IPC/BNS sections data <---
+      const finalStandardSections = selectedIpcSections.map(section => ({
         bnsId: section.bnsId.toString(),
-        OtherAct: ""
+        otherIpcAct: "",
+        otherBnsAct: ""
       }));
 
-      const combinedIpcSections = [...finalSelectedSections, ...finalOtherSections];
+      const finalOtherSections = otherSectionsList.map(row => ({
+        bnsId: OTHER_SECTION_BNS_ID.toString(),
+        otherIpcAct: row.ipcValue,
+        otherBnsAct: row.bnsValue
+      }));
 
+      const combinedIpcSections = [...finalStandardSections, ...finalOtherSections];
 
+      // Validate total number of sections/rows
       if (combinedIpcSections.length === 0) {
-        throw "Please add at least one IPC/BNS or Other section";
+        throw "Please add at least one Standard IPC/BNS Section or one Other Section row.";
       }
-      if (combinedIpcSections.length > 10) {
-        throw "Maximum 10 sections (including Other) allowed";
+      if (combinedIpcSections.length > MAX_TOTAL_ENTRIES) {
+        throw `Maximum ${MAX_TOTAL_ENTRIES} total entries (Standard + Other Rows) allowed.`
       }
 
-      // Prepare data for API
+      // Data for API
       const apiData = {
         ...updateFormData,
-        // ipcSections: selectedIpcSections.map((section) => section.bnsId.toString()),
-        ipcSections: combinedIpcSections, // <-- NEW way
+        ipcSections: combinedIpcSections,
         refferences: selectedReferences.length > 0 ? selectedReferences : [],
-      }
+      };
+
+      // console.log("Submitting Update API Data:", apiData); // For debugging
 
       // Call update API
-      await createCaseOfficeAdmin(apiData)
+      await createCaseOfficeAdmin(apiData);
 
       // Upload documents if any
       if (documents.length > 0) {
-        await uploadCaseDocuments(updateFormData.CaseId, documents, user.AuthorityUserID)
+        await uploadCaseDocuments(updateFormData.CaseId, documents, user.AuthorityUserID);
       }
 
-      openAlert("success", "Case updated successfully")
+      openAlert("success", "Case updated successfully");
 
       // Reset form
       setUpdateFormData({
-        CaseId: "",
-        CaseNumber: "",
-        EntryUserID: user.AuthorityUserID,
-        CaseDate: "",
-        districtId: "",
-        psId: "",
-        caseTypeId: "",
-        filingDate: "",
-        petitionName: "",
-        hearingDate: "",
-      })
+        CaseId: "", CaseNumber: "", EntryUserID: user.AuthorityUserID, CaseDate: "",
+        districtId: "", psId: "", caseTypeId: "", filingDate: "",
+        petitionName: "", hearingDate: "",
+      });
+      setSelectedIpcSections([]);
+      setOtherSectionsList([]);
+      setCurrentOtherIpc("");
+      setCurrentOtherBns("");
+      setSelectedReferences([]);
+      setDocuments([]);
+      setIpcToBnsMap({});
 
-      setSelectedIpcSections([])
-      setOtherIpcSections([{ id: Date.now(), value: "", isReadOnly: false }]);
-      setSelectedReferences([])
-      setDocuments([])
-      setIpcToBnsMap({})
 
       // Refresh case list
-      fetchCases()
+      fetchCases();
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : (typeof err === 'string' ? err : "An unknown error occurred");
       openAlert("error", errorMessage instanceof Array ? errorMessage.join(", ") : errorMessage);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleConfirm = () => {
     closeAlert()
@@ -626,7 +666,7 @@ const AddCasePage = () => {
           <Tabs defaultValue="add" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-2 mx-6 mt-4">
               <TabsTrigger value="add">Add New Case</TabsTrigger>
-              {/* <TabsTrigger value="update">Update Existing Case</TabsTrigger> */}
+              <TabsTrigger value="update">Update Existing Case</TabsTrigger>
             </TabsList>
 
             {/* Add New Case Tab */}
@@ -666,12 +706,12 @@ const AddCasePage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="font-bold" htmlFor="petitionName">
-                        Petition Name <span className="text-red-500">*</span>
+                        Petitioner Name <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="petitionName"
                         name="petitionName"
-                        placeholder="Enter petition name"
+                        placeholder="Enter petitioner name"
                         value={addFormData.petitionName}
                         onChange={handleAddChange}
                       />
@@ -864,7 +904,7 @@ const AddCasePage = () => {
 
                   <div className="space-y-2">
                     <Label className="font-bold" htmlFor="CourtCaseDescription">
-                      Court Case Description <span className="text-red-500">*</span> (Max 50 words)
+                      Court Case Description <span className="text-red-500">*</span> (Max 100 words)
                     </Label>
                     <textarea
                       id="CourtCaseDescription"
@@ -873,22 +913,23 @@ const AddCasePage = () => {
                       value={addFormData.CourtCaseDescription}
                       onChange={(e) => {
                         const wordCount = e.target.value.trim().split(/\s+/).length
-                        if (wordCount <= 50) {
+                        if (wordCount <= 100) {
                           setAddFormData({ ...addFormData, CourtCaseDescription: e.target.value })
                         }
                       }}
-                      placeholder="Enter a brief summary of the case (max 50 words)"
+                      placeholder="Enter a brief summary of the case (max 100 words)"
                       className="w-full border rounded-md px-3 py-2 text-sm"
                     />
                     <p className="text-xs text-gray-500">
-                      {addFormData.CourtCaseDescription.trim().split(/\s+/).filter(Boolean).length} / 50 words
+                      {addFormData.CourtCaseDescription.trim().split(/\s+/).filter(Boolean).length} / 100 words
                     </p>
                   </div>
 
                   {/* IPC/BNS Sections */}
-                  <div className="space-y-2 mt-2">
+                  <div className="space-y-2 mt-2 border-b pb-4 mb-4">
                     <Label className="font-bold">
-                      IPC / BNS Sections <span className="text-red-500">*</span> (Max 5)
+                      Standard IPC / BNS Sections <span className="text-red-500">*</span>
+                      {/* (Max {MAX_STANDARD_SECTIONS}) */}
                     </Label>
 
                     {/* Display Mode Switch (Styled like v0) */}
@@ -907,7 +948,7 @@ const AddCasePage = () => {
                     </div>
 
                     {/* Selected badges with conversion */}
-                    <div className="flex flex-wrap gap-2 mb-2">
+                    <div className="flex flex-wrap gap-2 mb-2 min-h-[30px]">
                       {selectedIpcSections.map((section) => (
                         <Badge key={section.bnsId} variant="secondary" className="flex items-center gap-2 py-2 px-3">
                           <div className="text-xs font-semibold">
@@ -969,56 +1010,87 @@ const AddCasePage = () => {
                     </Popover>
                   </div>
 
-                  {/* --- Other IPC/BNS Sections --- */}
-                  <div className="mt-4 space-y-2">
-                    <Label className="font-bold">Other IPC/BNS Section (Max 5)</Label>
-                    {otherIpcSections.map((section, index) => (
-                      <div key={section.id} className="flex items-center gap-2">
-                        <Input
-                          placeholder="Enter other section details"
-                          value={section.value}
-                          onChange={(e) => handleOtherSectionChange(section.id, e.target.value)}
-                          readOnly={section.isReadOnly}
-                          className={section.isReadOnly ? "bg-gray-100" : ""}
-                        />
-                        {section.isReadOnly ? (
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => removeOtherSection(section.id)}
-                            className="h-9 w-9" // Match input height
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        ) : (
-                          <Button
-                            size="icon"
-                            onClick={addOtherSectionField}
-                            disabled={!section.value.trim() || selectedIpcSections.length + otherIpcSections.filter(s => s.value && s.isReadOnly).length >= 10}
-                            className="h-9 w-9" // Match input height
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {/* Add a delete button also for the active input field if there's more than one field OR if it's filled*/}
-                        {(otherIpcSections.length > 1 || section.value.trim() !== '') && !section.isReadOnly && (
-                          <Button
-                            variant="ghost" // Less prominent delete for active input
-                            size="icon"
-                            onClick={() => removeOtherSection(section.id)}
-                            className="h-9 w-9 text-gray-500 hover:text-red-600"
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                  {/* --- Other IPC Act & Corresponding BNS Section --- */}
+                  <div className="space-y-2 mt-4">
+                    <Label className="font-bold">Other Sections
+                      {/* (Max {MAX_OTHER_ROWS} rows) */}
+                    </Label>
+                    <p className="text-xs text-gray-600 mb-2">Enter custom IPC Act, BNS Section, or both. At least one field is required per row.</p>
 
+                    {/* Input Row */}
+                    <div className="flex items-end gap-2 mb-2">
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor="otherIpcActInput" className="text-xs">Other IPC Act</Label>
+                        <Input
+                          id="otherIpcActInput"
+                          placeholder="Enter other IPC Act"
+                          value={currentOtherIpc}
+                          onChange={(e) => setCurrentOtherIpc(e.target.value)}
+                          // Disable if max other rows or total entries reached
+                          disabled={otherSectionsList.length >= MAX_OTHER_ROWS || selectedIpcSections.length + otherSectionsList.length >= MAX_TOTAL_ENTRIES}
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor="otherBnsSectionInput" className="text-xs">Corresponding BNS Section</Label>
+                        <Input
+                          id="otherBnsSectionInput"
+                          placeholder="Enter corresponding BNS Section"
+                          value={currentOtherBns}
+                          onChange={(e) => setCurrentOtherBns(e.target.value)}
+                          // Disable if max other rows or total entries reached
+                          disabled={otherSectionsList.length >= MAX_OTHER_ROWS || selectedIpcSections.length + otherSectionsList.length >= MAX_TOTAL_ENTRIES}
+                        />
+                      </div>
+                      <Button
+                        size="icon"
+                        onClick={addOtherSectionRow}
+                        className="h-9 w-9" // Match input height
+                        // Disable if inputs are empty or limits reached
+                        disabled={(!currentOtherIpc.trim() && !currentOtherBns.trim()) || otherSectionsList.length >= MAX_OTHER_ROWS || selectedIpcSections.length + otherSectionsList.length >= MAX_TOTAL_ENTRIES}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    {/* Display List/Table for Other Sections */}
+                    {otherSectionsList.length > 0 && (
+                      <div className="border rounded-md overflow-hidden mt-4">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Other IPC Act</TableHead>
+                              <TableHead>Corresponding BNS Section</TableHead>
+                              <TableHead className="w-[50px] text-right">Action</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {otherSectionsList.map((section) => (
+                              <TableRow key={section.id}>
+                                <TableCell className="font-medium py-2">{section.ipcValue || "-"}</TableCell>
+                                <TableCell className="py-2">{section.bnsValue || "-"}</TableCell>
+                                <TableCell className="text-right py-2">
+                                  <Button
+                                    variant="destructive"
+                                    size="icon"
+                                    onClick={() => removeOtherSectionRow(section.id)}
+                                    className="h-7 w-7" // Smaller delete button
+                                  >
+                                    <Trash className="h-3.5 w-3.5" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
                   </div>
 
                   {/* References */}
                   <div className="space-y-2 mt-2">
-                    <Label className="font-bold">References (Max 5)</Label>
+                    <Label className="font-bold">References
+                      {/* (Max {MAX_STANDARD_SECTIONS}) */}
+                    </Label>
 
                     <div className="flex flex-wrap gap-2 mb-2">
                       {selectedReferences.map((ref, index) => (
@@ -1272,7 +1344,7 @@ const AddCasePage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="font-bold" htmlFor="updatePetitionName">
-                        Petition Name <span className="text-red-500">*</span>
+                        Petitioner Name <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="updatePetitionName"
@@ -1342,7 +1414,7 @@ const AddCasePage = () => {
                   {/* IPC Sections */}
                   <div className="space-y-2 mt-2">
                     <Label className="font-bold">
-                      IPC Sections <span className="text-red-500">*</span> (Max 5)
+                      IPC Sections <span className="text-red-500">*</span> {/* (Max {MAX_STANDARD_SECTIONS}) */}
                     </Label>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {selectedIpcSections.map((section) => (
@@ -1403,7 +1475,7 @@ const AddCasePage = () => {
 
                   {/* References */}
                   <div className="space-y-2 mt-2">
-                    <Label className="font-bold">References (Max 5)</Label>
+                    <Label className="font-bold">References {/* (Max {MAX_STANDARD_SECTIONS}) */}</Label>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {selectedReferences.map((ref, index) => (
                         <Badge key={index} variant="secondary" className="flex items-center gap-1 py-2">

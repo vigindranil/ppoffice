@@ -55,6 +55,7 @@ router.post("/api/DashboardCount",authMiddleware.verifyToken,CaseController.getD
 router.post("/api/showCaseDetail", authMiddleware.verifyToken,CaseController.showCaseDetail);
 router.post("/api/show-case-document", authMiddleware.verifyToken,CaseController.getCaseDocuments);
 router.post("/api/crm-list-case", authMiddleware.verifyToken,CaseController.getCrmListByCaseId);
+router.post("/api/show-section-by-case", authMiddleware.verifyToken,CaseController.showSectionsByCaseId);
 
 // send email
 const EmailController = require("../controllers/emailController");

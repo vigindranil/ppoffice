@@ -211,15 +211,10 @@ class CaseController {
         try {
             console.log("Request Payload:", req.body);
 
-            // ✅ Validate required fields using `validateFields`
             try {
                 validateFields(req.body, [
-                    "CaseNumber",
-                    "EntryUserID",
-                    "CaseDate",
-                    "districtId",
-                    "psId",
-                    "caseTypeId",
+                    "CaseNumber", "EntryUserID", "CaseDate", "districtId", "psId",
+                    "caseTypeId", 
                     "filingDate",
                     "petitionName",
                     "hearingDate",
@@ -231,24 +226,21 @@ class CaseController {
 
             // ✅ Extract fields from request body
             const {
-                CaseNumber,
-                EntryUserID,
-                CaseDate,
-                districtId,
-                psId,
-                caseTypeId,
-                filingDate,
-                petitionName,
-                hearingDate,
-                CourtCaseDescription,
+                CaseNumber, EntryUserID, CaseDate, districtId, psId, caseTypeId,
+                filingDate, petitionName, hearingDate, CourtCaseDescription,
                 refferences = [],
-                ipcSections = []
+                ipcSections = [] // Expecting array of { bnsId: string|number, otherIpcAct: string, otherBnsAct: string }
             } = req.body;
 
-            // Additional validation for ipcSections structure (optional but recommended)
-         if (!Array.isArray(ipcSections) || !ipcSections.every(sec => typeof sec === 'object' && sec !== null && 'bnsId' in sec && 'OtherAct' in sec)) {
-            return res.status(400).json({ status: 1, message: "Invalid format for ipcSections. Expected array of objects with bnsId and OtherAct. ErrorCode: ERR_IPC_FORMAT" });
-        }
+            // ---> Updated validation for ipcSections structure <---
+            if (!Array.isArray(ipcSections) || !ipcSections.every(sec =>
+                typeof sec === 'object' && sec !== null &&
+                'bnsId' in sec &&
+                'otherIpcAct' in sec && // Check for new field
+                'otherBnsAct' in sec    // Check for new field
+            )) {
+                return res.status(400).json({ status: 1, message: "Invalid format for ipcSections. Expected array of objects with bnsId, otherIpcAct, and otherBnsAct. ErrorCode: ERR_IPC_FORMAT_V2" });
+            }
 
             // ✅ Call sp_Createcase to save the case and get CaseID
             const caseQuery = "CALL sp_Createcase(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
@@ -266,8 +258,6 @@ class CaseController {
             ];
 
             console.log("Executing sp_Createcase with params:", caseParams);
-            // await new Promise((resolve, reject) => {
-            // await db.query(caseQuery, caseParams);
 
             await new Promise((resolve, reject) => {
                 db.query(caseQuery, caseParams, (err) => {
@@ -278,10 +268,6 @@ class CaseController {
                     resolve();
                 });
             });
-
-            // ✅ Fetch the output CaseID and ErrorCode
-            // const caseOutput = await db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode");
-            // const { CaseID, ErrorCode } = caseOutput[0];
 
             const caseOutput = await new Promise((resolve, reject) => {
                 db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode", (outputErr, results) => {
@@ -294,24 +280,14 @@ class CaseController {
             });
 
             // Basic error handling for Case Creation SP (Example)
-        if (!caseOutput || caseOutput.length === 0 || !caseOutput[0].CaseID) {
-            console.error("Failed to retrieve CaseID after sp_Createcase call.");
-            // Check ErrorCode if available from SP for more specific message
-            const spErrorCode = caseOutput && caseOutput.length > 0 ? caseOutput[0].ErrorCode : null;
-            return res.status(500).json({ status: 1, message: `Failed to create case (SP ErrorCode: ${spErrorCode || 'N/A'}). ErrorCode: ERR_CASE_ID` });
-        }
+            if (!caseOutput || caseOutput.length === 0 || !caseOutput[0].CaseID) {
+                console.error("Failed to retrieve CaseID after sp_Createcase call.");
+                // Check ErrorCode if available from SP for more specific message
+                const spErrorCode = caseOutput && caseOutput.length > 0 ? caseOutput[0].ErrorCode : null;
+                return res.status(500).json({ status: 1, message: `Failed to create case (SP ErrorCode: ${spErrorCode || 'N/A'}). ErrorCode: ERR_CASE_ID` });
+            }
 
             const { CaseID } = caseOutput[0];
-
-            // ✅ Handle stored procedure errors
-            // const errorMessages = {
-            //     1: "An error occurred while executing the procedure.",
-            //     2: "Case already exists.",
-            //     3: "User does not have permission to create a case."
-            // };
-            // if (ErrorCode && errorMessages[ErrorCode]) {
-            //     return ResponseHelper.error(res, errorMessages[ErrorCode]);
-            // }
 
             console.log("Case created successfully with CaseID:", CaseID);
 
@@ -339,31 +315,32 @@ class CaseController {
 
             // ✅ Save multiple IPC sections
             if (Array.isArray(ipcSections) && ipcSections.length > 0) {
-                // Note: Assumes sp_saveipcsectionBycaseId now accepts OtherAct as the 4th IN parameter
-                const ipcQuery = "CALL sp_saveipcsectionBycaseId(?, ?, ?, ?, @ErrorCode)"; // Added '?' for OtherAct
-    
+                // Updated query to match the new SP signature
+                const ipcQuery = "CALL sp_saveipcsectionBycaseId(?, ?, ?, ?, ?, @ErrorCode)";
+
                 for (const section of ipcSections) {
-                    const { bnsId, OtherAct } = section; // Destructure the object
-    
-                     // Basic validation for the destructured values
-                     if (bnsId === undefined || bnsId === null || OtherAct === undefined || OtherAct === null) {
-                        console.warn("Skipping invalid IPC section object:", section);
+                    // Destructure all required fields from the frontend object
+                    const { bnsId, otherIpcAct, otherBnsAct } = section;
+
+                    // Basic validation for the destructured values
+                    if (bnsId === undefined || bnsId === null || otherIpcAct === undefined || otherIpcAct === null || otherBnsAct === undefined || otherBnsAct === null) {
+                        console.warn("Skipping invalid IPC/BNS section object:", section);
                         continue; // Skip this iteration
-                     }
-    
-    
-                    console.log("Saving IPC/BNS section for CaseID:", CaseID, "with bnsId:", bnsId, "and OtherAct:", OtherAct);
-    
-                    const ipcParams = [CaseID, bnsId, OtherAct, EntryUserID]; // Pass OtherAct to SP
-    
+                    }
+
+                    console.log("Saving IPC/BNS section for CaseID:", CaseID, "with bnsId:", bnsId, "OtherIPC:", otherIpcAct, "OtherBNS:", otherBnsAct);
+
+                    // Pass parameters in the correct order for the new SP
+                    const ipcParams = [CaseID, bnsId, otherIpcAct, otherBnsAct, EntryUserID];
+
                     await new Promise((resolve, reject) => {
                         db.query(ipcQuery, ipcParams, (err) => {
                             if (err) {
                                 console.error("Error executing sp_saveipcsectionBycaseId:", err);
                                 // Decide if you want to stop or just log the error
-                                // return reject(err); // Stops if one section fails
+                                // Consider rejecting if a critical save fails: return reject(err);
                             }
-                            resolve();
+                            resolve(); // Resolve even if one fails, depends on requirement
                         });
                     });
                 }
@@ -372,13 +349,12 @@ class CaseController {
             // ✅ Final success response
             return res.status(201).json({
                 status: 0,
-                message: "Case created successfully with associated reference numbers and IPC sections.",
+                message: "Case created successfully with associated reference numbers and IPC/BNS sections.",
                 data: { CaseID }
             });
 
         } catch (error) {
             console.error("Unexpected error in createCaseV1:", error);
-            // return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
             return res.status(500).json({ status: 1, message: "An unexpected error occurred while processing the request. ErrorCode: ERR_UNEXPECTED" });
         }
     }
@@ -739,10 +715,10 @@ class CaseController {
     static async showallCaseBetweenRange(req, res) {
         try {
             const { startDate, endDate, isAssign, EntryUserID } = req.body;
-    
+
             const mainQuery = "CALL sp_ShowallCaseBetweenRange(?, ?, ?, ?)";
             const mainParams = [startDate, endDate, isAssign, EntryUserID];
-    
+
             // Step 1: Fetch all cases
             const [caseResults] = await new Promise((resolve, reject) => {
                 db.query(mainQuery, mainParams, (err, results) => {
@@ -753,12 +729,12 @@ class CaseController {
                     resolve(results);
                 });
             });
-    
+
             // Step 2: For each case, fetch its references and IPC sections
             const enrichedCases = await Promise.all(
                 caseResults.map(async (caseItem) => {
                     const { CaseId, UserId } = caseItem;
-    
+
                     // Fetch references
                     const references = await new Promise((resolve, reject) => {
                         db.query("CALL sp_getRefferenceNumberByCaseId(?, ?)", [CaseId, UserId], (err, results) => {
@@ -766,7 +742,7 @@ class CaseController {
                             resolve(results[0]);
                         });
                     });
-    
+
                     // Fetch IPC sections
                     const ipcSections = await new Promise((resolve, reject) => {
                         db.query("CALL sp_getIpcSectionByCaseId(?, ?)", [CaseId, UserId], (err, results) => {
@@ -774,7 +750,7 @@ class CaseController {
                             resolve(results[0]);
                         });
                     });
-    
+
                     return {
                         ...caseItem,
                         references,
@@ -782,40 +758,40 @@ class CaseController {
                     };
                 })
             );
-    
+
             return ResponseHelper.success_reponse(res, "Data found", enrichedCases);
         } catch (error) {
             console.error("Unexpected error:", error);
             return ResponseHelper.error(res, "An unexpected error occurred", error);
         }
-    }    
+    }
 
     static async getDashboardCounts(req, res) {
         try {
             const { EntryuserID } = req.body;
-    
+
             // Validate input
             if (!EntryuserID) {
                 return ResponseHelper.error(res, "EntryuserID is required");
             }
-    
+
             // Call the stored procedure
             const query = 'CALL sp_DashBoardCount_V1(?)';
-    
+
             db.query(query, [EntryuserID], (err, results) => {
                 if (err) {
                     console.error("Error executing stored procedure:", err);
                     return ResponseHelper.error(res, "An error occurred while fetching data");
                 }
-    
+
                 // The SP returns data in results[0], typically an array of rows
                 const caseData = results[0];
-    
+
                 // Initialize counts
                 let unassignedCases = 0;
                 let assignedCases = 0;
                 let totalCases = 0;
-    
+
                 // Check if we got at least one row from the SP
                 if (!caseData || !caseData.length) {
                     // Handle the case where the stored procedure returns no data.
@@ -832,23 +808,23 @@ class CaseController {
                         response
                     );
                 }
-    
+
                 // The SP now returns a single row with the counts.  Access the properties directly.
                 const spRow = caseData[0];  // Get the first (and only) row.
-    
+
                 // Extract the counts from the row.  Use 0 as a default in case any value is null.
                 unassignedCases = spRow.TotalUnassignedCase || 0;
                 assignedCases = spRow.TotalAssignedCase || 0;
                 totalCases = spRow.TotalCases || 0;
-    
-    
+
+
                 // Prepare the final response
                 const response = {
                     unassignedCases,
                     assignedCases,
                     totalCases
                 };
-    
+
                 // Send the response
                 return ResponseHelper.success_reponse(
                     res,
@@ -1029,6 +1005,31 @@ class CaseController {
             });
         }
     }
+
+    static async showSectionsByCaseId(req, res) {
+        try {
+          const {CaseId,UserId} = req.body; 
+    
+          // console.log(req.body);
+          if (!CaseId) {
+            return ResponseHelper.error(res, "CaseId is required in the request body"); 
+          }
+          if (!UserId) {
+            return ResponseHelper.error(res, "UserId is required in the request body"); 
+          }
+    
+          const [results] = await db.promise().query('CALL sp_getIpcSectionByCaseId( ?, ?)', [CaseId,UserId]); 
+    
+          if (!results || results.length === 0) {
+            return ResponseHelper.success_reponse(res,"No Data found",[]);
+          }
+    
+          return ResponseHelper.success_reponse(res, "Data found", results[0]);
+        } catch (error) {
+          console.error('Error in showSectionsByCaseId:', error);
+          return ResponseHelper.error(res, "An error occurred while fetching data");
+        }
+      }
 
 }
 
