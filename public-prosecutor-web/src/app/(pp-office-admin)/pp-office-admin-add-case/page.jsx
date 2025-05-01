@@ -10,7 +10,9 @@ import {
   showpoliceBydistrict,
   showIpcSection,
   showBnsSection,
-  showIbsByBnsId
+  showIbsByBnsId,
+  showJustSectionByCase,
+  showJustReferenceByCase
 } from "@/app/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"

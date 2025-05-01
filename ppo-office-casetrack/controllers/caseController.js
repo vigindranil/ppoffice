@@ -1006,6 +1006,31 @@ class CaseController {
         }
     }
 
+    static async showRefferenceNumberByCaseId(req, res) {
+        try {
+          const {CaseId,EntryUserID} = req.body; 
+    
+          // console.log(req.body);
+          if (!CaseId) {
+            return ResponseHelper.error(res, "CaseId is required in the request body"); 
+          }
+          if (!EntryUserID) {
+            return ResponseHelper.error(res, "EntryUserID is required in the request body"); 
+          }
+    
+          const [results] = await db.promise().query('CALL sp_getRefferenceNumberByCaseId( ?, ?)', [CaseId,EntryUserID]); 
+    
+          if (!results || results.length === 0) {
+            return ResponseHelper.success_reponse(res,"No Data found",[]);
+          }
+    
+          return ResponseHelper.success_reponse(res, "Data found", results[0]);
+        } catch (error) {
+          console.error('Error in showRefferenceNumberByCaseId:', error);
+          return ResponseHelper.error(res, "An error occurred while fetching data");
+        }
+      }
+
     static async showSectionsByCaseId(req, res) {
         try {
           const {CaseId,UserId} = req.body; 

@@ -954,3 +954,59 @@ export const showIbsByBnsId = async (bnsId) => {
     }
   })
 }
+
+export const showJustSectionByCase = async (bnsId) => {
+  return new Promise(async(resolve, reject) => {
+    const token = sessionStorage.getItem('token')
+    const response = await fetch(`${BASE_URL}show-section-by-case`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        "bnsId": bnsId
+      }),
+
+    })
+    if (!response.ok) {
+      reject('Failed to fetch Sections for editing');
+    }
+    const result = await response.json()
+    if (result.status === 0) {
+      // console.log(result.data)
+      resolve(result.data);
+    } else {
+      reject(result.message);
+      // console.log(result.message)
+    }
+  })
+}
+
+export const showJustReferenceByCase = async (bnsId) => {
+  return new Promise(async(resolve, reject) => {
+    const token = sessionStorage.getItem('token')
+    const response = await fetch(`${BASE_URL}show-reference-by-case`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        "bnsId": bnsId
+      }),
+
+    })
+    if (!response.ok) {
+      reject('Failed to fetch Reference for editing');
+    }
+    const result = await response.json()
+    if (result.status === 0) {
+      // console.log(result.data)
+      resolve(result.data);
+    } else {
+      reject(result.message);
+      // console.log(result.message)
+    }
+  })
+}
