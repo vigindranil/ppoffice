@@ -359,6 +359,199 @@ class CaseController {
         }
     }
 
+    static async createCaseV2(req, res) {
+        try {
+            const payload = req.body;
+            console.log("Request Payload (V2):", payload);
+
+            // ✅ Extract and Default IDs
+            // CaseId will be present only during updates. Default to 0 for create.
+            const InCaseID = payload.CaseId || 0;
+            const {
+                CaseNumber, EntryUserID, CaseDate, districtId, psId, caseTypeId,
+                filingDate, petitionName, hearingDate, CourtCaseDescription,
+                refferences = [], // Expecting { InreffeeenceID?, crmID, refferenceNumber, refferenceyear }
+                ipcSections = []  // Expecting { InIpcID?, bnsId, otherIpcAct, otherBnsAct }
+            } = payload;
+
+            // ✅ Basic Payload Validation (Add more specific checks as needed)
+             try {
+                // Validate core fields, adapt if payload structure differs slightly for update vs create
+                validateFields({ CaseNumber, EntryUserID, CaseDate, districtId, psId, caseTypeId, filingDate, petitionName, hearingDate, CourtCaseDescription }, [
+                    "CaseNumber", "EntryUserID", "CaseDate", "districtId", "psId",
+                    "caseTypeId", "filingDate", "petitionName", "hearingDate",
+                    "CourtCaseDescription"
+                ]);
+
+                 // Validate structure of reference and section arrays
+                 if (!Array.isArray(refferences) || !refferences.every(ref => ref && typeof ref === 'object' && 'crmID' in ref && 'refferenceNumber' in ref && 'refferenceyear' in ref)) {
+                    throw new Error("Invalid format for refferences array.");
+                 }
+                  if (!Array.isArray(ipcSections) || !ipcSections.every(sec => sec && typeof sec === 'object' && 'bnsId' in sec && 'otherIpcAct' in sec && 'otherBnsAct' in sec)) {
+                     throw new Error("Invalid format for ipcSections array.");
+                 }
+
+             } catch (error) {
+                 return res.status(400).json({ status: 1, message: `${error.message}. ErrorCode: ERR_VALIDATE_V2` });
+             }
+
+
+            // ✅ 1. Call sp_Createcase_v1 (Handles both create and update based on InCaseID)
+            const caseQuery = "CALL sp_Createcase_v1(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode)";
+            const caseParams = [
+                InCaseID, // 0 for create, actual CaseId for update
+                CaseNumber, CaseDate, districtId, psId, caseTypeId,
+                filingDate, petitionName, hearingDate, CourtCaseDescription, EntryUserID
+            ];
+
+            console.log("Executing sp_Createcase_v1 with params:", caseParams);
+            let returnedCaseID; // To store the ID returned by the SP
+            let spErrorCode;
+
+            try {
+                await new Promise((resolve, reject) => {
+                    db.query(caseQuery, caseParams, (err) => {
+                        if (err) {
+                            console.error("Error executing sp_Createcase_v1:", err);
+                            return reject(err); // Reject on SP execution error
+                        }
+                        resolve();
+                    });
+                });
+
+                // Fetch output parameters @CaseID and @ErrorCode
+                const caseOutput = await new Promise((resolve, reject) => {
+                    db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode", (outputErr, results) => {
+                        if (outputErr) {
+                             console.error("Error fetching output parameters from sp_Createcase_v1:", outputErr);
+                            return reject(outputErr);
+                        }
+                         if (!results || results.length === 0) {
+                             console.error("No output parameters returned from sp_Createcase_v1.");
+                             return reject(new Error("Failed to get output from case creation/update."));
+                         }
+                        resolve(results[0]); // Resolve with the first row containing @CaseID, @ErrorCode
+                    });
+                });
+
+                 returnedCaseID = caseOutput.CaseID;
+                 spErrorCode = caseOutput.ErrorCode;
+
+                 console.log(`sp_Createcase_v1 Result: CaseID=${returnedCaseID}, ErrorCode=${spErrorCode}`);
+
+                 // Handle specific errors returned by the SP
+                 if (spErrorCode !== 0) { // Assuming 0 means success
+                     // Map ErrorCode to a meaningful message if possible
+                     throw new Error(`Case ${InCaseID === 0 ? 'creation' : 'update'} failed. SP Error Code: ${spErrorCode}`);
+                 }
+                  if (!returnedCaseID) {
+                     // This shouldn't happen if ErrorCode is 0, but check just in case
+                     throw new Error(`Case ${InCaseID === 0 ? 'creation' : 'update'} succeeded but returned no CaseID.`);
+                 }
+
+            } catch (dbError) {
+                 console.error("Database error during case save/update:", dbError);
+                 // Return a more specific error based on dbError if possible
+                 return res.status(500).json({ status: 1, message: `Database error during case save/update: ${dbError.message}. ErrorCode: ERR_CASE_SP_V1` });
+            }
+
+            const finalCaseId = returnedCaseID; // Use the ID returned by the SP
+            console.log(`Case ${InCaseID === 0 ? 'created' : 'updated'} successfully with CaseID:`, finalCaseId);
+
+            // ✅ 2. Save/Update References using sp_saveRefferenceNumberByCaseId_v1
+             if (Array.isArray(refferences) && refferences.length > 0) {
+                const refQuery = "CALL sp_saveRefferenceNumberByCaseId_v1(?, ?, ?, ?, ?, ?, @reffeeenceID, @ErrorCode)";
+                for (const ref of refferences) {
+                    const InreffeeenceID = ref.InreffeeenceID || 0; // Default to 0 if not provided (new reference)
+                    const { crmID, refferenceNumber, refferenceyear } = ref;
+
+                     // Add validation for ref fields if needed
+                     if (crmID === undefined || refferenceNumber === undefined || refferenceyear === undefined) {
+                         console.warn("Skipping reference due to missing fields:", ref);
+                         continue;
+                     }
+
+
+                    console.log(`Saving/Updating reference for CaseID ${finalCaseId}:`, { InreffeeenceID, crmID, refferenceNumber, refferenceyear });
+                    const refParams = [InreffeeenceID, finalCaseId, crmID, refferenceNumber, refferenceyear, EntryUserID];
+
+                    try {
+                         await new Promise((resolve, reject) => {
+                            db.query(refQuery, refParams, (err) => {
+                                if (err) {
+                                    console.error(`Error executing sp_saveRefferenceNumberByCaseId_v1 for InreffeeenceID ${InreffeeenceID}:`, err);
+                                    // Decide whether to continue or stop on error
+                                    // return reject(err); // Uncomment to stop on first reference error
+                                }
+                                 // You might want to fetch and check the @ErrorCode here too
+                                resolve();
+                            });
+                        });
+                     } catch (refDbError) {
+                         console.error(`Database error saving reference InreffeeenceID ${InreffeeenceID}:`, refDbError);
+                         // Handle error - maybe collect errors and report at the end
+                     }
+                }
+            }
+
+            // ✅ 3. Save/Update IPC/BNS Sections using sp_saveipcsectionBycaseId_v1
+             if (Array.isArray(ipcSections) && ipcSections.length > 0) {
+                const ipcQuery = "CALL sp_saveipcsectionBycaseId_v1(?, ?, ?, ?, ?, ?, @IpcID, @ErrorCode)";
+                for (const section of ipcSections) {
+                    const InIpcID = section.InIpcID || 0; // Default to 0 if not provided (new section)
+                    const { bnsId, otherIpcAct, otherBnsAct } = section;
+
+                     // Add validation for section fields if needed
+                      if (bnsId === undefined || otherIpcAct === undefined || otherBnsAct === undefined) {
+                          console.warn("Skipping section due to missing fields:", section);
+                          continue;
+                      }
+
+                    console.log(`Saving/Updating section for CaseID ${finalCaseId}:`, { InIpcID, bnsId, otherIpcAct, otherBnsAct });
+                    const ipcParams = [InIpcID, finalCaseId, bnsId, otherIpcAct, otherBnsAct, EntryUserID];
+
+                    try {
+                        await new Promise((resolve, reject) => {
+                            db.query(ipcQuery, ipcParams, (err) => {
+                                if (err) {
+                                    console.error(`Error executing sp_saveipcsectionBycaseId_v1 for InIpcID ${InIpcID}:`, err);
+                                    // Decide whether to continue or stop on error
+                                    // return reject(err); // Uncomment to stop on first section error
+                                }
+                                 // You might want to fetch and check the @ErrorCode here too
+                                resolve();
+                            });
+                        });
+                    } catch (ipcDbError) {
+                         console.error(`Database error saving section InIpcID ${InIpcID}:`, ipcDbError);
+                         // Handle error
+                     }
+                }
+            }
+
+             // ✅ 4. Handle Deletions (IMPORTANT - Requires separate logic/SPs)
+             // The current SPs only handle insert/update. You'll need logic here (or on the frontend sending delete requests)
+             // to handle sections/references that were present before but are removed during the edit.
+             // This typically involves:
+             //  a) Frontend sending lists of IDs to keep AND IDs to delete.
+             //  b) Or, Backend fetching existing IDs for the case and comparing with the incoming list to determine deletions.
+             //  c) Calling separate `sp_deleteReferenceById` / `sp_deleteSectionById` procedures.
+             // This part is NOT implemented below but is crucial for a full update functionality.
+             console.warn("Deletion logic for removed sections/references is not implemented in createCaseV2.");
+
+
+            // ✅ Final success response
+            return res.status(InCaseID === 0 ? 201 : 200).json({ // 201 for created, 200 for updated
+                status: 0,
+                message: `Case ${InCaseID === 0 ? 'created' : 'updated'} successfully.`,
+                data: { CaseID: finalCaseId } // Return the final CaseID
+            });
+
+        } catch (error) { // Catch errors from validation or unhandled SP errors
+            console.error(`Unexpected error in ${req.body.CaseId ? 'Update' : 'Create'} Case V2:`, error);
+            return res.status(500).json({ status: 1, message: error.message || "An unexpected error occurred.", ErrorCode: "ERR_UNEXPECTED_V2" });
+        }
+    }
 
     static async createCaseWithDocument(req, res) {
         try {

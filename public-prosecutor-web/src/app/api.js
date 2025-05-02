@@ -501,6 +501,34 @@ export const createCaseOfficeAdmin = async (req_body) => {
   });
 };
 
+export const createOrUpdateCaseV2 = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log(req_body);
+      const token = sessionStorage.getItem('token');
+
+      const response = await fetch(`${BASE_URL}cases/create-v2`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(req_body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        resolve(result); // Return the case ID
+      } else {
+        reject(result.message || 'An error occurred while creating the case');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
 export const uploadCaseDocuments = async (caseId, documents, entryUserId) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -955,7 +983,7 @@ export const showIbsByBnsId = async (bnsId) => {
   })
 }
 
-export const showJustSectionByCase = async (bnsId) => {
+export const showJustSectionByCase = async (CaseId,UserId) => {
   return new Promise(async(resolve, reject) => {
     const token = sessionStorage.getItem('token')
     const response = await fetch(`${BASE_URL}show-section-by-case`, {
@@ -965,7 +993,8 @@ export const showJustSectionByCase = async (bnsId) => {
       },
       method: 'POST',
       body: JSON.stringify({
-        "bnsId": bnsId
+        "CaseId": CaseId,
+        "UserId": UserId
       }),
 
     })
@@ -983,7 +1012,7 @@ export const showJustSectionByCase = async (bnsId) => {
   })
 }
 
-export const showJustReferenceByCase = async (bnsId) => {
+export const showJustReferenceByCase = async (CaseId,UserId) => {
   return new Promise(async(resolve, reject) => {
     const token = sessionStorage.getItem('token')
     const response = await fetch(`${BASE_URL}show-reference-by-case`, {
@@ -993,7 +1022,8 @@ export const showJustReferenceByCase = async (bnsId) => {
       },
       method: 'POST',
       body: JSON.stringify({
-        "bnsId": bnsId
+        "CaseId": CaseId,
+        "EntryUserID": UserId
       }),
 
     })
