@@ -563,7 +563,21 @@ export const uploadCaseDocuments = async (caseId, documents, entryUserId) => {
       formData.append("EntryUserID", entryUserId);
 
       documents.forEach((file) => {
-        formData.append("documents", file); 
+        const ext = file.name.split(".").pop();
+        const originalNameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.'));
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const timestamp = `${year}${month}${day}_${hours}${minutes}${seconds}`;
+        // const timestamp = `${year}${month}${day}`;
+        const renamed = new File([file], `${originalNameWithoutExt}_${caseId}_${entryUserId}_${timestamp}.${ext}`, {
+          type: file.type,
+        });
+        formData.append("documents", renamed); 
       });
 
       console.log("🔥 FormData Content:", ...formData.entries()); 
@@ -1040,3 +1054,31 @@ export const showJustReferenceByCase = async (CaseId,UserId) => {
     }
   })
 }
+
+export const createCrrOfficeAdmin = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log(req_body);
+      const token = sessionStorage.getItem('token');
+
+      const response = await fetch(`${BASE_URL}add-crr`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(req_body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        resolve(result); // Return the crr ID
+      } else {
+        reject(result.message || 'An error occurred while creating the CRR');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};

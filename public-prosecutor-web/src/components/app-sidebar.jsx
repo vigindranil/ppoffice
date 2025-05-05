@@ -271,6 +271,10 @@ const data = {
           url: "/pp-office-admin-add-case",
         },
         {
+          title: "Add CRR",
+          url: "/add-crr",
+        },
+        {
           title: "Add New Advocate",
           url: "/add-pp-user",
         },

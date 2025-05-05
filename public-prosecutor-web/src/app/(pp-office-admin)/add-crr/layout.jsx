@@ -20,7 +20,7 @@ const Layout = ({children}) => {
   }, [userDetails]); 
 
   const breadcrumb = [
-    { name: "Office Admin" },{ href: "/pp-office-admin-dashboard", name: "Dashboard" },{ name: "Add Case" },
+    { name: "Office Admin" },{ href: "/pp-office-admin-dashboard", name: "Dashboard" },{ name: "Add CRR" },
   ];
 
   return (
