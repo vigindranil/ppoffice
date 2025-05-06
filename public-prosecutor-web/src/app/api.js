@@ -1047,7 +1047,7 @@ export const showJustReferenceByCase = async (CaseId,UserId) => {
     const result = await response.json()
     if (result.status === 0) {
       // console.log(result.data)
-      resolve(result.data);
+      resolve(result);
     } else {
       reject(result.message);
       // console.log(result.message)
@@ -1076,6 +1076,92 @@ export const createCrrOfficeAdmin = async (req_body) => {
         resolve(result); // Return the crr ID
       } else {
         reject(result.message || 'An error occurred while creating the CRR');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+export const createCranOfficeAdmin = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log(req_body);
+      const token = sessionStorage.getItem('token');
+
+      const response = await fetch(`${BASE_URL}add-cran`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(req_body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        resolve(result); // Return the cran ID
+      } else {
+        reject(result.message || 'An error occurred while creating the CRAN');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
+export const uploadCaseDocumentsV1 = async (caseId, RefferenceID, CranID, documents, entryUserId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const errors = [];
+      
+      const formData = new FormData();
+      formData.append("CaseID", caseId);
+      formData.append("RefferenceID", RefferenceID);
+      formData.append("CranID", CranID);
+      formData.append("EntryUserID", entryUserId);
+
+      documents.forEach((file) => {
+        const ext = file.name.split(".").pop();
+        const originalNameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.'));
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const timestamp = `${year}${month}${day}_${hours}${minutes}${seconds}`;
+        // const timestamp = `${year}${month}${day}`;
+        const renamed = new File([file], `${originalNameWithoutExt}_${caseId}_${entryUserId}_${timestamp}.${ext}`, {
+          type: file.type,
+        });
+        formData.append("documents", renamed); 
+      });
+
+      console.log("🔥 FormData Content:", ...formData.entries()); 
+
+      const response = await fetch(`${BASE_URL}upload/add-ftp-case-document-v1`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || result.status !== 0) {
+        errors.push(result.message || "Failed to upload document");
+      }
+      
+
+      if (errors.length > 0) {
+        reject(errors);
+      } else {
+        resolve("All documents uploaded successfully");
       }
     } catch (error) {
       reject(`Fetch error: ${error.message}`);

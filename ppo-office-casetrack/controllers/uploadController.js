@@ -66,6 +66,64 @@ class uploadController {
         }
     }
 
+    static async addCaseDocumentsV1(req, res) {
+        try {
+            console.log("🔥 Received Request Body:", req.body);
+            console.log("🔥 Received Files:", req.files);
+
+            const InDOCID = "0" || req.body.InDOCID;
+            const { CaseID, RefferenceID, CranID, EntryUserID } = req.body;
+            const files = req.files;
+
+            if (!CaseID || !EntryUserID || !RefferenceID || !CranID || !files || files.length === 0) {
+                return ResponseHelper.error(res, "Invalid input: Provide CaseID, RefferenceID, CranID, EntryUserID, and at least one document.");
+            }
+    
+            console.log("files", files);
+            
+            for (const file of files) {
+                const remoteFilePath = await uploadToSFTP(file.buffer, file.originalname);
+                // console.log("sddddd",remoteFilePath);
+                if (!remoteFilePath) {
+                    console.error("❌ FTP Upload Failed");
+                    continue; // Skip file processing if FTP upload fails
+                }
+    
+                console.log("✅ File uploaded to FTP:", remoteFilePath);
+    
+                const query = "CALL sp_createcaseDocument_v1(?, ?, ?, ?, ?, ?, @DOCID, @ErrorCode)";
+                console.log("CaseID", CaseID);
+                console.log("remoteFilePath", remoteFilePath);
+                console.log("EntryUserID", EntryUserID);
+                
+                
+                
+                
+                const params = [InDOCID, CaseID, RefferenceID, CranID, remoteFilePath, EntryUserID];
+    
+                await new Promise((resolve, reject) => {
+                    db.query(query, params, (err) => {
+                        if (err) {
+                            console.error("❌ Database Error:", err);
+                            return reject(err);
+                        }
+                        resolve();
+                    });
+                });
+    
+            }
+    
+            return res.status(201).json({
+                status: 0,
+                message: "All case documents uploaded to FTP and saved successfully.",
+            });
+    
+        } catch (error) {
+            console.error("❌ Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+        }
+    }
+
     static async downloadFTPDoc (req, res) {
         const { filename } = req.query;
     

@@ -1404,6 +1404,99 @@ class CaseController {
         }
     }
 
+    static async saveCran(req, res) {
+        try {
+            console.log("Request Payload (saveCran):", req.body);
+
+            const InccnId = "0" || req.body.InccnId;
+            const {
+                caseId,              // Reference Type ID
+                refferenceId,         // CRR Case Type ID
+                cranNumber,
+                cranYear,
+                EntryUserID,
+            } = req.body;
+
+            try {
+                validateFields({
+                    caseId, refferenceId, cranNumber, cranYear, EntryUserID
+                }, [
+                    // List required fields from the frontend payload
+                    "caseId", "refferenceId", "cranNumber", "cranYear", "EntryUserID"
+                ]);
+
+            } catch (error) {
+                return res.status(400).json({ status: 1, message: `${error.message}. ErrorCode: ERR_CRR_VALIDATE` });
+            }
+
+            // ✅ Call sp_saveCRR to save the crr and get reffeeenceID, caseID
+            const cranQuery = "CALL sp_saveCranNumber(?, ?, ?, ?, ?, ?, @ccnId, @ErrorCode)";
+            const cranParams = [
+                InccnId,           // Always 0 for new Cran
+                caseId,
+                refferenceId,
+                cranNumber,
+                cranYear,
+                EntryUserID
+            ];
+
+            console.log("Executing sp_saveCranNumber with params:", cranParams);
+
+            await new Promise((resolve, reject) => {
+                db.query(cranQuery, cranParams, (err) => {
+                    if (err) {
+                        console.error("Error executing sp_saveCranNumber:", err);
+                        return reject(new Error(`Database error executing sp_saveCranNumber: ${err.message || err.code}`));
+                    }
+                    resolve();
+                });
+            });
+
+            const cranOutput = await new Promise((resolve, reject) => {
+                db.query("SELECT @ccnId AS CranID, @ErrorCode AS ErrorCode", (outputErr, results) => {
+                    if (outputErr) {
+                        console.error("Error fetching output parameters from sp_saveCranNumber:", outputErr);
+                        return reject(new Error(`Database error fetching SP output: ${outputErr.message || outputErr.code}`));
+                    }
+                    if (!results || results.length === 0) {
+                        console.error("No output parameters returned from sp_saveCranNumber.");
+                        return reject(new Error("Failed to get output from Cran creation."));
+                    }
+                    resolve(results[0]);
+                });
+            });
+
+            const { CranID, ErrorCode } = cranOutput;
+
+            console.log(`sp_saveCRR Result: ErrorCode=${ErrorCode}`);
+
+            if (ErrorCode === 2) {
+                return res.status(409).json({ status: 1, message: "CRan already exists.", ErrorCode: "ERR_CRAN_EXISTS" });
+            }
+
+            if (ErrorCode !== 0) {
+                throw new Error(`Cran creation failed. SP Error Code: ${ErrorCode}`);
+            }
+            if (CranID === undefined || CranID === null) { throw new Error("Cran creation succeeded but failed to return the Cran ID."); }
+
+            // console.log(`Document upload logic would be triggered here for CranID: ${CranID}`);
+
+            return res.status(201).json({
+                status: 0,
+                message: "Cran created successfully.",
+                data: { CranID }
+            });
+
+        } catch (error) {
+            console.error("Unexpected error in saveCran:", error);
+            return res.status(500).json({
+                status: 1,
+                message: error.message || "An unexpected error occurred while processing the request.",
+                ErrorCode: "ERR_CRAN_UNEXPECTED"
+            });
+        }
+    }
+
 }
 
 
