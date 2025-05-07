@@ -50,6 +50,7 @@ router.get("/api/showRefferenceDetails",authMiddleware.verifyToken,CaseControlle
 router.post("/api/addCase",authMiddleware.verifyToken,CaseController.createCase); // firsttime create case by ppOffice
 router.get("/api/showallCase",authMiddleware.verifyToken,CaseController.showallCase); // firsttime create case by ppOffice
 router.post("/api/showallCaseBetweenRange",authMiddleware.verifyToken,CaseController.showallCaseBetweenRange);
+router.post("/api/showallCaseBetweenRange-v2",authMiddleware.verifyToken,CaseController.showallCaseBetweenRangeV2);
 router.post("/api/showallCase", authMiddleware.verifyToken,CaseController.showallCaseWithDOC);
 router.post("/api/DashboardCount",authMiddleware.verifyToken,CaseController.getDashboardCounts);
 router.post("/api/showCaseDetail", authMiddleware.verifyToken,CaseController.showCaseDetail);

@@ -1497,6 +1497,60 @@ class CaseController {
         }
     }
 
+    static async showallCaseBetweenRangeV2(req, res) {
+        try {
+            const { startDate = null, endDate = null, isAssign = 2, EntryUserID, p_ps_id = null , p_district_id = null, p_case_number = "" } = req.body;
+
+            const mainQuery = "CALL sp_ShowallCaseBetweenRange_v2(?, ?, ?, ?, ?, ?, ?)";
+            const mainParams = [startDate, endDate, isAssign, EntryUserID, p_ps_id, p_district_id, p_case_number];
+
+            // Step 1: Fetch all cases
+            const [caseResults] = await new Promise((resolve, reject) => {
+                db.query(mainQuery, mainParams, (err, results) => {
+                    if (err) {
+                        console.error("Error executing sp_ShowallCaseBetweenRange_v2:", err);
+                        return reject(err);
+                    }
+                    resolve(results);
+                });
+            });
+
+            // Step 2: For each case, fetch its references and IPC sections
+            // const enrichedCases = await Promise.all(
+            //     caseResults.map(async (caseItem) => {
+            //         const { CaseId, UserId } = caseItem;
+
+            //         // Fetch references
+            //         const references = await new Promise((resolve, reject) => {
+            //             db.query("CALL sp_getRefferenceNumberByCaseId(?, ?)", [CaseId, UserId], (err, results) => {
+            //                 if (err) return reject(err);
+            //                 resolve(results[0]);
+            //             });
+            //         });
+
+            //         // Fetch IPC sections
+            //         const ipcSections = await new Promise((resolve, reject) => {
+            //             db.query("CALL sp_getIpcSectionByCaseId(?, ?)", [CaseId, UserId], (err, results) => {
+            //                 if (err) return reject(err);
+            //                 resolve(results[0]);
+            //             });
+            //         });
+
+            //         return {
+            //             ...caseItem,
+            //             references,
+            //             ipcSections
+            //         };
+            //     })
+            // );
+
+            return ResponseHelper.success_reponse(res, "Data found", caseResults);
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred", error);
+        }
+    }
+
 }
 
 

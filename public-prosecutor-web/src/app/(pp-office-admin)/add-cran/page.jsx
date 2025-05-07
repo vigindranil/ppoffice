@@ -1,10 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   createCranOfficeAdmin,
   uploadCaseDocumentsV1,
-  showJustReferenceByCase
+  showJustReferenceByCase,
+  alldistrict,
+  showpoliceBydistrict
 } from "@/app/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,7 +15,7 @@ import { Label } from "@/components/ui/label"
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { useSelector } from "react-redux"
-import { Calendar, FileText, Hash, Clock, Trash, Plus, X, Square, CheckSquare, FileUp, Loader2 } from "lucide-react"
+import { Calendar, FileText, Hash, Clock, Trash, Plus, X, Square, CheckSquare, FileUp, Loader2, FilterX, Search } from "lucide-react"
 import { decrypt } from "@/utils/crypto"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -38,6 +40,16 @@ const AddCranPage = () => {
   const [documents, setDocuments] = useState([])
   const [activeTab, setActiveTab] = useState("add")
 
+   // --- State for Filters ---
+   const [filterParams, setFilterParams] = useState({
+    caseNumber: "",
+    districtId: "",
+    psId: ""
+  });
+  const [allDistricts, setAllDistricts] = useState([]);
+  const [allPSList, setAllPSList] = useState([]);
+  const [openFilterDistrict, setOpenFilterDistrict] = useState(false);
+  const [openFilterPS, setOpenFilterPS] = useState(false);
 
   // --- State for CRAN Workflow ---
   const [allCases, setAllCases] = useState([]);
@@ -72,18 +84,66 @@ const AddCranPage = () => {
   }, [encryptedUser]);
 
   useEffect(() => {
-    if (user?.AuthorityUserID) {
-      const fetchCases = async () => {
-        setIsLoading(true);
+    if (user) { 
+        const fetchDistricts = async () => {
+            try {
+                const districts = await alldistrict();
+                setAllDistricts(districts || []);
+            } catch (error) {
+                console.error("Error fetching districts:", error);
+                openAlert("error", "Failed to load districts for filtering.");
+            }
+        };
+        fetchDistricts();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (filterParams.districtId) {
+      const fetchPS = async () => {
         try {
-          const response = await postRequest("showallCaseBetweenRange", {
-            startDate: null, endDate: null, isAssign: 2, // Adjust params if needed
-            EntryUserID: user.AuthorityUserID
-          });
-          if (response.status === 0 && Array.isArray(response.data)) {
+          const psList = await showpoliceBydistrict(filterParams.districtId);
+          setAllPSList(psList || []);
+        } catch (error) {
+          console.error("Error fetching police stations for filter:", error);
+          openAlert("error", "Failed to load police stations for selected district.");
+          setAllPSList([]); // Reset on error
+        }
+      };
+      fetchPS();
+    } else {
+      setAllPSList([]); // Clear PS list if no district is selected
+      setFilterParams(prev => ({ ...prev, psId: "" })); // Reset PS filter
+    }
+  }, [filterParams.districtId]);
+
+  const fetchCases = useCallback(async (currentFilters) => {
+      if (user?.AuthorityUserID) {
+        setIsLoading(true);
+        setAllCases([]); // Clear previous cases
+        // Reset downstream selections when cases are re-fetched
+        setSelectedCaseId("");
+        setSelectedCaseNumber("");
+        setCaseReferences([]);
+        // setSelectedRefData([]);
+  
+        try {
+          const payload = {
+            p_case_number: currentFilters.caseNumber || null, 
+            p_district_id: currentFilters.districtId || null,
+            p_ps_id: currentFilters.psId || null,
+            EntryUserID: user.AuthorityUserID,
+            // startDate: null, endDate: null, isAssign: 2,
+          };
+          console.log("Fetching cases with params:", payload);
+          const response = await postRequest("showallCaseBetweenRange-v2", payload);
+          if (response && response.status === 0 && Array.isArray(response.data)) {
             setAllCases(response.data);
+            if (response.data.length === 0) {
+              openAlert("info", "No cases found matching your filter criteria.");
+            }
           } else {
-            throw new Error(response.message || "Failed to fetch cases");
+            throw new Error(response?.message || "Failed to fetch cases or unexpected data format.");
           }
         } catch (error) {
           console.error("Error fetching cases:", error);
@@ -91,8 +151,38 @@ const AddCranPage = () => {
         } finally {
           setIsLoading(false);
         }
-      };
-      fetchCases();
+      }
+    }, [user, openAlert]);
+
+  // useEffect(() => {
+  //   if (user?.AuthorityUserID) {
+  //     const fetchCases = async () => {
+  //       setIsLoading(true);
+  //       try {
+  //         const response = await postRequest("showallCaseBetweenRange-v2", {
+  //           // startDate: null, endDate: null, isAssign: 2,
+  //           // p_ps_id: null, p_district_id: null, p_case_number: "", 
+  //           EntryUserID: user.AuthorityUserID
+  //         });
+  //         if (response.status === 0 && Array.isArray(response.data)) {
+  //           setAllCases(response.data);
+  //         } else {
+  //           throw new Error(response.message || "Failed to fetch cases");
+  //         }
+  //       } catch (error) {
+  //         console.error("Error fetching cases:", error);
+  //         openAlert("error", `Failed to fetch cases: ${error.message}`);
+  //       } finally {
+  //         setIsLoading(false);
+  //       }
+  //     };
+  //     fetchCases();
+  //   }
+  // }, [user]);
+
+  useEffect(() => {
+    if (user?.AuthorityUserID) {
+      fetchCases({ caseNumber: "", districtId: "", psId: "" }); // Initial
     }
   }, [user]);
 
@@ -128,6 +218,25 @@ const AddCranPage = () => {
   }, [selectedCaseId, user]);
 
   // --- Handlers ---
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilterParams(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFilterSelectChange = (name, value) => {
+    setFilterParams(prev => ({ ...prev, [name]: value, ...(name === 'districtId' && { psId: '' }) })); // Reset PS if district changes
+  };
+
+  const handleSearchCases = () => {
+    fetchCases(filterParams);
+  };
+
+  const handleClearFilters = () => {
+    setFilterParams({ caseNumber: "", districtId: "", psId: "" });
+    fetchCases({ caseNumber: "", districtId: "", psId: "" }); // Re-fetch with default params
+    setAllPSList([]); // Clear PS list
+  };
 
   // Case Selection
   const handleCaseSelect = (caseItem) => {
@@ -500,6 +609,29 @@ const AddCranPage = () => {
               <CardContent className="p-6">
                 <div className="flex flex-col gap-6"> {/* Increased gap */}
 
+                  <div className="space-y-3 p-4 border rounded-md shadow-sm bg-slate-50">
+                                  <Label className="font-semibold text-gray-700 text-md">Filter Cases</Label>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <Input placeholder="Case Number" name="caseNumber" value={filterParams.caseNumber} onChange={handleFilterChange} className="text-sm"  disabled={isSubmitting}/>
+                                    <Popover open={openFilterDistrict} onOpenChange={setOpenFilterDistrict}>
+                                      <PopoverTrigger asChild>
+                                        <Button variant="outline" role="combobox"  disabled={isSubmitting} className="w-full justify-between font-normal text-sm"> {filterParams.districtId ? allDistricts.find(d => d.districtId.toString() === filterParams.districtId)?.districtName : "Select District"} <ChevronsUpDown/> </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput/><CommandList><CommandEmpty/><CommandGroup>{(allDistricts||[]).map(d=>(<CommandItem key={d.districtId} value={d.districtName} onSelect={()=>{handleFilterSelectChange("districtId",d.districtId.toString());setOpenFilterDistrict(false);}}><Check className={cn(filterParams.districtId===d.districtId.toString()?"o":"o")}/>{d.districtName}</CommandItem>))}</CommandGroup></CommandList></Command></PopoverContent>
+                                    </Popover>
+                                    <Popover open={openFilterPS} onOpenChange={setOpenFilterPS}>
+                                      <PopoverTrigger asChild>
+                                        <Button variant="outline" role="combobox" className="w-full justify-between font-normal text-sm" disabled={!filterParams.districtId || allPSList.length === 0 || isSubmitting}> {filterParams.psId ? allPSList.find(ps => ps.id.toString() === filterParams.psId)?.ps_name : "Select Police Station"} <ChevronsUpDown/> </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0"><Command><CommandInput/><CommandList><CommandEmpty/><CommandGroup>{(allPSList||[]).map(ps=>(<CommandItem key={ps.id} value={ps.ps_name} onSelect={()=>{handleFilterSelectChange("psId",ps.id.toString());setOpenFilterPS(false);}}><Check className={cn(filterParams.psId===ps.id.toString()?"o":"o")}/>{ps.ps_name}</CommandItem>))}</CommandGroup></CommandList></Command></PopoverContent>
+                                    </Popover>
+                                  </div>
+                                  <div className="flex gap-2 justify-end">
+                                      <Button variant="outline" size="sm" onClick={handleClearFilters}  disabled={isSubmitting} className="text-xs"><FilterX className="h-3.5 w-3.5 mr-1"/>Clear Filters</Button>
+                                      <Button size="sm" onClick={handleSearchCases}  disabled={isSubmitting} className="text-xs bg-blue-600 hover:bg-blue-700"><Search className="h-3.5 w-3.5 mr-1"/>Search Cases</Button>
+                                  </div>
+                                </div>
+
                   {/* 1. Case Selection */}
                   <div className="space-y-2 border-b pb-4">
                     <Label className="font-semibold text-gray-700 text-lg" htmlFor="caseSelect">
@@ -668,7 +800,7 @@ const AddCranPage = () => {
                               ))}
                               {/* Add CRAN Entry Button */}
                               {currentCranEntries.length < MAX_CRAN_PER_REF && (
-                                <Button variant="outline" size="sm" onClick={() => addCranEntry(refId)} className="mt-2 text-xs">
+                                <Button variant="outline" size="sm" onClick={() => addCranEntry(refId)}  disabled={isSubmitting} className="mt-2 text-xs">
                                   <Plus className="h-4 w-4 mr-1" /> Add CRAN Entry for this Reference
                                 </Button>
                               )}
