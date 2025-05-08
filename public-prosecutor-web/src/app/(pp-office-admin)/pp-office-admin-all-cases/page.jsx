@@ -23,6 +23,8 @@ import { Badge } from '@/components/ui/badge'
 import { postRequest } from "@/app/commonAPI"
 import { BASE_URL } from '@/app/constants'
 import { Label } from '@/components/ui/label'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 
 
 export default function CaseTable() {
@@ -41,6 +43,52 @@ export default function CaseTable() {
   const [isCaseSelected, setIsCaseSelected] = useState(false)
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
+
+  const exportToExcel = () => {
+    const dataForExport = allCases.map((item, idx) => {
+      const referencesFormatted = item.references?.map((ref, i) =>
+        `${i + 1}. ${ref.RefferenceNumber} - ${ref.CrmName} (${ref.RefferenceYear})`
+      ).join('\n') || 'No references';
+  
+      const ipcFormatted = item.ipcSections?.map(ipc => ipc.IpcSection).filter(Boolean).join(', ') || 'None';
+  
+      return {
+        "Case Date": formatDate(item.CaseDate),
+        "Case Number": item.CaseNumber,
+        "Police Station": item.PsName,
+        "References": referencesFormatted,
+        "Case Status": item.IsAssigned ? 'Assigned' : 'Pending',
+        "IPC Sections": ipcFormatted
+      };
+    });
+  
+    const worksheet = XLSX.utils.json_to_sheet(dataForExport, { origin: 'A1' });
+  
+    // Auto-fit columns (optional)
+    const columnWidths = dataForExport.reduce((widths, row) => {
+      Object.values(row).forEach((val, idx) => {
+        const len = val?.toString().split('\n').reduce((max, line) => Math.max(max, line.length), 0) || 10;
+        widths[idx] = Math.max(widths[idx] || 10, len);
+      });
+      return widths;
+    }, []);
+  
+    worksheet['!cols'] = columnWidths.map(w => ({ wch: w + 5 }));
+  
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "All Cases");
+  
+    const today = new Date();
+    const formattedToday = today.toISOString().split('T')[0];
+    const from = fromDate ? formatDate(fromDate) : null;
+    const to = toDate ? formatDate(toDate) : null;
+    const fileName = from && to
+      ? `All_Cases_${from}_to_${to}.xlsx`
+      : `All_Cases_${formattedToday}.xlsx`;
+  
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    saveAs(new Blob([wbout], { type: "application/octet-stream" }), fileName);
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
@@ -96,21 +144,21 @@ export default function CaseTable() {
 
   const filteredData = allCases?.filter((data) => {
     const lowerSearch = searchTerm.toLowerCase();
-  
+
     const matchesCaseFields = Object?.values(data)?.some((value) =>
       value?.toString()?.toLowerCase()?.includes(lowerSearch)
     );
-  
+
     const matchesReferences = data.references?.some(ref =>
       `${ref.RefferenceNumber} ${ref.CrmName} ${ref.RefferenceYear}`
         .toLowerCase()
         .includes(lowerSearch)
     );
-  
+
     const matchesIPC = data.ipcSections?.some(ipc =>
       ipc?.IpcSection?.toLowerCase().includes(lowerSearch)
     );
-  
+
     return matchesCaseFields || matchesReferences || matchesIPC;
   });
 
@@ -184,7 +232,7 @@ export default function CaseTable() {
                   </div>
                 </div>
                 <div className='w-100 h-[1px] bg-slate-100 my-4'></div>
-                <div className="flex justify-between items-center mb-4">
+                {/* <div className="flex justify-between items-center mb-4">
                   <div className="relative">
                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
@@ -198,6 +246,24 @@ export default function CaseTable() {
                   <div>
                     <span className="mr-2 text-xs">Total number of records: {filteredData.length}</span>
                   </div>
+                </div> */}
+                <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      type="text"
+                      placeholder="Search Cases..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-8"
+                    />
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-xs">Total number of records: {filteredData.length}</span>
+                    <Button onClick={exportToExcel} className="bg-green-600 text-white hover:bg-green-800">
+                      Export to Excel
+                    </Button>
+                  </div>
                 </div>
                 <Table>
                   <TableHeader>
@@ -205,7 +271,7 @@ export default function CaseTable() {
                       {/* <TableHead className="font-bold">PP User Name</TableHead> */}
                       <TableHead className="font-bold">Case Date</TableHead>
                       <TableHead className="font-bold">Case Number</TableHead>
-                      <TableHead className="font-bold">PS Name</TableHead>
+                      <TableHead className="font-bold">Police Station</TableHead>
                       <TableHead className="font-bold">Reference</TableHead>
                       <TableHead className="font-bold">Case Status</TableHead>
                       <TableHead className="font-bold">Action</TableHead>
@@ -276,10 +342,10 @@ export default function CaseTable() {
                                       <div className="space-y-2">
                                         <p><strong>Case Date:</strong> {formatDate(selectedCase.CaseDate)}</p>
                                         <p><strong>Case Number:</strong> {selectedCase.CaseNumber}</p>
-                                        <p><strong>SP Name:</strong> {selectedCase.SpName}</p>
-                                        <p><strong>PS Name:</strong> {selectedCase.PsName}</p>
+                                        <p><strong>District:</strong> {selectedCase.SpName}</p>
+                                        <p><strong>Police Station:</strong> {selectedCase.PsName}</p>
                                         <p><strong>Case Type:</strong> {selectedCase.CaseType}</p>
-                                        <p><strong>Case Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
+                                        <p><strong>Next Hearing Date:</strong> {formatDate(selectedCase.CaseHearingDate)}</p>
                                         <p>
                                           <strong>IPC Sections:</strong>{' '}
                                           {selectedCase.ipcSections && selectedCase.ipcSections.length > 0
