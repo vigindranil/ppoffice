@@ -529,6 +529,34 @@ export const createOrUpdateCaseV2 = async (req_body) => {
   });
 };
 
+export const createOrUpdateCaseV3 = async (req_body) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log(req_body);
+      const token = sessionStorage.getItem('token');
+
+      const response = await fetch(`${BASE_URL}cases/create-v3`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(req_body),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === 0) {
+        resolve(result); // Return the case ID
+      } else {
+        reject(result.message || 'An error occurred while creating the case');
+      }
+    } catch (error) {
+      reject(`Fetch error: ${error.message}`);
+    }
+  });
+};
+
 export const uploadCaseDocuments = async (caseId, documents, entryUserId) => {
   return new Promise(async (resolve, reject) => {
     try {

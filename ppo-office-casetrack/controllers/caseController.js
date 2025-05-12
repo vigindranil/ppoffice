@@ -1551,6 +1551,231 @@ class CaseController {
         }
     }
 
+    static async showallCaseBetweenRangeV3(req, res) {
+        try {
+            const { startDate, endDate, isAssign, EntryUserID } = req.body;
+
+            const mainQuery = "CALL sp_ShowallCaseBetweenRange(?, ?, ?, ?)";
+            const mainParams = [startDate, endDate, isAssign, EntryUserID];
+
+            // Step 1: Fetch all cases
+            const [caseResults] = await new Promise((resolve, reject) => {
+                db.query(mainQuery, mainParams, (err, results) => {
+                    if (err) {
+                        console.error("Error executing sp_ShowallCaseBetweenRange:", err);
+                        return reject(err);
+                    }
+                    resolve(results);
+                });
+            });
+
+            // Step 2: For each case, fetch its references and IPC sections
+            const enrichedCases = await Promise.all(
+                caseResults.map(async (caseItem) => {
+                    const { CaseId, UserId } = caseItem;
+
+                    // Fetch references
+                    const references = await new Promise((resolve, reject) => {
+                        db.query("CALL sp_getReferenceNumberByCaseId_v1(?, ?)", [CaseId, UserId], (err, results) => {
+                            if (err) return reject(err);
+                            resolve(results[0]);
+                        });
+                    });
+
+                    // Fetch IPC sections
+                    const ipcSections = await new Promise((resolve, reject) => {
+                        db.query("CALL sp_getIpcSectionByCaseId_v1(?, ?)", [CaseId, UserId], (err, results) => {
+                            if (err) return reject(err);
+                            resolve(results[0]);
+                        });
+                    });
+
+                    return {
+                        ...caseItem,
+                        references,
+                        ipcSections
+                    };
+                })
+            );
+
+            return ResponseHelper.success_reponse(res, "Data found", enrichedCases);
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred", error);
+        }
+    }
+
+    static async createCaseV3(req, res) {
+        try {
+            const payload = req.body;
+            console.log("Request Payload (V3):", payload);
+
+            const InCaseID = payload.CaseId || 0;
+            const {
+                caseNumber, CaseDate, districtId, psId, caseTypeId,
+                filingDate, petitionName, hearingDate, CourtCaseDescription,
+                EntryUserID, crmID, refferenceNumber, refferenceyear,
+                removedSections = [],
+                ipcSections = []  // Expecting { bnsId, otherIpcAct, otherBnsAct }
+            } = payload;
+
+            // ✅ Basic Payload Validation (Add more specific checks as needed)
+            try {
+                // Validate core fields, adapt if payload structure differs slightly for update vs create
+                validateFields({ caseNumber, EntryUserID, CaseDate, districtId, psId, caseTypeId, filingDate, petitionName, hearingDate, CourtCaseDescription, crmID, refferenceNumber, refferenceyear }, [
+                    "caseNumber", "EntryUserID", "CaseDate", "districtId", "psId",
+                    "caseTypeId", "filingDate", "petitionName", "hearingDate",
+                    "CourtCaseDescription", "crmID", "refferenceNumber", "refferenceyear",
+                ]);
+
+                if (!Array.isArray(ipcSections) || !ipcSections.every(sec => sec && typeof sec === 'object' && 'bnsId' in sec && 'otherIpcAct' in sec && 'otherBnsAct' in sec)) {
+                    throw new Error("Invalid format for ipcSections array.");
+                }
+
+            } catch (error) {
+                return res.status(400).json({ status: 1, message: `${error.message}. ErrorCode: ERR_VALIDATE_V3` });
+            }
+
+
+            // ✅ 1. Call sp_Createcase_v1 (Handles both create and update based on InCaseID)
+            const caseQuery = "CALL sp_Createcase_v2(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode, @Out_crmID)";
+            const caseParams = [
+                InCaseID, // 0 for create, actual CaseId for update
+                caseNumber, CaseDate, districtId, psId, caseTypeId,
+                filingDate, petitionName, hearingDate, CourtCaseDescription,
+                EntryUserID, crmID, refferenceNumber, refferenceyear,
+            ];
+
+            console.log("Executing sp_Createcase_v2 with params:", caseParams);
+            let returnedCaseID; 
+            let spErrorCode;
+            let returnedCrmID;
+
+            try {
+                await new Promise((resolve, reject) => {
+                    db.query(caseQuery, caseParams, (err) => {
+                        if (err) {
+                            console.error("Error executing sp_Createcase_v2:", err);
+                            return reject(err); // Reject on SP execution error
+                        }
+                        resolve();
+                    });
+                });
+
+                // Fetch output parameters @CaseID and @ErrorCode
+                const caseOutput = await new Promise((resolve, reject) => {
+                    db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode, @Out_crmID AS CrmID", (outputErr, results) => {
+                        if (outputErr) {
+                            console.error("Error fetching output parameters from sp_Createcase_v1:", outputErr);
+                            return reject(outputErr);
+                        }
+                        if (!results || results.length === 0) {
+                            console.error("No output parameters returned from sp_Createcase_v1.");
+                            return reject(new Error("Failed to get output from case creation/update."));
+                        }
+                        resolve(results[0]); // Resolve with the first row containing @CaseID, @ErrorCode
+                    });
+                });
+
+                returnedCaseID = caseOutput.CaseID;
+                spErrorCode = caseOutput.ErrorCode;
+                returnedCrmID = caseOutput.CrmID;
+
+                console.log(`sp_Createcase_v1 Result: CaseID=${returnedCaseID}, ErrorCode=${spErrorCode}, CrmID=${returnedCrmID}`);
+
+                // Handle specific errors returned by the SP
+                if (spErrorCode !== 0) { // 0 means success
+                    // Map ErrorCode to a meaningful message if possible
+                    throw new Error(`Case ${InCaseID === 0 ? 'creation' : 'update'} failed. SP Error Code: ${spErrorCode}`);
+                }
+                if (!returnedCaseID) {
+                    // This shouldn't happen if ErrorCode is 0, but check just in case
+                    throw new Error(`Case ${InCaseID === 0 ? 'creation' : 'update'} succeeded but returned no CaseID.`);
+                }
+
+            } catch (dbError) {
+                console.error("Database error during case save/update:", dbError);
+                // Return a more specific error based on dbError if possible
+                return res.status(500).json({ status: 1, message: `Database error during case save/update: ${dbError.message}. ErrorCode: ERR_CASE_SP_V1` });
+            }
+
+            const finalCaseId = returnedCaseID; // Use the ID returned by the SP
+            const finalCrmId = returnedCrmID;
+            console.log(`Case ${InCaseID === 0 ? 'created' : 'updated'} successfully with CaseID:`, finalCaseId);
+
+            // ✅ 2. Handle Deletions for IPC sections
+            if (Array.isArray(removedSections) && removedSections.length > 0) {
+                const deleteQuery = "CALL sp_deleteIpcSectionById(?, ?, @ErrorCode)";
+            
+                for (const cisId of removedSections) {
+                    if (!cisId || isNaN(cisId)) {
+                        console.warn("Skipping invalid CisID in removedSections:", cisId);
+                        continue;
+                    }
+            
+                    console.log(`Deleting IPC Section with CisID: ${cisId}`);
+            
+                    await new Promise((resolve, reject) => {
+                        db.query(deleteQuery, [cisId, EntryUserID], (err) => {
+                            if (err) {
+                                console.error(`Error executing sp_deleteIpcSectionById for CisID ${cisId}:`, err);
+                                // Optional: reject if deletions are critical
+                                return reject(err);
+                            }
+                            resolve();
+                        });
+                    });
+                }
+            }
+
+            // ✅ 3. Save/Update IPC/BNS Sections using sp_saveipcsectionBycaseId_v1
+
+            if (Array.isArray(ipcSections) && ipcSections.length > 0) {
+                // Updated query to match the new SP signature
+                const ipcQuery = "CALL sp_saveipcsectionBycaseId(?, ?, ?, ?, ?, @ErrorCode)";
+
+                for (const section of ipcSections) {
+                    // Destructure all required fields from the frontend object
+                    const { bnsId, otherIpcAct, otherBnsAct } = section;
+
+                    // Basic validation for the destructured values
+                    if (bnsId === undefined || bnsId === null || otherIpcAct === undefined || otherIpcAct === null || otherBnsAct === undefined || otherBnsAct === null) {
+                        console.warn("Skipping invalid IPC/BNS section object:", section);
+                        continue; // Skip this iteration
+                    }
+
+                    console.log("Saving IPC/BNS section for CaseID:", finalCaseId, "with bnsId:", bnsId, "OtherIPC:", otherIpcAct, "OtherBNS:", otherBnsAct);
+
+                    // Pass parameters in the correct order for the new SP
+                    const ipcParams = [finalCaseId, bnsId, otherIpcAct, otherBnsAct, EntryUserID];
+
+                    await new Promise((resolve, reject) => {
+                        db.query(ipcQuery, ipcParams, (err) => {
+                            if (err) {
+                                console.error("Error executing sp_saveipcsectionBycaseId:", err);
+                                // Decide if you want to stop or just log the error
+                                // Consider rejecting if a critical save fails: return reject(err);
+                            }
+                            resolve(); // Resolve even if one fails, depends on requirement
+                        });
+                    });
+                }
+            }
+
+
+            // ✅ Final success response
+            return res.status(InCaseID === 0 ? 201 : 200).json({ // 201 for created, 200 for updated
+                status: 0,
+                message: `Case ${InCaseID === 0 ? 'created' : 'updated'} successfully.`,
+                data: { CaseID: finalCaseId , CrmID: finalCrmId }
+            });
+
+        } catch (error) { // Catch errors from validation or unhandled SP errors
+            console.error(`Unexpected error in ${req.body.CaseId ? 'Update' : 'Create'} Case V3:`, error);
+            return res.status(500).json({ status: 1, message: error.message || "An unexpected error occurred.", ErrorCode: "ERR_UNEXPECTED_V3" });
+        }
+    }
+
 }
 
 

@@ -239,6 +239,31 @@ const data = {
       ],
     },
     {
+      title: "Actions",
+      url: "#",
+      icon: FolderPlus,
+      isActive: true,
+      type: 10,
+      items: [
+        {
+          title: "Add/Edit Case & CRAN",
+          url: "/pp-office-admin-add-case",
+        },
+        // {
+        //   title: "Add CRR",
+        //   url: "/add-crr",
+        // },
+        // {
+        //   title: "Add CRAN",
+        //   url: "/add-cran",
+        // },
+        {
+          title: "Add New Advocate",
+          url: "/add-pp-user",
+        },
+      ],
+    },
+    {
       title: "Reports",
       url: "#",
       icon: FolderSearch,
@@ -256,31 +281,6 @@ const data = {
         {
           title: "All Cases",
           url: "/pp-office-admin-all-cases",
-        },
-      ],
-    },
-    {
-      title: "Actions",
-      url: "#",
-      icon: FolderPlus,
-      isActive: true,
-      type: 10,
-      items: [
-        {
-          title: "Add Case",
-          url: "/pp-office-admin-add-case",
-        },
-        // {
-        //   title: "Add CRR",
-        //   url: "/add-crr",
-        // },
-        {
-          title: "Add CRAN",
-          url: "/add-cran",
-        },
-        {
-          title: "Add New Advocate",
-          url: "/add-pp-user",
         },
       ],
     },
