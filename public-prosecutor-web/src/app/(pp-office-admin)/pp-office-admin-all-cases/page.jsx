@@ -56,6 +56,7 @@ export default function CaseTable() {
         "Case Date": formatDate(item.CaseDate),
         "Case Number": item.CaseNumber,
         "Police Station": item.PsName,
+        "Petitioner Name": item.PetitionName,
         "References": referencesFormatted,
         "Case Status": item.IsAssigned ? 'Assigned' : 'Pending',
         "IPC Sections": ipcFormatted
@@ -283,7 +284,7 @@ export default function CaseTable() {
                         <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
                         <TableCell>{caseItem.CaseNumber}</TableCell>
                         <TableCell>{caseItem.PsName}</TableCell>
-                        <TableCell>
+                        <TableCell className="max-w-[300px]">
                           {caseItem.references && caseItem.references.length > 0 ? (
                             <HoverCard>
                               <HoverCardTrigger asChild>
