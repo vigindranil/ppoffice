@@ -1,786 +1,440 @@
 const nodemailer = require("nodemailer");
+const CryptoJS = require('crypto-js');
 const ResponseHelper = require('./ResponseHelper');
-const db = require("../config/db"); // Import the DB connection
-const EmailTemplate = require('./emailTemplate'); // Import the EmailTemplate class
+const db = require("../config/db"); 
+const EmailTemplate = require('./emailTemplate');
+const { BASE_URL, AES_SECRET } = process.env;
+
+const generateEncryptedToken = (data) => {
+  const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), AES_SECRET).toString();
+  return encodeURIComponent(ciphertext);
+};
 
 class EmailController {
 
-    // static async sendEmail(req, res) {
-    //     try {
-    //         console.log("🔥 Request Body:", req.body); // Debugging
-    
-    //         const { CaseID } = req.body;
-    
-    //         // ✅ Validate required fields
-    //         if (!CaseID) {
-    //             return ResponseHelper.error(res, "CaseID is required");
-    //         }
-    
-    //         // ✅ Call stored procedure to get email details
-    //         const query = "CALL sp_sendEmail(?)";
-    //         db.query(query, [CaseID], async (err, results) => {
-    //             if (err) {
-    //                 console.error("❌ Error executing stored procedure:", err);
-    //                 return res.status(500).json({
-    //                     status: 1,
-    //                     message: "Error retrieving data from the database",
-    //                 });
-    //             }
-    
-    //             const rows = results[0];
-    //             const emailDetails = rows[0];
-    
-    //             if (!emailDetails) {
-    //                 return res.status(404).json({
-    //                     status: 1,
-    //                     message: "No email details found for the given CaseID.",
-    //                 });
-    //             }
-    
-    //             // ✅ Extract required fields correctly
-    //             const { districtEmail, psEmail, rolegalEmail, psCaseNo, dated, hearingDate, ipcSection, districtId, policestationId, PPId, PPUserName } = emailDetails;
-    
-    //             // ✅ Define recipients and their corresponding user types
-    //             const recipients = [
-    //                 { email: districtEmail, userTypeId: 30, districtId, policestationId: 0 },  // District Recipient
-    //                 { email: psEmail, userTypeId: 50, districtId: 0, policestationId },        // Police Station Recipient
-    //                 { email: rolegalEmail, userTypeId: 70, districtId, policestationId: 0 }    // RO Legal Recipient
-    //             ];
-    
-    //             // ✅ Filter out null or empty emails
-    //             const validRecipients = recipients.filter(r => r.email);
-    
-    //             if (validRecipients.length === 0) {
-    //                 return res.status(400).json({
-    //                     status: 1,
-    //                     message: "No valid recipients found for email.",
-    //                 });
-    //             }
-    
-    //             // ✅ Generate email content
-    //             const emailTemplate = new EmailTemplate({
-    //                 psCaseNo,
-    //                 dated,
-    //                 ipcSection,
-    //                 hearingDate,
-    //             });
-    
-    //             const transporter = nodemailer.createTransport({
-    //                 host: "smtp.gmail.com",
-    //                 port: 587,
-    //                 secure: false,
-    //                 auth: {
-    //                     user: process.env.EMAIL_USER,
-    //                     pass: process.env.EMAIL_PASSWORD,
-    //                 },
-    //             });
-    
-    //             const emailContent = emailTemplate.generateEmailContent();
-    //             let emailSendSuccess = false;
-    
-    //             // ✅ Send email to all valid recipients and log results
-    //             for (const recipient of validRecipients) {
-    //                 const mailOptions = {
-    //                     from: process.env.EMAIL_USER,
-    //                     to: recipient.email,
-    //                     subject: `Case Update: ${psCaseNo}`,
-    //                     html: `<pre>${emailContent}</pre>`,
-    //                     dsn: {
-    //                         id: `dsn-${CaseID}`,
-    //                         return: 'headers',
-    //                         notify: ['failure', 'delay'],
-    //                         recipient: process.env.EMAIL_USER,
-    //                     },
-    //                 };
-    
-    //                 try {
-    //                     const info = await transporter.sendMail(mailOptions);
-    //                     console.log(`✅ Email sent to ${recipient.email}`);
-    
-    //                     emailSendSuccess = true; // ✅ At least one email was sent successfully
-    
-    //                     // ✅ Log successful email in `sp_logEmailDetails`
-    //                     const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    //                     const logParams = [
-    //                         info.messageId, // Message ID from nodemailer
-    //                         CaseID,         // Case ID
-    //                         psCaseNo,       // Case number
-    //                         dated,          // Case Date
-    //                         ipcSection,
-    //                         hearingDate,    // Hearing Date
-    //                         recipient.email, // ✅ Email recipient
-    //                         recipient.districtId, // ✅ District ID or 0 for PS
-    //                         recipient.policestationId, // ✅ PS ID or 0 for District
-    //                         PPId,            // ✅ Corrected PP ID
-    //                         recipient.userTypeId, // ✅ Ensured userTypeId is an integer
-    //                         1                // ✅ Success (Delivery Status)
-    //                     ];
-    
-    //                     db.query(logQuery, logParams, (logErr) => {
-    //                         if (logErr) {
-    //                             console.error(`❌ Error logging email details for ${recipient.email}:`, logErr);
-    //                         }
-    //                     });
-    
-    //                 } catch (emailError) {
-    //                     console.error(`❌ Failed to send email to ${recipient.email}:`, emailError);
-    
-    //                     // ✅ Log failed email attempt in `sp_logEmailDetails`
-    //                     const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    //                     const logParams = [
-    //                         null,         // No message ID since email failed
-    //                         CaseID,
-    //                         psCaseNo,
-    //                         dated,
-    //                         ipcSection,
-    //                         hearingDate,
-    //                         recipient.email,
-    //                         recipient.districtId, // ✅ District ID or 0 for PS
-    //                         recipient.policestationId, // ✅ PS ID or 0 for District
-    //                         PPId,            // ✅ Corrected PP ID
-    //                         recipient.userTypeId,
-    //                         0             // ✅ Failure (Delivery Status)
-    //                     ];
-    
-    //                     db.query(logQuery, logParams, (logErr) => {
-    //                         if (logErr) {
-    //                             console.error(`❌ Error logging failed email details for ${recipient.email}:`, logErr);
-    //                         }
-    //                     });
-    //                 }
-    //             }
-    
-    //             // ✅ Respond based on email sending status
-    //             if (emailSendSuccess) {
-    //                 return res.status(200).json({
-    //                     status: 0,
-    //                     message: "Email(s) sent and logged successfully.",
-    //                 });
-    //             } else {
-    //                 return res.status(500).json({
-    //                     status: 1,
-    //                     message: "Failed to send all emails.",
-    //                 });
-    //             }
-    
-    //         });
-    
-    //     } catch (error) {
-    //         console.error("❌ Unexpected error:", error);
-    //         return res.status(500).json({
-    //             status: 1,
-    //             message: "An unexpected error occurred.",
-    //             error: error.message,
-    //         });
-    //     }
-    // }
-
-
-    static async sendEmail(req, res) {
-        try {
-            console.log("🔥 Request Body:", req.body); // Debugging
-    
-            const { CaseID, DistrictID, PSID } = req.body;
-    
-            // ✅ Validate required fields
-            if (!CaseID || !DistrictID || !PSID) {
-                return res.status(400).json({
-                    status: 1,
-                    message: "Fields 'CaseID', 'DistrictID', and 'PSID' are required.",
-                });
-            }
-    
-            // ✅ Call the updated stored procedure
-            const query = "CALL sp_sendEmailv1(?, ?, ?)";
-            db.query(query, [CaseID, DistrictID, PSID], async (err, results) => {
+    static async callStoredProcedure(spName, params) {
+        return new Promise((resolve, reject) => {
+            db.query(`CALL ${spName}(${params.map(() => '?').join(',')})`, params, (err, results) => {
                 if (err) {
-                    console.error("❌ Error executing stored procedure:", err);
-                    return res.status(500).json({
-                        status: 1,
-                        message: "Error retrieving data from the database.",
-                    });
+                    console.error(`❌ Error executing stored procedure ${spName}:`, err);
+                    return reject(err);
                 }
-    
-                const rows = results[0];
-                const emailDetails = rows[0];
-    
-                if (!emailDetails) {
-                    return res.status(404).json({
-                        status: 1,
-                        message: "No email details found for the given CaseID.",
-                    });
-                }
-    
-                // ✅ Extract required fields correctly
-                const { 
-                    AssignedPPs, 
-                    DistrictEmail, 
-                    ROLegalEmail, 
-                    PoliceEmail, 
-                    CaseNumber, 
-                    IPCSection, 
-                    BNSSection, 
-                    CaseDate, 
-                    HearingDate 
-                } = emailDetails;
-    
-                // ✅ Define recipients and their corresponding user types
-                const recipients = [
-                    { email: DistrictEmail, userTypeId: 30, districtId: DistrictID, policestationId: 0 },  // District Recipient
-                    { email: PoliceEmail, userTypeId: 50, districtId: 0, policestationId: PSID },          // Police Station Recipient
-                    { email: ROLegalEmail, userTypeId: 70, districtId: DistrictID, policestationId: 0 }    // RO Legal Recipient
-                ];
-    
-                // ✅ Filter out null or empty emails
-                const validRecipients = recipients.filter(r => r.email);
-    
-                if (validRecipients.length === 0) {
-                    return res.status(400).json({
-                        status: 1,
-                        message: "No valid recipients found for email.",
-                    });
-                }
-    
-                // ✅ Generate email content
-                // const emailTemplate = new EmailTemplate({
-                //     CaseNumber,
-                //     CaseDate,
-                //     IPCSection,
-                //     BNSSection,
-                //     HearingDate,
-                //     AssignedPPs
-                // });
-
-                // console.log("📧 Template input:", {
-                //     crm: BNSSection,
-                //     psCaseNo: CaseNumber,
-                //     dated: CaseDate,
-                //     ipcSection: IPCSection,
-                //     hearingDate: HearingDate,
-                //     PPName: AssignedPPs
-                //   });
-
-                console.log({
-                    crm: BNSSection, 
-                    psCaseNo: CaseNumber,
-                    dated: CaseDate,
-                    ipcSection: IPCSection,
-                    hearingDate: HearingDate,
-                    PPName: AssignedPPs,       
-                    SPName: emailDetails.SPName || "Unknown", 
-                    PSName: emailDetails.PSName || "Unknown",  
-                });
-
-                const emailTemplate = new EmailTemplate({
-                    crm: BNSSection, 
-                    psCaseNo: CaseNumber,
-                    dated: CaseDate,
-                    ipcSection: IPCSection,
-                    hearingDate: HearingDate,
-                    PPName: AssignedPPs,       
-                    SPName: emailDetails.SPName || "Unknown", 
-                    PSName: emailDetails.PSName || "Unknown",  
-                });
-    
-                const transporter = nodemailer.createTransport({
-                    host: "smtp.gmail.com",
-                    port: 587,
-                    secure: false,
-                    auth: {
-                        user: process.env.EMAIL_USER,
-                        pass: process.env.EMAIL_PASSWORD,
-                    },
-                });
-    
-                const emailContent = emailTemplate.generateEmailContent();
-                let emailSendSuccess = false;
-    
-                // ✅ Send email to all valid recipients and log results
-                for (const recipient of validRecipients) {
-                    const mailOptions = {
-                        from: process.env.EMAIL_USER,
-                        to: recipient.email,
-                        subject: `Case Update: ${CaseNumber}`,
-                        html: `<pre>${emailContent}</pre>`,
-                        dsn: {
-                            id: `dsn-${CaseID}`,
-                            return: 'headers',
-                            notify: ['failure', 'delay'],
-                            recipient: process.env.EMAIL_USER,
-                        },
-                    };
-    
-                    try {
-                        const info = await transporter.sendMail(mailOptions);
-                        console.log(`✅ Email sent to ${recipient.email}`);
-    
-                        emailSendSuccess = true; // ✅ At least one email was sent successfully
-    
-                        // ✅ Log successful email in `sp_logEmailDetails`
-                        const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                        const logParams = [
-                            info.messageId, // Message ID from nodemailer
-                            CaseID,         // Case ID
-                            CaseNumber,     // Case number
-                            CaseDate,       // Case Date
-                            IPCSection,
-                            HearingDate,    // Hearing Date
-                            recipient.email, // ✅ Email recipient
-                            recipient.districtId, // ✅ District ID or 0 for PS
-                            recipient.policestationId, // ✅ PS ID or 0 for District
-                            0,               // PPId (not applicable here)
-                            recipient.userTypeId, // ✅ Ensured userTypeId is correct
-                            1                // ✅ Success (Delivery Status)
-                        ];
-    
-                        db.query(logQuery, logParams, (logErr) => {
-                            if (logErr) {
-                                console.error(`❌ Error logging email details for ${recipient.email}:`, logErr);
-                            }
-                        });
-    
-                    } catch (emailError) {
-                        console.error(`❌ Failed to send email to ${recipient.email}:`, emailError);
-    
-                        // ✅ Log failed email attempt in `sp_logEmailDetails`
-                        const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                        const logParams = [
-                            null,         // No message ID since email failed
-                            CaseID,
-                            CaseNumber,
-                            CaseDate,
-                            IPCSection,
-                            HearingDate,
-                            recipient.email,
-                            recipient.districtId, // ✅ District ID or 0 for PS
-                            recipient.policestationId, // ✅ PS ID or 0 for District
-                            0,               // PPId (not applicable here)
-                            recipient.userTypeId,
-                            0             // ✅ Failure (Delivery Status)
-                        ];
-    
-                        db.query(logQuery, logParams, (logErr) => {
-                            if (logErr) {
-                                console.error(`❌ Error logging failed email details for ${recipient.email}:`, logErr);
-                            }
-                        });
-                    }
-                }
-    
-                // ✅ Respond based on email sending status
-                if (emailSendSuccess) {
-                    return res.status(200).json({
-                        status: 0,
-                        message: "Email(s) sent and logged successfully.",
-                    });
-                } else {
-                    return res.status(500).json({
-                        status: 1,
-                        message: "Failed to send all emails.",
-                    });
-                }
-    
+                resolve(results[0]);
             });
-    
-        } catch (error) {
-            console.error("❌ Unexpected error:", error);
-            return res.status(500).json({
+        });
+    }
+
+    static async sendEmail(req, res) { 
+    try {
+        console.log("🔥 Request Body for sendEmail:", req.body);
+
+        const { CaseID, Departments } = req.body; // Payload: {CaseID: "58", Departments: [{DistrictID: 5, PSID: 70}, ...]}
+
+        if (!CaseID || !Departments || !Array.isArray(Departments) || Departments.length === 0) {
+            return res.status(400).json({
                 status: 1,
-                message: "An unexpected error occurred.",
-                error: error.message,
+                message: "Fields 'CaseID' and a non-empty array 'Departments' are required.",
             });
         }
-    }    
-    
 
-    // static async sendEmailTO(req, res) {
-    //     try {
-    //         console.log("🔥 Request Body:", req.body); // Debugging
-    
-    //         const { CaseID, PPuserID } = req.body;
-    
-    //         // ✅ Validate required fields
-    //         if (!CaseID || !PPuserID) {
-    //             return res.status(400).json({
-    //                 status: 1,
-    //                 message: "Fields 'CaseID' and 'PPuserID' are required.",
-    //             });
-    //         }
-    
-    //         // ✅ Call stored procedure to get email details
-    //         const query = "CALL sp_sendEmail_pp(?, ?)";
-    //         db.query(query, [CaseID, PPuserID], async (err, results) => {
-    //             if (err) {
-    //                 console.error("❌ Error executing stored procedure:", err);
-    //                 return res.status(500).json({
-    //                     status: 1,
-    //                     message: "Error retrieving data from the database.",
-    //                 });
-    //             }
-    
-    //             const rows = results[0];
-    //             const emailDetails = rows[0];
-    
-    //             if (!emailDetails) {
-    //                 return res.status(404).json({
-    //                     status: 1,
-    //                     message: "No email details found for the given CaseID.",
-    //                 });
-    //             }
-    
-    //             // ✅ Extract required fields correctly
-    //             const { ppEmail, psCaseNo, dated, hearingDate, ipcSection, PPName, SPName, PSName, PPId, PPUserName } = emailDetails;
-    
-    //             // ✅ Define recipients
-    //             const recipients = [
-    //                 { email: ppEmail, userTypeId: 60 }, // Public Prosecutor (PP)
-    //             ];
-    
-    //             // ✅ Filter out null or empty emails
-    //             const validRecipients = recipients.filter(r => r.email);
-    
-    //             if (validRecipients.length === 0) {
-    //                 return res.status(400).json({
-    //                     status: 1,
-    //                     message: "No valid recipients found for email.",
-    //                 });
-    //             }
-    
-    //             // ✅ Generate email content for PP
-    //             const emailTemplatePP = new EmailTemplate({
-    //                 psCaseNo,
-    //                 dated,
-    //                 ipcSection,
-    //                 SPName,
-    //                 PSName,
-    //                 hearingDate,
-    //             });
-    
-    //             const transporter = nodemailer.createTransport({
-    //                 host: "smtp.gmail.com",
-    //                 port: 587,
-    //                 secure: false,
-    //                 auth: {
-    //                     user: process.env.EMAIL_USER,
-    //                     pass: process.env.EMAIL_PASSWORD,
-    //                 },
-    //             });
-    
-    //             const emailContentPP = emailTemplatePP.generateEmailCopy();
-    //             let emailSendSuccess = false;
-    
-    //             // ✅ Send email to all valid recipients and log results
-    //             for (const recipient of validRecipients) {
-    //                 const mailOptions = {
-    //                     from: process.env.EMAIL_USER,
-    //                     to: recipient.email,
-    //                     subject: `Case Update: ${psCaseNo}`,
-    //                     html: `<pre>${emailContentPP}</pre>`,
-    //                     dsn: {
-    //                         id: `dsn-${CaseID}`,
-    //                         return: 'headers',
-    //                         notify: ['failure', 'delay'],
-    //                         recipient: process.env.EMAIL_USER,
-    //                     },
-    //                 };
-    
-    //                 try {
-    //                     const info = await transporter.sendMail(mailOptions);
-    //                     console.log(`✅ Email sent to ${recipient.email}`);
-    
-    //                     emailSendSuccess = true; // ✅ At least one email was sent successfully
-    
-    //                     // ✅ Log successful email in `sp_logEmailDetails`
-    //                     const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    //                     const logParams = [
-    //                         info.messageId, // Message ID from nodemailer
-    //                         CaseID,         // Case ID
-    //                         psCaseNo,       // Case number
-    //                         dated,          // Case Date
-    //                         ipcSection,
-    //                         hearingDate,    // Hearing Date
-    //                         recipient.email, // ✅ Email recipient
-    //                         0,           // District ID (Not available)
-    //                         0,           // Police Station ID (Not available)
-    //                         PPId,           // ✅ Corrected PP ID
-    //                         recipient.userTypeId, // ✅ Ensured userTypeId is correct (60 for PP)
-    //                         1                // ✅ Success (Delivery Status)
-    //                     ];
-    
-    //                     db.query(logQuery, logParams, (logErr) => {
-    //                         if (logErr) {
-    //                             console.error(`❌ Error logging email details for ${recipient.email}:`, logErr);
-    //                         }
-    //                     });
-    
-    //                 } catch (emailError) {
-    //                     console.error(`❌ Failed to send email to ${recipient.email}:`, emailError);
-    
-    //                     // ✅ Log failed email attempt in `sp_logEmailDetails`
-    //                     const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    //                     const logParams = [
-    //                         null,         // No message ID since email failed
-    //                         CaseID,
-    //                         psCaseNo,
-    //                         dated,
-    //                         ipcSection,
-    //                         hearingDate,
-    //                         recipient.email,
-    //                         0,           // District ID (Not available)
-    //                         0,           // Police Station ID (Not available)
-    //                         PPId,           // ✅ Corrected PP ID
-    //                         recipient.userTypeId,
-    //                         0             // ✅ Failure (Delivery Status)
-    //                     ];
-    
-    //                     db.query(logQuery, logParams, (logErr) => {
-    //                         if (logErr) {
-    //                             console.error(`❌ Error logging failed email details for ${recipient.email}:`, logErr);
-    //                         }
-    //                     });
-    //                 }
-    //             }
-    
-    //             // ✅ Respond based on email sending status
-    //             if (emailSendSuccess) {
-    //                 return res.status(200).json({
-    //                     status: 0,
-    //                     message: "Email(s) sent and logged successfully.",
-    //                 });
-    //             } else {
-    //                 return res.status(500).json({
-    //                     status: 1,
-    //                     message: "Failed to send all emails.",
-    //                 });
-    //             }
-    
-    //         });
-    
-    //     } catch (error) {
-    //         console.error("❌ Unexpected error:", error);
-    //         return res.status(500).json({
-    //             status: 1,
-    //             message: "An unexpected error occurred.",
-    //             error: error.message,
-    //         });
-    //     }
-    // }    
-    
+        const recipientEmails = new Set(); // To collect unique To/BCC emails for departments
+        const recipientDataForLogging = [];
+        let commonCaseDetailsFromSP = null; // To store CaseNumber, IPCSection etc.
 
-    static async sendEmailTO(req, res) {
+        // 1. Fetch email addresses for the specified departments (for TO/BCC list)
+        for (const dept of Departments) {
+            const { DistrictID, PSID } = dept;
+            if (DistrictID === undefined || PSID === undefined) {
+                 console.warn("Skipping department due to missing DistrictID or PSID:", dept);
+                 continue;
+            }
+            try {
+                // sp_sendEmailv1 is called per department combination from the payload
+                const results = await EmailController.callStoredProcedure('sp_sendEmailv1', [CaseID, DistrictID, PSID]);
+                const emailDetails = results[0];
+
+                if (emailDetails) {
+                    if (!commonCaseDetailsFromSP) {
+                        commonCaseDetailsFromSP = emailDetails; // Capture common details once
+                    }
+                    // Collect all relevant emails from this department
+                    if (emailDetails.DistrictEmail) recipientEmails.add(emailDetails.DistrictEmail.trim());
+                    if (emailDetails.ROLegalEmail) recipientEmails.add(emailDetails.ROLegalEmail.trim());
+                    if (emailDetails.PoliceEmail) recipientEmails.add(emailDetails.PoliceEmail.trim());
+                    
+                    // For logging, we might need to log against the primary contact for this department pair
+                    // This part of logging needs refinement based on how sp_logEmailDetails is structured for departments
+                    // For now, just collect that an attempt will be made for these primary targets
+                    if (emailDetails.DistrictEmail) recipientDataForLogging.push({ email: emailDetails.DistrictEmail, userTypeId: 30, DistrictID, PSID:0, CaseID });
+                    if (emailDetails.PoliceEmail) recipientDataForLogging.push({ email: emailDetails.PoliceEmail, userTypeId: 50, DistrictID:0, PSID, CaseID });
+                    if (emailDetails.ROLegalEmail) recipientDataForLogging.push({ email: emailDetails.ROLegalEmail, userTypeId: 70, DistrictID, PSID:0, CaseID });
+
+                } else {
+                    console.warn(`No email details from sp_sendEmailv1 for CaseID ${CaseID}, DistrictID ${DistrictID}, PSID ${PSID}`);
+                }
+            } catch (error) {
+                console.error(`❌ Error processing department D:${DistrictID}/PS:${PSID} with sp_sendEmailv1:`, error.message);
+            }
+        }
+
+        if (recipientEmails.size === 0 || !commonCaseDetailsFromSP) {
+            return res.status(404).json({
+                status: 1,
+                message: "No valid department recipients found or case details missing.",
+            });
+        }
+
+        // 2. Fetch all assigned advocates for the case to include in the email body
+        let assignedAdvocatesListHTML = 'No advocates assigned or found.';
         try {
-            console.log("🔥 Request Body:", req.body); // Debugging
-    
-            const { CaseID, PPuserID } = req.body;
-    
-            // ✅ Validate required fields
-            if (!CaseID || !PPuserID) {
-                return res.status(400).json({
-                    status: 1,
-                    message: "Fields 'CaseID' and 'PPuserID' are required.",
+            const assignedAdvocates = await EmailController.callStoredProcedure('sp_getAssignedAdvocatelistByCaseId', [CaseID]);
+            if (assignedAdvocates && assignedAdvocates.length > 0) {
+                assignedAdvocatesListHTML = assignedAdvocates
+                    .map(adv => `${adv.advocateName}${adv.advocateContactNumber ? ` (${adv.advocateContactNumber})` : ''}`)
+                    .join('<br>');
+            }
+        } catch (error) {
+            console.error(`❌ Error fetching assigned advocates for CaseID ${CaseID} (sendEmail):`, error.message);
+            assignedAdvocatesListHTML = "Could not retrieve advocate list.";
+        }
+
+        // 3. Fetch all assigned departments for the case to determine CC list (those NOT in the primary 'Departments' payload)
+        const ccDepartmentEmails = new Set();
+        const payloadDepartmentKeys = new Set(Departments.map(d => `${d.DistrictID}-${d.PSID}`)); // For easy lookup
+
+        try {
+            const allCaseDepartments = await EmailController.callStoredProcedure('sp_getAssignedDistrictAndPoliceByCaseId', [CaseID]);
+            if (allCaseDepartments && allCaseDepartments.length > 0) {
+                allCaseDepartments.forEach(dept => {
+                    const deptKey = `${dept.districtId}-${dept.policeStationId}`;
+                    if (!payloadDepartmentKeys.has(deptKey)) { // If this department was not a primary target
+                        if (dept.districtEmail) ccDepartmentEmails.add(dept.districtEmail.trim());
+                        if (dept.rolegalEmail) ccDepartmentEmails.add(dept.rolegalEmail.trim());
+                        if (dept.policeEmail) ccDepartmentEmails.add(dept.policeEmail.trim());
+                    }
                 });
             }
-    
-            // ✅ Call the updated stored procedure
-            const query = "CALL sp_sendEmail_ppv1(?, ?)";
-            db.query(query, [CaseID, PPuserID], async (err, results) => {
-                if (err) {
-                    console.error("❌ Error executing stored procedure:", err);
-                    return res.status(500).json({
-                        status: 1,
-                        message: "Error retrieving data from the database.",
-                    });
-                }
-    
-                const rows = results[0];
-                const emailDetails = rows[0];
-    
-                if (!emailDetails) {
-                    return res.status(404).json({
-                        status: 1,
-                        message: "No email details found for the given CaseID.",
-                    });
-                }
-    
-                // ✅ Extract required fields correctly
-                const { 
-                    PPEmail, 
-                    CaseNumber, 
-                    IPCSection, 
-                    BNSSection, 
-                    CaseDate, 
-                    HearingDate, 
-                    Districts, 
-                    casePoliceStationName,
-                    PoliceStations 
-                } = emailDetails;
-    
-                // ✅ Define recipient
-                const recipient = { email: PPEmail, userTypeId: 60 }; // Public Prosecutor (PP)
-    
-                // ✅ Validate email before proceeding
-                if (!recipient.email) {
-                    return res.status(400).json({
-                        status: 1,
-                        message: "No valid recipients found for email.",
-                    });
-                }
-    
-                // ✅ Generate email content for PP
-                // const emailTemplatePP = new EmailTemplate({
-                //     CaseNumber,
-                //     CaseDate,
-                //     IPCSection,
-                //     BNSSection,
-                //     HearingDate,
-                //     Districts,
-                //     casePoliceStationName,
-                //     PoliceStations
-                // });
-
-                // const emailTemplatePP = new EmailTemplate({
-                //     crm: BNSSection,
-                //     psCaseNo: CaseNumber,
-                //     dated: CaseDate,
-                //     ipcSection: IPCSection,
-                //     hearingDate: HearingDate,
-                //     SPName: Districts,      
-                //     PSName: casePoliceStationName || PoliceStations,  
-                //     PPName: "You", 
-                //   });
-
-                console.log(emailDetails); // debug
-
-                console.log("debugging...", {
-                    crm: emailDetails.BNSSection,
-                    psCaseNo: emailDetails.psCaseNo,
-                    dated: emailDetails.dated,
-                    ipcSection: emailDetails.IPCSection,
-                    hearingDate: emailDetails.hearingDate,
-                    SPName: emailDetails.SPName,
-                    PSName: emailDetails.PSName,
-                    PPName: "You"
-                    });
-                
-                const emailTemplatePP = new EmailTemplate({
-                crm: emailDetails.BNSSection,
-                psCaseNo: emailDetails.psCaseNo,
-                dated: emailDetails.dated,
-                ipcSection: emailDetails.IPCSection,
-                hearingDate: emailDetails.hearingDate,
-                SPName: emailDetails.SPName,
-                PSName: emailDetails.PSName,
-                PPName: "You"
-                });
-    
-                const transporter = nodemailer.createTransport({
-                    host: "smtp.gmail.com",
-                    port: 587,
-                    secure: false,
-                    auth: {
-                        user: process.env.EMAIL_USER,
-                        pass: process.env.EMAIL_PASSWORD,
-                    },
-                });
-    
-                const emailContentPP = emailTemplatePP.generateEmailCopy();
-                let emailSendSuccess = false;
-    
-                // ✅ Send email
-                const mailOptions = {
-                    from: process.env.EMAIL_USER,
-                    to: recipient.email,
-                    subject: `Case Update: ${emailDetails.psCaseNo}`,
-                    html: `<pre>${emailContentPP}</pre>`,
-                    dsn: {
-                        id: `dsn-${CaseID}`,
-                        return: 'headers',
-                        notify: ['failure', 'delay'],
-                        recipient: process.env.EMAIL_USER,
-                    },
-                };
-    
-                try {
-                    const info = await transporter.sendMail(mailOptions);
-                    console.log(`✅ Email sent to ${recipient.email}`);
-    
-                    emailSendSuccess = true; // ✅ Email was sent successfully
-    
-                    // ✅ Log successful email in `sp_logEmailDetails`
-                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    const logParams = [
-                        info.messageId, // Message ID from nodemailer
-                        CaseID,         // Case ID
-                        CaseNumber,     // Case number
-                        CaseDate,       // Case Date
-                        IPCSection,
-                        HearingDate,    // Hearing Date
-                        recipient.email, // ✅ Email recipient
-                        0,              // District ID (Not applicable here)
-                        0,              // Police Station ID (Not applicable here)
-                        PPuserID,       // ✅ Corrected PP ID
-                        recipient.userTypeId, // ✅ Ensured userTypeId is correct (60 for PP)
-                        1                // ✅ Success (Delivery Status)
-                    ];
-    
-                    db.query(logQuery, logParams, (logErr) => {
-                        if (logErr) {
-                            console.error(`❌ Error logging email details for ${recipient.email}:`, logErr);
-                        }
-                    });
-    
-                } catch (emailError) {
-                    console.error(`❌ Failed to send email to ${recipient.email}:`, emailError);
-    
-                    // ✅ Log failed email attempt in `sp_logEmailDetails`
-                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    const logParams = [
-                        null,         // No message ID since email failed
-                        CaseID,
-                        CaseNumber,
-                        CaseDate,
-                        IPCSection,
-                        HearingDate,
-                        recipient.email,
-                        0,              // District ID (Not applicable here)
-                        0,              // Police Station ID (Not applicable here)
-                        PPuserID,       // ✅ Corrected PP ID
-                        recipient.userTypeId,
-                        0             // ✅ Failure (Delivery Status)
-                    ];
-    
-                    db.query(logQuery, logParams, (logErr) => {
-                        if (logErr) {
-                            console.error(`❌ Error logging failed email details for ${recipient.email}:`, logErr);
-                        }
-                    });
-                }
-    
-                // ✅ Respond based on email sending status
-                if (emailSendSuccess) {
-                    return res.status(200).json({
-                        status: 0,
-                        message: "Email sent and logged successfully.",
-                    });
-                } else {
-                    return res.status(500).json({
-                        status: 1,
-                        message: "Failed to send the email.",
-                    });
-                }
-            });
-    
         } catch (error) {
-            console.error("❌ Unexpected error:", error);
+            console.error(`❌ Error fetching all assigned departments for CC list (sendEmail) for CaseID ${CaseID}:`, error.message);
+        }
+
+        // Destructure common details from the first successful sp_sendEmailv1 call
+        const {
+            CaseNumber, IPCSection, BNSSection, CaseDate, HearingDate, SPName, PSName
+        } = commonCaseDetailsFromSP;
+
+        const emailTemplate = new EmailTemplate({
+            crm: BNSSection, // Or Refference if that's the field name
+            psCaseNo: CaseNumber,
+            dated: CaseDate,
+            ipcSection: IPCSection,
+            hearingDate: HearingDate,
+            SPName: SPName || "N/A", // From sp_sendEmailv1 if available, else default
+            PSName: PSName || "N/A",   // From sp_sendEmailv1 if available, else default
+            assignedAdvocatesList: assignedAdvocatesListHTML // Pass the advocate list
+        });
+
+        const emailContent = emailTemplate.generateEmailContent(); // Using the main content template
+
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || "smtp.gmail.com",
+            port: parseInt(process.env.SMTP_PORT) || 587,
+            secure: (process.env.SMTP_SECURE === 'true'),
+            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD },
+        });
+
+        const mailOptions = {
+            from: `"${process.env.EMAIL_FROM_NAME || 'Notifications'}" <${process.env.EMAIL_USER}>`,
+            to: process.env.EMAIL_USER, // Placeholder
+            bcc: Array.from(recipientEmails).join(', '),
+            subject: `Case Information: ${CaseNumber}`,
+            html: emailContent, // HTML from template
+            dsn: {
+                id: `dsn-dept-${CaseID}-${Date.now()}`,
+                return: 'headers',
+                notify: ['failure', 'delay'],
+                recipient: process.env.EMAIL_USER,
+            },
+        };
+
+        if (ccDepartmentEmails.size > 0) {
+            mailOptions.cc = Array.from(ccDepartmentEmails).join(', ');
+        }
+
+        try {
+            const info = await transporter.sendMail(mailOptions);
+            console.log(`✅ Department batch email sent. Message ID: ${info.messageId}`);
+            console.log(`✉️ BCC'd to: ${Array.from(recipientEmails).join(', ')}`);
+            if(mailOptions.cc) console.log(`✉️ CC'd to: ${mailOptions.cc}`);
+            
+            // Simplified logging for batch department email
+            // You might want to loop through recipientDataForLogging if more granular logs are needed
+            const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            // For a general log entry for this batch:
+             const primaryRecipientForLog = recipientDataForLogging[0] || {};
+             const logParams = [
+                info.messageId, CaseID, CaseNumber, CaseDate, IPCSection, HearingDate,
+                Array.from(recipientEmails).join(', '), // Log all BCC'd emails
+                primaryRecipientForLog.DistrictID || 0, 
+                primaryRecipientForLog.PSID || 0, 
+                0, // PPId (not applicable for this email type)
+                primaryRecipientForLog.userTypeId || 0, // A general type or first one
+                1 // Success
+            ];
+             db.query(logQuery, logParams, (logErr) => {
+                if (logErr) console.error(`❌ DB Log Error (Success) for department batch:`, logErr);
+            });
+
+
+            return res.status(200).json({
+                status: 0,
+                message: `Batch email sent to ${recipientEmails.size} department contacts and CC'd to ${ccDepartmentEmails.size} other department contacts.`,
+                messageId: info.messageId,
+            });
+
+        } catch (emailError) {
+            console.error(`❌ Failed to send department batch email:`, emailError);
+             // Log failure
+            const primaryRecipientForLog = recipientDataForLogging[0] || {};
+            const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            const logParams = [
+                null, CaseID, CaseNumber, CaseDate, IPCSection, HearingDate,
+                Array.from(recipientEmails).join(', '),
+                primaryRecipientForLog.DistrictID || 0, 
+                primaryRecipientForLog.PSID || 0, 
+                0, 
+                primaryRecipientForLog.userTypeId || 0, 
+                0 // Failure
+            ];
+            db.query(logQuery, logParams, (logErr) => {
+                if (logErr) console.error(`❌ DB Log Error (Failure) for department batch:`, logErr);
+            });
+
             return res.status(500).json({
                 status: 1,
-                message: "An unexpected error occurred.",
+                message: "Failed to send batch email to departments.",
+                error: emailError.message,
+            });
+        }
+
+    } catch (error) {
+        console.error("❌ Unexpected error in sendEmail (department version):", error);
+        return res.status(500).json({
+            status: 1,
+            message: "An unexpected server error occurred in sendEmail.",
+            error: error.message,
+        });
+    }
+}   
+    
+    static async sendEmailTO(req, res) {
+        try {
+            console.log("🔥 Request Body:", req.body);
+
+            const { CaseID, PPuserID_array, ccEmail: initialCcEmail } = req.body; // Renamed to initialCcEmail
+
+            if (!CaseID || !PPuserID_array || !Array.isArray(PPuserID_array) || PPuserID_array.length === 0) {
+                return res.status(400).json({
+                    status: 1,
+                    message: "Fields 'CaseID' and a non-empty array 'PPuserID_array' are required.",
+                });
+            }
+
+            const BASE_URL = process.env.BASE_URL;
+            if (!BASE_URL) {
+                console.warn("⚠️ BASE_URL is not configured. Email links might be affected.");
+            }
+            
+            let encryptedCaseID = null;
+            if (CaseID) {
+                 try {
+                    encryptedCaseID = generateEncryptedToken({ CaseID }); // Use your actual function
+                 } catch (e) {
+                    console.error("Error encrypting CaseID", e);
+                 }
+            }
+
+            let commonEmailDetails = null;
+            const recipientEmailsForBCC = []; // For the main PPs in PPuserID_array
+            const recipientDataForLogging = [];
+            const ccEmailsList = new Set(); // Use a Set to avoid duplicate CCs
+
+            if (initialCcEmail && typeof initialCcEmail === 'string' && initialCcEmail.trim() !== '') {
+                initialCcEmail.split(',').forEach(email => ccEmailsList.add(email.trim()));
+            }
+
+            // 1. Fetch details for PPs in PPuserID_array (for BCC)
+            for (const PPuserID of PPuserID_array) {
+                try {
+                    const results = await EmailController.callStoredProcedure('sp_sendEmail_ppv2', [CaseID, PPuserID]);
+                    const emailDetailsFromDB = results[0];
+
+                    if (emailDetailsFromDB && emailDetailsFromDB.PPEmail) {
+                        if (!commonEmailDetails) {
+                            commonEmailDetails = emailDetailsFromDB;
+                        }
+                        recipientEmailsForBCC.push(emailDetailsFromDB.PPEmail);
+                        recipientDataForLogging.push({
+                            PPuserID: PPuserID, // Or emailDetailsFromDB.PPId
+                            PPEmail: emailDetailsFromDB.PPEmail,
+                            userTypeId: 60
+                        });
+                    } else {
+                        console.warn(`No email details or PPEmail found for CaseID ${CaseID} and PPuserID ${PPuserID} via sp_sendEmail_ppv2.`);
+                    }
+                } catch (error) {
+                    console.error(`❌ Error processing PPuserID ${PPuserID} with sp_sendEmail_ppv2:`, error.message);
+                }
+            }
+
+            if (recipientEmailsForBCC.length === 0 || !commonEmailDetails) {
+                return res.status(404).json({
+                    status: 1,
+                    message: "No valid primary recipients (PPs) found or case details missing.",
+                });
+            }
+
+            // 2. Fetch all assigned advocates for the case to determine additional CCs
+            try {
+                const assignedAdvocates = await EmailController.callStoredProcedure('sp_getAssignedAdvocatelistByCaseId', [CaseID]);
+                if (assignedAdvocates && assignedAdvocates.length > 0) {
+                    const ppUserIDsSet = new Set(PPuserID_array.map(id => parseInt(id, 10))); // Ensure IDs are numbers for comparison
+                    assignedAdvocates.forEach(advocate => {
+                        // If advocateId is not in the primary PPuserID_array and has an email, add to CC
+                        if (advocate.advocateEmail && !ppUserIDsSet.has(advocate.advocateId)) {
+                            ccEmailsList.add(advocate.advocateEmail.trim());
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error(`❌ Error fetching assigned advocates list for CaseID ${CaseID}:`, error.message);
+                // Continue, but CC list might be incomplete
+            }
+            
+            // 3. Fetch assigned departments (police stations) for the email body
+            let assignedDepartmentsListHTML = '';
+            try {
+                const assignedDepts = await EmailController.callStoredProcedure('sp_getAssignedDistrictAndPoliceByCaseId', [CaseID]);
+                if (assignedDepts && assignedDepts.length > 0) {
+                    const deptNames = assignedDepts.map(dept => dept.policeStationName).filter(name => name);
+                    if (deptNames.length > 0) {
+                        assignedDepartmentsListHTML = deptNames.join('<br>');
+                    } else {
+                        assignedDepartmentsListHTML = "No specific departments listed.";
+                    }
+                } else {
+                     assignedDepartmentsListHTML = "No departments assigned or found.";
+                }
+            } catch (error) {
+                console.error(`❌ Error fetching assigned departments for CaseID ${CaseID}:`, error.message);
+                assignedDepartmentsListHTML = "Could not retrieve department list.";
+            }
+
+
+            const {
+                psCaseNo, Refference, dated, hearingDate,
+                PSName, SPName, ipcSection
+            } = commonEmailDetails;
+
+            const emailTemplatePP = new EmailTemplate({
+                crm: Refference,
+                psCaseNo: psCaseNo,
+                dated: dated,
+                ipcSection: ipcSection,
+                hearingDate: hearingDate,
+                SPName: SPName,
+                PSName: PSName,
+                PPName: "You", // For the primary recipients
+                encryptedCaseID: encryptedCaseID,
+                baseURL: BASE_URL,
+                assignedDepartmentsList: assignedDepartmentsListHTML // Pass the list to the template
+            });
+
+            const emailContentPP = emailTemplatePP.generateEmailAdvocateAssignToA(); // This template now uses the departments list
+
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST || "smtp.gmail.com",
+                port: parseInt(process.env.SMTP_PORT) || 587,
+                secure: (process.env.SMTP_SECURE === 'true'),
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASSWORD,
+                },
+            });
+
+            const mailOptions = {
+                from: `"${process.env.EMAIL_FROM_NAME || 'Notifications'}" <${process.env.EMAIL_USER}>`,
+                to: process.env.EMAIL_USER, // Placeholder 'to' as primary recipients are in BCC
+                bcc: recipientEmailsForBCC.join(', '),
+                subject: `Case Assignment Update: ${psCaseNo}`,
+                html: emailContentPP, // HTML content from template
+                dsn: {
+                    id: `dsn-batch-pp-${CaseID}-${Date.now()}`,
+                    return: 'headers',
+                    notify: ['failure', 'delay'],
+                    recipient: process.env.EMAIL_USER,
+                },
+            };
+
+            if (ccEmailsList.size > 0) {
+                mailOptions.cc = Array.from(ccEmailsList).join(', ');
+            }
+
+            try {
+                const info = await transporter.sendMail(mailOptions);
+                console.log(`✅ Batch PP email sent. Message ID: ${info.messageId}`);
+                console.log(`✉️ BCC'd to: ${recipientEmailsForBCC.join(', ')}`);
+                if(mailOptions.cc) console.log(`✉️ CC'd to: ${mailOptions.cc}`);
+
+                for (const recipient of recipientDataForLogging) {
+                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logParams = [
+                        info.messageId, CaseID, psCaseNo, dated, ipcSection, hearingDate,
+                        recipient.PPEmail, 0, 0, 
+                        recipient.PPuserID,
+                        recipient.userTypeId, 1 // Success
+                    ];
+                    // Fire-and-forget logging for now
+                    db.query(logQuery, logParams, (logErr) => {
+                        if (logErr) console.error(`❌ DB Log Error (Success) for ${recipient.PPEmail}:`, logErr);
+                    });
+                }
+
+                return res.status(200).json({
+                    status: 0,
+                    message: `Batch email sent to ${recipientEmailsForBCC.length} PPs and CC'd to ${ccEmailsList.size} other advocates.`,
+                    messageId: info.messageId,
+                });
+
+            } catch (emailError) {
+                console.error(`❌ Failed to send batch PP email:`, emailError);
+                for (const recipient of recipientDataForLogging) {
+                     const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                     const logParams = [
+                        null, CaseID, psCaseNo, dated, ipcSection, hearingDate,
+                        recipient.PPEmail, 0, 0,
+                        recipient.PPuserID, recipient.userTypeId, 0 // Failure
+                    ];
+                    db.query(logQuery, logParams, (logErr) => {
+                        if (logErr) console.error(`❌ DB Log Error (Failure) for ${recipient.PPEmail}:`, logErr);
+                    });
+                }
+                return res.status(500).json({
+                    status: 1,
+                    message: "Failed to send batch email to PPs.",
+                    error: emailError.message,
+                });
+            }
+        } catch (error) {
+            console.error("❌ Unexpected error in sendEmailTO:", error);
+            return res.status(500).json({
+                status: 1,
+                message: "An unexpected error occurred in sendEmailTO.",
                 error: error.message,
             });
         }
     }
     
-
     static async sendCaseUpdatedEmail(req, res) {
         const { CaseSummaryId } = req.body;
 

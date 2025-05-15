@@ -1,10 +1,10 @@
 "use client"
 import { useEffect, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
-import { PlusCircle } from "lucide-react"
+import { ArrowUpCircle, PlusCircle } from "lucide-react"
 import { Button } from "./ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { postRequest } from "@/app/commonAPI"
@@ -30,134 +30,148 @@ const AddAdvocateModal = ({
   setShowPassword
 }) => (
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] bg-white">
-          <DialogHeader>
-              <DialogTitle>Add New Advocate</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 py-4">
-               {/* Row 1: Full Name & Contact Number */}
-               <div className="flex space-x-4">
-                   <div className="flex-1 space-y-1">
-                       <Label className="font-bold text-sm" htmlFor="modalFullName">Full Name</Label>
-                       <Input
-                           id="modalFullName"
-                           name="FullName"
-                           placeholder="Enter full name"
-                           value={formData.FullName}
-                           onChange={handleChange}
-                           required
-                           maxLength={30}
-                           className="text-sm"
-                       />
-                       {formErrors.FullName && <p className="text-xs text-red-500">{formErrors.FullName}</p>}
-                   </div>
-                   <div className="flex-1 space-y-1">
-                       <Label className="font-bold text-sm" htmlFor="modalContractNo">Contact Number</Label>
-                       <Input
-                           id="modalContractNo"
-                           name="ContractNo"
-                           type="tel"
-                           placeholder="Enter contact number"
-                           value={formData.ContractNo}
-                           onChange={handleChange}
-                           required
-                           maxLength={10}
-                           className={`text-sm ${formErrors.ContractNo ? 'border-red-500' : ''}`}
-                       />
-                       {formErrors.ContractNo && <p className="text-xs text-red-500">{formErrors.ContractNo}</p>}
-                   </div>
-               </div>
-
-              {/* Row 2: Username & Password */}
-               <div className="flex space-x-4">
-                   <div className="flex-1 space-y-1">
-                      <Label className="font-bold text-sm" htmlFor="modalUsername">Username</Label>
-                      <Input
-                          id="modalUsername"
-                          name="Username"
-                          placeholder="Enter username"
-                          value={formData.Username}
-                          onChange={handleChange}
-                          required
-                           className="text-sm"
-                      />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                       <Label className="font-bold text-sm" htmlFor="modalUserPassword">Password</Label>
-                       <div className="relative">
-                          <Input
-                              id="modalUserPassword"
-                              name="UserPassword"
-                              type={showPassword ? "text" : "password"}
-                              placeholder="Enter password"
-                              value={formData.UserPassword}
-                              onChange={handleChange}
-                              required
-                              className="text-sm"
-                           />
-                           <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-0 top-0 h-full px-3 py-1 hover:bg-transparent"
-                              // Use onMouseDown/Up/Leave to toggle showPassword via the passed setter
-                              onMouseDown={() => setShowPassword(true)}
-                              onMouseUp={() => setShowPassword(false)}
-                              onMouseLeave={() => setShowPassword(false)}
-                          >
-                               {showPassword ? (
-                                  <EyeOff className="h-4 w-4" />
-                              ) : (
-                                  <Eye className="h-4 w-4" />
-                              )}
-                           </Button>
-                       </div>
-                   </div>
-               </div>
-
-               {/* Row 3: Email & License Number */}
-               <div className="flex space-x-4">
-                   <div className="flex-1 space-y-1">
-                       <Label className="font-bold text-sm" htmlFor="modalEmail">Email</Label>
-                       <Input
-                           id="modalEmail"
-                           name="Email"
-                           type="email"
-                           placeholder="Enter e-mail address"
-                           value={formData.Email}
-                           onChange={handleChange}
-                           required
-                           className={`text-sm ${formErrors.Email ? 'border-red-500' : ''}`}
-                       />
-                       {formErrors.Email && <p className="text-xs text-red-500">{formErrors.Email}</p>}
-                   </div>
-                  <div className="flex-1 space-y-1">
-                       <Label className="font-bold text-sm" htmlFor="modalLicenseNumber">License Number</Label>
-                       <Input
-                           id="modalLicenseNumber"
-                           name="LicenseNumber"
-                           placeholder="Enter license number"
-                           value={formData.LicenseNumber}
-                           onChange={handleChange}
-                           required // Assuming license is required, adjust if not
-                           className="text-sm"
-                       />
-                   </div>
-               </div>
+    <DialogContent className="sm:max-w-[600px] bg-white">
+      <DialogHeader>
+        <DialogTitle>Add New Advocate</DialogTitle>
+      </DialogHeader>
+      <div className="flex flex-col gap-4 py-4">
+        {/* Row 1: Full Name & Contact Number */}
+        <div className="flex space-x-4">
+          <div className="flex-1 space-y-1">
+            <Label className="font-bold text-sm" htmlFor="modalFullName">Full Name</Label>
+            <Input
+              id="modalFullName"
+              name="FullName"
+              placeholder="Enter full name"
+              value={formData.FullName}
+              onChange={handleChange}
+              required
+              maxLength={30}
+              className="text-sm"
+            />
+            {formErrors.FullName && <p className="text-xs text-red-500">{formErrors.FullName}</p>}
           </div>
-          <DialogFooter>
-              <DialogClose asChild>
-                  <Button type="button" variant="outline" disabled={isLoading}>Cancel</Button>
-              </DialogClose>
-              <Button onClick={handleSubmit} disabled={isLoading || Object.values(formErrors).some(error => error !== '')}>
-                  {isLoading ? 'Adding...' : 'Add Advocate'}
+          <div className="flex-1 space-y-1">
+            <Label className="font-bold text-sm" htmlFor="modalContractNo">Contact Number</Label>
+            <Input
+              id="modalContractNo"
+              name="ContractNo"
+              type="tel"
+              placeholder="Enter contact number"
+              value={formData.ContractNo}
+              onChange={handleChange}
+              required
+              maxLength={10}
+              className={`text-sm ${formErrors.ContractNo ? 'border-red-500' : ''}`}
+            />
+            {formErrors.ContractNo && <p className="text-xs text-red-500">{formErrors.ContractNo}</p>}
+          </div>
+        </div>
+
+        {/* Row 2: Username & Password */}
+        <div className="flex space-x-4">
+          <div className="flex-1 space-y-1">
+            <Label className="font-bold text-sm" htmlFor="modalUsername">Username</Label>
+            <Input
+              id="modalUsername"
+              name="Username"
+              placeholder="Enter username"
+              value={formData.Username}
+              onChange={handleChange}
+              required
+              className="text-sm"
+            />
+          </div>
+          <div className="flex-1 space-y-1">
+            <Label className="font-bold text-sm" htmlFor="modalUserPassword">Password</Label>
+            <div className="relative">
+              <Input
+                id="modalUserPassword"
+                name="UserPassword"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter password"
+                value={formData.UserPassword}
+                onChange={handleChange}
+                required
+                className="text-sm"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-1 hover:bg-transparent"
+                // Use onMouseDown/Up/Leave to toggle showPassword via the passed setter
+                onMouseDown={() => setShowPassword(true)}
+                onMouseUp={() => setShowPassword(false)}
+                onMouseLeave={() => setShowPassword(false)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </Button>
-          </DialogFooter>
-      </DialogContent>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 3: Email & License Number */}
+        <div className="flex space-x-4">
+          <div className="flex-1 space-y-1">
+            <Label className="font-bold text-sm" htmlFor="modalEmail">Email</Label>
+            <Input
+              id="modalEmail"
+              name="Email"
+              type="email"
+              placeholder="Enter e-mail address"
+              value={formData.Email}
+              onChange={handleChange}
+              required
+              className={`text-sm ${formErrors.Email ? 'border-red-500' : ''}`}
+            />
+            {formErrors.Email && <p className="text-xs text-red-500">{formErrors.Email}</p>}
+          </div>
+          <div className="flex-1 space-y-1">
+            <Label className="font-bold text-sm" htmlFor="modalLicenseNumber">License Number</Label>
+            <Input
+              id="modalLicenseNumber"
+              name="LicenseNumber"
+              placeholder="Enter license number"
+              value={formData.LicenseNumber}
+              onChange={handleChange}
+              required // Assuming license is required, adjust if not
+              className="text-sm"
+            />
+          </div>
+        </div>
+      </div>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="outline" disabled={isLoading}>Cancel</Button>
+        </DialogClose>
+        <Button onClick={handleSubmit} disabled={isLoading || Object.values(formErrors).some(error => error !== '')}>
+          {isLoading ? 'Adding...' : 'Add Advocate'}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
   </Dialog>
 );
 
 const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
+
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const shouldShow = scrollTop > window.innerHeight / 2;
+      setShowScrollTop(shouldShow);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const [user, setUser] = useState(null);
   const encryptedUser = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
@@ -169,106 +183,242 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
   const [isProcessComplete, setIsProcessComplete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [selectedAdvocates, setSelectedAdvocates] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+
   // State specifically for the Add Advocate Modal
   const [isAddAdvocateModalOpen, setIsAddAdvocateModalOpen] = useState(false);
   const [isAddingAdvocate, setIsAddingAdvocate] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // Keep password visibility state here
   const [newAdvocateFormData, setNewAdvocateFormData] = useState({
-      Username: '', UserPassword: '', EntryUserID: '',
-      FullName: '', ContractNo: '', Email: '', LicenseNumber: ''
+    Username: '', UserPassword: '', EntryUserID: '',
+    FullName: '', ContractNo: '', Email: '', LicenseNumber: ''
   });
   const [newAdvocateFormErrors, setNewAdvocateFormErrors] = useState({
-      FullName: '', ContractNo: '', Email: '',
+    FullName: '', ContractNo: '', Email: '',
   });
+
+  const toggleSelection = (doc) => {
+    const isAlreadySelected = selectedAdvocates.some((a) => a.AdvocateId === doc.AdvocateId);
+    if (isAlreadySelected) {
+      setSelectedAdvocates((prev) => prev.filter((a) => a.AdvocateId !== doc.AdvocateId));
+    } else {
+      setSelectedAdvocates((prev) => [doc, ...prev]);
+    }
+  };
+
+  const handleBatchAssign = async () => {
+    setIsAssigning(true);
+    setProgressModalOpen(true);
+    setProgressSteps([
+      { id: "assign", label: "Assigning advocates", status: "loading" },
+      { id: "emailAdvocates", label: "Notifying assigned advocates", status: "pending" },
+      { id: "emailDepts", label: "Notifying assigned departments", status: "pending" },
+    ]);
+
+    try {
+      const ppUserIds = selectedAdvocates.map((a) => a.AdvocateId);
+
+      // Step 1: Assign
+      const response = await postRequest("assign-case-to-advocates", {
+        caseId: identity,
+        EntryUserId: formData.EntryUserID,
+        ppUserIds,
+      });
+
+      if (!response?.success || !Array.isArray(response.assignedPPUserIDs)) {
+        updateStepStatus("assign", "error", "Assignment failed.");
+        openAlert("error", "Assignment failed.");
+        return;
+      }
+
+      updateStepStatus("assign", "success");
+
+      // Step 2: Notify Advocates
+      updateStepStatus("emailAdvocates", "loading");
+
+      try {
+        await postRequest("send-email-pp", {
+          CaseID: identity,
+          PPuserID_array: response.assignedPPUserIDs,
+        });
+
+        updateStepStatus("emailAdvocates", "success");
+      } catch (err) {
+        updateStepStatus("emailAdvocates", "error", "Failed to send emails to advocates.");
+        console.error("Email error:", err);
+      }
+
+      // Step 3: Notify Departments
+      updateStepStatus("emailDepts", "loading");
+
+      const deptRes = await postRequest("assigned-dept", { caseId: identity });
+      const deptList = deptRes?.data || [];
+
+      const deptPayload = deptList.map((dept) => ({
+        DistrictID: dept.districtId,
+        PSID: dept.policeStationId,
+      }));
+
+      // Optionally remove duplicates:
+      const seen = new Set();
+      const uniqueDepts = deptPayload.filter(({ DistrictID, PSID }) => {
+        const key = `${DistrictID}-${PSID}`;
+        return seen.has(key) ? false : seen.add(key);
+      });
+
+      try {
+        const emailRes = await postRequest("send-email", {
+          CaseID: identity,
+          Departments: uniqueDepts,
+        });
+
+        if (emailRes?.success) {
+          updateStepStatus("emailDepts", "success");
+        } else {
+          updateStepStatus("emailDepts", "error", "Some departments failed to receive email.");
+        }
+      } catch (err) {
+        updateStepStatus("emailDepts", "error", "Failed to notify departments.");
+        console.error("Dept bulk email error:", err);
+      }
+
+      // try {
+      //   const deptRes = await postRequest("assigned-dept", { caseId: identity });
+      //   const deptList = deptRes?.data || [];
+
+      //   let allSuccess = true;
+
+      //   for (const dept of deptList) {
+      //     try {
+      //       const res = await postRequest("send-email", {
+      //         CaseID: identity,
+      //         DistrictID: dept.districtId,
+      //         PSID: dept.policeStationId,
+      //       });
+
+      //       if (!res?.success) {
+      //         allSuccess = false;
+      //         console.warn(`Failed to notify department: ${dept.districtName} / ${dept.policeStationName}`);
+      //       }
+      //     } catch (err) {
+      //       allSuccess = false;
+      //       console.error("Dept email error:", err);
+      //     }
+      //   }
+
+      //   if (allSuccess) {
+      //     updateStepStatus("emailDepts", "success");
+      //   } else {
+      //     updateStepStatus("emailDepts", "error", "Some departments failed to receive email.");
+      //   }
+
+      // } catch (err) {
+      //   updateStepStatus("emailDepts", "error", "Failed to fetch assigned departments.");
+      //   console.error("Dept fetch error:", err);
+      // }
+
+      openAlert("success", `${response.assignedPPUserIDs.length} advocates assigned successfully.`);
+
+    } catch (err) {
+      updateStepStatus("assign", "error", "Unexpected error.");
+      openAlert("error", "An unexpected error occurred.");
+      console.error(err);
+    } finally {
+      setIsAssigning(false);
+      setIsProcessComplete(true);
+      setModalOpen(false);
+    }
+  };
 
   // State for assigning cases (original functionality)
   const [formData, setFormData] = useState({ EntryUserID: "" });
 
   useEffect(() => {
-          if (encryptedUser) {
-              try {
-                  const decoded_user = JSON.parse(decrypt(encryptedUser));
-                  setUser(decoded_user);
-                  // Set EntryUserID for BOTH forms
-                  setFormData((prevState) => ({ ...prevState, EntryUserID: decoded_user.AuthorityUserID }));
-                  setNewAdvocateFormData(prevState => ({ ...prevState, EntryUserID: decoded_user.AuthorityUserID }));
-              } catch (error) {
-                  console.error("Failed to decode user:", error);
-              }
-          }
-      }, [encryptedUser]);
+    if (encryptedUser) {
+      try {
+        const decoded_user = JSON.parse(decrypt(encryptedUser));
+        setUser(decoded_user);
+        // Set EntryUserID for BOTH forms
+        setFormData((prevState) => ({ ...prevState, EntryUserID: decoded_user.AuthorityUserID }));
+        setNewAdvocateFormData(prevState => ({ ...prevState, EntryUserID: decoded_user.AuthorityUserID }));
+      } catch (error) {
+        console.error("Failed to decode user:", error);
+      }
+    }
+  }, [encryptedUser]);
 
-      const handleNewAdvocateChange = (e) => {
-        const { name, value } = e.target;
-        setNewAdvocateFormData(prevState => ({ ...prevState, [name]: value }));
-        if (newAdvocateFormErrors[name]) {
-            setNewAdvocateFormErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
-        }
-    };
+  const handleNewAdvocateChange = (e) => {
+    const { name, value } = e.target;
+    setNewAdvocateFormData(prevState => ({ ...prevState, [name]: value }));
+    if (newAdvocateFormErrors[name]) {
+      setNewAdvocateFormErrors(prevErrors => ({ ...prevErrors, [name]: '' }));
+    }
+  };
 
-    const validateNewAdvocateForm = () => {
-     const errors = { FullName: '', ContractNo: '', Email: '' };
-     let isValid = true;
+  const validateNewAdvocateForm = () => {
+    const errors = { FullName: '', ContractNo: '', Email: '' };
+    let isValid = true;
 
-     if (!newAdvocateFormData.FullName.trim()) {
-         errors.FullName = 'Full Name is required';
-         isValid = false;
-     }
-     if (!newAdvocateFormData.Username.trim()) {
-         errors.Username = 'Username is required';
-         isValid = false;
-     }
-     if (!newAdvocateFormData.UserPassword.trim()) {
-          errors.Password = 'Password is required';
-          isValid = false;
-     }
-     if (!newAdvocateFormData.ContractNo.trim()) {
-         errors.ContractNo = 'Contact Number is required';
-         isValid = false;
-     } else if (!isValidIndianPhoneNumber(newAdvocateFormData.ContractNo)) {
-         errors.ContractNo = 'Invalid Indian phone number';
-         isValid = false;
-     }
-     if (!newAdvocateFormData.Email.trim()) {
-         errors.Email = 'Email is required';
-         isValid = false;
-     } else if (!isValidEmail(newAdvocateFormData.Email)) {
-         errors.Email = 'Invalid email address';
-         isValid = false;
-     }
-     // Add check for LicenseNumber if required
-      // if (!newAdvocateFormData.LicenseNumber.trim()) {
-      //     errors.LicenseNumber = 'License Number is required';
-      //     isValid = false;
-      // }
+    if (!newAdvocateFormData.FullName.trim()) {
+      errors.FullName = 'Full Name is required';
+      isValid = false;
+    }
+    if (!newAdvocateFormData.Username.trim()) {
+      errors.Username = 'Username is required';
+      isValid = false;
+    }
+    if (!newAdvocateFormData.UserPassword.trim()) {
+      errors.Password = 'Password is required';
+      isValid = false;
+    }
+    if (!newAdvocateFormData.ContractNo.trim()) {
+      errors.ContractNo = 'Contact Number is required';
+      isValid = false;
+    } else if (!isValidIndianPhoneNumber(newAdvocateFormData.ContractNo)) {
+      errors.ContractNo = 'Invalid Indian phone number';
+      isValid = false;
+    }
+    if (!newAdvocateFormData.Email.trim()) {
+      errors.Email = 'Email is required';
+      isValid = false;
+    } else if (!isValidEmail(newAdvocateFormData.Email)) {
+      errors.Email = 'Invalid email address';
+      isValid = false;
+    }
+    // Add check for LicenseNumber if required
+    // if (!newAdvocateFormData.LicenseNumber.trim()) {
+    //     errors.LicenseNumber = 'License Number is required';
+    //     isValid = false;
+    // }
 
-     setNewAdvocateFormErrors(errors);
-     return isValid;
+    setNewAdvocateFormErrors(errors);
+    return isValid;
   };
 
   const handleAddAdvocateSubmit = async () => {
-          if (!validateNewAdvocateForm()) {
-              return;
-          }
-          setIsAddingAdvocate(true);
-          try {
-              // Ensure EntryUserID is set correctly before API call
-              const payload = { ...newAdvocateFormData, EntryUserID: user.AuthorityUserID };
-              const result = await addPPUser(payload);
-              setIsAddingAdvocate(false);
-              setIsAddAdvocateModalOpen(false);
-              setNewAdvocateFormData({ // Reset form
-                  Username: '', UserPassword: '', EntryUserID: user.AuthorityUserID,
-                  FullName: '', ContractNo: '', Email: '', LicenseNumber: ''
-              });
-              setNewAdvocateFormErrors({ FullName: '', ContractNo: '', Email: '' });
-              openAlert('success', 'Advocate added successfully!');
-          } catch (err) {
-              setIsAddingAdvocate(false);
-              console.error("Error adding advocate:", err);
-              openAlert('error', err?.message || err || "Failed to add advocate. Please try again.");
-          }
-      };
+    if (!validateNewAdvocateForm()) {
+      return;
+    }
+    setIsAddingAdvocate(true);
+    try {
+      // Ensure EntryUserID is set correctly before API call
+      const payload = { ...newAdvocateFormData, EntryUserID: user.AuthorityUserID };
+      const result = await addPPUser(payload);
+      setIsAddingAdvocate(false);
+      setIsAddAdvocateModalOpen(false);
+      setNewAdvocateFormData({ // Reset form
+        Username: '', UserPassword: '', EntryUserID: user.AuthorityUserID,
+        FullName: '', ContractNo: '', Email: '', LicenseNumber: ''
+      });
+      setNewAdvocateFormErrors({ FullName: '', ContractNo: '', Email: '' });
+      openAlert('success', 'Advocate added successfully!');
+    } catch (err) {
+      setIsAddingAdvocate(false);
+      console.error("Error adding advocate:", err);
+      openAlert('error', err?.message || err || "Failed to add advocate. Please try again.");
+    }
+  };
 
   const updateStepStatus = (stepId, status, errorMessage) => {
     setProgressSteps((currentSteps) =>
@@ -281,6 +431,18 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
   const filteredDocuments = documents?.filter((doc) =>
     doc.AdvocateName.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
+
+  const pinned = selectedAdvocates;
+
+  // Always filter from full list (documents) not filteredDocuments
+  const unselectedDocuments = documents.filter(
+    (doc) => !selectedAdvocates.some((sel) => sel.AdvocateId === doc.AdvocateId)
+  );
+
+  // Then apply search only to the unselected
+  const others = unselectedDocuments.filter((doc) =>
+    doc.AdvocateName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleAssign = async (doc) => {
     try {
@@ -475,12 +637,12 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
     closeAlert();
 
     if (shouldReloadAfterAdd) {
-         setTimeout(() => { window.location.reload(); }, 1000); // 1 sec delay
+      setTimeout(() => { window.location.reload(); }, 1000); // 1 sec delay
     } else if (shouldReloadAfterAssign) {
-        window.location.reload(); // Immediate reload for assignment
+      window.location.reload(); // Immediate reload for assignment
     }
     // No reload for other alert types (e.g., errors) unless explicitly needed
-};
+  };
 
   const closeProgressModal = () => {
     setProgressModalOpen(false)
@@ -504,23 +666,30 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
         isComplete={isProcessComplete}
       />
       <AddAdvocateModal
-                isOpen={isAddAdvocateModalOpen}
-                onOpenChange={setIsAddAdvocateModalOpen}
-                formData={newAdvocateFormData}
-                formErrors={newAdvocateFormErrors}
-                handleChange={handleNewAdvocateChange}
-                handleSubmit={handleAddAdvocateSubmit}
-                isLoading={isAddingAdvocate}
-                showPassword={showPassword}        // Pass showPassword state
-                setShowPassword={setShowPassword}  // Pass its setter
-            />
+        isOpen={isAddAdvocateModalOpen}
+        onOpenChange={setIsAddAdvocateModalOpen}
+        formData={newAdvocateFormData}
+        formErrors={newAdvocateFormErrors}
+        handleChange={handleNewAdvocateChange}
+        handleSubmit={handleAddAdvocateSubmit}
+        isLoading={isAddingAdvocate}
+        showPassword={showPassword}        // Pass showPassword state
+        setShowPassword={setShowPassword}  // Pass its setter
+      />
       <Card className="m-5">
+        <CardHeader className="items-end">
+          {selectedAdvocates.length > 0 && (
+            <Button onClick={() => setModalOpen(true)} className="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 shadow-lg shadow-green-500/50 dark:shadow-lg dark:shadow-green-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 max-w-min">
+              Assign Selected
+            </Button>
+          )}
+        </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <div className="flex justify-between items-center px-4 pt-4 pb-4 gap-4">
               <Button
                 variant="outline"
-                className="text-sm"
+                className="text-white bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 shadow-lg shadow-cyan-500/50 dark:shadow-lg dark:shadow-cyan-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
                 onClick={() => setIsAddAdvocateModalOpen(true)}
               >
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -548,21 +717,35 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
                     <TableCell colSpan={2} className="text-center">Loading...</TableCell>
                   </TableRow>
                 ) : filteredDocuments.length > 0 ? (
-                  filteredDocuments.map((doc, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{doc.AdvocateName}</TableCell>
-                      <TableCell>
-                        <Button
-                          className="bg-blue-100 hover:bg-blue-200 text-sm text-blue-600"
-                          onClick={() => handleAssign(doc)}
-                          disabled={isAssigning}
-                        >
-                          <PlusCircle className="text-blue-600 mr-2 h-4 w-4" />
-                          {isAssigning ? "Please Wait..." : "Assign"}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  [...pinned, ...others].map((doc, index) => {
+                    const isSelected = selectedAdvocates.some((a) => a.AdvocateId === doc.AdvocateId);
+                    return (
+                      <TableRow key={`row-${doc.AdvocateId}-${index}`}>
+                        <TableCell>{doc.AdvocateName}</TableCell>
+                        <TableCell>
+                          <Button
+                            // variant={isSelected ? "secondary" : "default"}
+                            onClick={() => toggleSelection(doc)}
+                            // className="text-sm"
+                            className={`text-sm ${isSelected
+                              ? "text-gray-900 bg-gradient-to-r from-yellow-300 via-red-400 to-red-300 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-red-100 dark:focus:ring-red-600 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+                              : "bg-black text-white hover:bg-gray-800"
+                              }`}
+                          >
+                            {isSelected ? (
+                              <>
+                                <span className="mr-1">✕</span>To be assigned
+                              </>
+                            ) : (
+                              <>
+                                <PlusCircle className="mr-2 h-4 w-4" /> Assign
+                              </>
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : searchTerm && !isLoadingDocumentTable ? (
                   <TableRow>
                     <TableCell colSpan={2}>
@@ -599,7 +782,37 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
             </Table>
           </div>
         </CardContent>
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Confirm Assignment</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-2">
+              <p className="text-sm">You are about to assign the following advocates:</p>
+              <ul className="list-disc pl-6 text-sm">
+                {selectedAdvocates.map((a) => (
+                  <li key={`selected-${a.AdvocateId}`}>{a.AdvocateName}</li>
+                ))}
+              </ul>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
+              <Button onClick={handleBatchAssign} disabled={isAssigning}>
+                {isAssigning ? "Assigning..." : "Confirm Assignment"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </Card>
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white rounded-full p-3 shadow-lg hover:bg-blue-700 transition"
+          aria-label="Scroll to top"
+        >
+          <ArrowUpCircle className="w-6 h-6" />
+        </button>
+      )}
     </>
   )
 }

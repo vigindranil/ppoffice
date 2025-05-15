@@ -24,10 +24,15 @@ import AssignedTable from "@/components/ps-assigned-adv-table-component"
 import AssignedDeptTable from "@/components/assigned-dept-table-component-no-action"
 
 export default function Page ({ params }) {
+  // console.log("params:",params);
   const unwrappedParams = use(params);
+  // console.log("unwrappedParams:",unwrappedParams);
   const { caseId } = unwrappedParams;
+  // console.log("caseId:",caseId);
   const dec_caseId = decodeURIComponent(caseId);
+  // console.log("dec_caseId:",dec_caseId);
   const case_id = atob(dec_caseId);
+  // console.log("case id:",case_id);
   const encryptedUser = useSelector((state) => state.auth.user)
   const token = useSelector((state) => state.auth.token)
   const [user, setUser] = useState("");

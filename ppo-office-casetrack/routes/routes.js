@@ -34,6 +34,7 @@ router.post('/api/unassigned-advocates', authMiddleware.verifyToken,ppuserContro
 router.post('/api/caseDetailsByPPuserId', authMiddleware.verifyToken,ppuserController.caseDetailsByPPuserId); // show ppstaffdetails by Id
 router.post('/api/assigncase', authMiddleware.verifyToken,ppuserController.assignOrUnAdvocateToCase); // show ppstaffdetails by Id
 router.get('/api/getppuserDetailsById', authMiddleware.verifyToken,ppuserController.getppuserDetailsById);
+router.post('/api/assign-case-to-advocates', authMiddleware.verifyToken,ppuserController.assignCaseToAdvocates);
 
 
 
