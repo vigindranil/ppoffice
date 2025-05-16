@@ -1638,7 +1638,7 @@ class CaseController {
 
 
             // ✅ 1. Call sp_Createcase_v1 (Handles both create and update based on InCaseID)
-            const caseQuery = "CALL sp_Createcase_v2(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode, @Out_crmID)";
+            const caseQuery = "CALL sp_Createcase_v3(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode, @Out_crmID)";
             const caseParams = [
                 InCaseID, // 0 for create, actual CaseId for update
                 caseNumber, CaseDate, districtId, psId, caseTypeId,
@@ -1646,7 +1646,7 @@ class CaseController {
                 EntryUserID, crmID, refferenceNumber, refferenceyear,
             ];
 
-            console.log("Executing sp_Createcase_v2 with params:", caseParams);
+            console.log("Executing sp_Createcase_v3 with params:", caseParams);
             let returnedCaseID; 
             let spErrorCode;
             let returnedCrmID;
@@ -1655,7 +1655,7 @@ class CaseController {
                 await new Promise((resolve, reject) => {
                     db.query(caseQuery, caseParams, (err) => {
                         if (err) {
-                            console.error("Error executing sp_Createcase_v2:", err);
+                            console.error("Error executing sp_Createcase_v3:", err);
                             return reject(err); // Reject on SP execution error
                         }
                         resolve();
