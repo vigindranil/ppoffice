@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getDetailsApplicationId, getPccCrimeDetails, updateCriminalInfoApi, getDocByCaseId, getAssignedByCaseId, getUnassignedByCaseId, getAssignedDeptByCaseId } from "./api"
 import moment, { isMoment } from "moment"
-import DocumentTable from "@/components/ps-document-table-component"
+// import DocumentTable from "@/components/ps-document-table-component"
+import DocumentTable from "@/components/document-table-component"
 import { useToast } from "@/hooks/use-toast"
 import { ToastAction } from "@/components/ui/toast"
 import ApplicationStatusHistory from "@/components/application-status-history"

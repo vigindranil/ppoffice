@@ -201,7 +201,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
   const toggleSelection = (doc) => {
     const isAlreadySelected = selectedAdvocates.some((a) => a.AdvocateId === doc.AdvocateId);
     if (isAlreadySelected) {
-      setSelectedAdvocates((prev) => prev.filter((a) => a.AdvocateId !== doc.AdvocateId));
+      setSelectedAdvocates((prev) => prev?.filter((a) => a.AdvocateId !== doc.AdvocateId));
     } else {
       setSelectedAdvocates((prev) => [doc, ...prev]);
     }
@@ -262,7 +262,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
 
       // Optionally remove duplicates:
       const seen = new Set();
-      const uniqueDepts = deptPayload.filter(({ DistrictID, PSID }) => {
+      const uniqueDepts = deptPayload?.filter(({ DistrictID, PSID }) => {
         const key = `${DistrictID}-${PSID}`;
         return seen.has(key) ? false : seen.add(key);
       });
@@ -435,12 +435,12 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
   const pinned = selectedAdvocates;
 
   // Always filter from full list (documents) not filteredDocuments
-  const unselectedDocuments = documents.filter(
+  const unselectedDocuments = documents?.filter(
     (doc) => !selectedAdvocates.some((sel) => sel.AdvocateId === doc.AdvocateId)
   );
 
   // Then apply search only to the unselected
-  const others = unselectedDocuments.filter((doc) =>
+  const others = unselectedDocuments?.filter((doc) =>
     doc.AdvocateName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -491,7 +491,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
         if (assignedAdvResponse?.data?.length > 0) {
           let allEmailsSent = true
 
-          for (const adv of assignedAdvResponse.data.filter(a => a.advocateId !== doc.AdvocateId)) {
+          for (const adv of assignedAdvResponse.data?.filter(a => a.advocateId !== doc.AdvocateId)) {
             try {
               const advEmailRes = await postRequest("send-email-pp", {
                 CaseID: identity,
@@ -611,7 +611,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
       if (allSuccessful) {
         openAlert("success", "Advocate Assigned & All Notifications Sent Successfully!")
       } else {
-        const completedSteps = progressSteps.filter((step) => step.status === "success").length
+        const completedSteps = progressSteps?.filter((step) => step.status === "success").length
         const totalSteps = progressSteps.length
         openAlert(
           "info",

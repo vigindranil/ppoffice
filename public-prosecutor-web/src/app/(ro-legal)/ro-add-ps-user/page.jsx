@@ -168,7 +168,7 @@ const Page = () => {
               />
             </div>
             <div className="flex-1 space-y-2">
-              <Label htmlFor="LicenseNumber">License Number</Label>
+              <Label htmlFor="LicenseNumber">WBPID</Label>
               <Input
                 icon={CreditCard}
                 id="LicenseNumber"
