@@ -1,13 +1,13 @@
 const nodemailer = require("nodemailer");
 const CryptoJS = require('crypto-js');
 const ResponseHelper = require('./ResponseHelper');
-const db = require("../config/db"); 
+const db = require("../config/db");
 const EmailTemplate = require('./emailTemplate');
 const { BASE_URL, AES_SECRET } = process.env;
 
 const generateEncryptedToken = (data) => {
-  const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), AES_SECRET).toString();
-  return encodeURIComponent(ciphertext);
+    const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), AES_SECRET).toString();
+    return encodeURIComponent(ciphertext);
 };
 
 class EmailController {
@@ -24,212 +24,228 @@ class EmailController {
         });
     }
 
-    static async sendEmail(req, res) { 
-    try {
-        console.log("🔥 Request Body for sendEmail:", req.body);
-
-        const { CaseID, Departments } = req.body; // Payload: {CaseID: "58", Departments: [{DistrictID: 5, PSID: 70}, ...]}
-
-        if (!CaseID || !Departments || !Array.isArray(Departments) || Departments.length === 0) {
-            return res.status(400).json({
-                status: 1,
-                message: "Fields 'CaseID' and a non-empty array 'Departments' are required.",
-            });
-        }
-
-        const recipientEmails = new Set(); // To collect unique To/BCC emails for departments
-        const recipientDataForLogging = [];
-        let commonCaseDetailsFromSP = null; // To store CaseNumber, IPCSection etc.
-
-        // 1. Fetch email addresses for the specified departments (for TO/BCC list)
-        for (const dept of Departments) {
-            const { DistrictID, PSID } = dept;
-            if (DistrictID === undefined || PSID === undefined) {
-                 console.warn("Skipping department due to missing DistrictID or PSID:", dept);
-                 continue;
-            }
-            try {
-                // sp_sendEmailv1 is called per department combination from the payload
-                const results = await EmailController.callStoredProcedure('sp_sendEmailv1', [CaseID, DistrictID, PSID]);
-                const emailDetails = results[0];
-
-                if (emailDetails) {
-                    if (!commonCaseDetailsFromSP) {
-                        commonCaseDetailsFromSP = emailDetails; // Capture common details once
-                    }
-                    // Collect all relevant emails from this department
-                    if (emailDetails.DistrictEmail) recipientEmails.add(emailDetails.DistrictEmail.trim());
-                    if (emailDetails.ROLegalEmail) recipientEmails.add(emailDetails.ROLegalEmail.trim());
-                    if (emailDetails.PoliceEmail) recipientEmails.add(emailDetails.PoliceEmail.trim());
-                    
-                    // For logging, we might need to log against the primary contact for this department pair
-                    // This part of logging needs refinement based on how sp_logEmailDetails is structured for departments
-                    // For now, just collect that an attempt will be made for these primary targets
-                    if (emailDetails.DistrictEmail) recipientDataForLogging.push({ email: emailDetails.DistrictEmail, userTypeId: 30, DistrictID, PSID:0, CaseID });
-                    if (emailDetails.PoliceEmail) recipientDataForLogging.push({ email: emailDetails.PoliceEmail, userTypeId: 50, DistrictID:0, PSID, CaseID });
-                    if (emailDetails.ROLegalEmail) recipientDataForLogging.push({ email: emailDetails.ROLegalEmail, userTypeId: 70, DistrictID, PSID:0, CaseID });
-
-                } else {
-                    console.warn(`No email details from sp_sendEmailv1 for CaseID ${CaseID}, DistrictID ${DistrictID}, PSID ${PSID}`);
-                }
-            } catch (error) {
-                console.error(`❌ Error processing department D:${DistrictID}/PS:${PSID} with sp_sendEmailv1:`, error.message);
-            }
-        }
-
-        if (recipientEmails.size === 0 || !commonCaseDetailsFromSP) {
-            return res.status(404).json({
-                status: 1,
-                message: "No valid department recipients found or case details missing.",
-            });
-        }
-
-        // 2. Fetch all assigned advocates for the case to include in the email body
-        let assignedAdvocatesListHTML = 'No advocates assigned or found.';
+    static async sendEmail(req, res) {
         try {
-            const assignedAdvocates = await EmailController.callStoredProcedure('sp_getAssignedAdvocatelistByCaseId', [CaseID]);
-            if (assignedAdvocates && assignedAdvocates.length > 0) {
-                assignedAdvocatesListHTML = assignedAdvocates
-                    .map(adv => `${adv.advocateName}${adv.advocateContactNumber ? ` (${adv.advocateContactNumber})` : ''}`)
-                    .join('<br>');
-            }
-        } catch (error) {
-            console.error(`❌ Error fetching assigned advocates for CaseID ${CaseID} (sendEmail):`, error.message);
-            assignedAdvocatesListHTML = "Could not retrieve advocate list.";
-        }
+            // console.log("🔥 Request Body for sendEmail:", req.body);
 
-        // 3. Fetch all assigned departments for the case to determine CC list (those NOT in the primary 'Departments' payload)
-        const ccDepartmentEmails = new Set();
-        const payloadDepartmentKeys = new Set(Departments.map(d => `${d.DistrictID}-${d.PSID}`)); // For easy lookup
+            const { CaseID, Departments } = req.body; // Payload: {CaseID: "58", Departments: [{DistrictID: 5, PSID: 70}, ...]}
 
-        try {
-            const allCaseDepartments = await EmailController.callStoredProcedure('sp_getAssignedDistrictAndPoliceByCaseId', [CaseID]);
-            if (allCaseDepartments && allCaseDepartments.length > 0) {
-                allCaseDepartments.forEach(dept => {
-                    const deptKey = `${dept.districtId}-${dept.policeStationId}`;
-                    if (!payloadDepartmentKeys.has(deptKey)) { // If this department was not a primary target
-                        if (dept.districtEmail) ccDepartmentEmails.add(dept.districtEmail.trim());
-                        if (dept.rolegalEmail) ccDepartmentEmails.add(dept.rolegalEmail.trim());
-                        if (dept.policeEmail) ccDepartmentEmails.add(dept.policeEmail.trim());
-                    }
+            if (!CaseID || !Departments || !Array.isArray(Departments) || Departments.length === 0) {
+                return res.status(400).json({
+                    status: 1,
+                    message: "Fields 'CaseID' and a non-empty array 'Departments' are required.",
                 });
             }
+
+            const recipientEmails = new Set(); // To collect unique To/BCC emails for departments
+            const recipientDataForLogging = [];
+            let commonCaseDetailsFromSP = null; // To store CaseNumber, IPCSection etc.
+
+            // 1. Fetch email addresses for the specified departments (for TO/BCC list)
+            for (const dept of Departments) {
+                const { DistrictID, PSID } = dept;
+                if (DistrictID === undefined || PSID === undefined) {
+                    console.warn("Skipping department due to missing DistrictID or PSID:", dept);
+                    continue;
+                }
+                try {
+                    // sp_sendEmailv1 is called per department combination from the payload
+                    const results = await EmailController.callStoredProcedure('sp_sendEmailv2', [CaseID, DistrictID, PSID]);
+                    const emailDetails = results[0];
+
+                    if (emailDetails) {
+                        if (!commonCaseDetailsFromSP) {
+                            commonCaseDetailsFromSP = emailDetails; // Capture common details once
+                        }
+                        // Collect all relevant emails from this department
+                        if (emailDetails.DistrictEmail) recipientEmails.add(emailDetails.DistrictEmail.trim());
+                        if (emailDetails.ROLegalEmail) recipientEmails.add(emailDetails.ROLegalEmail.trim());
+                        if (emailDetails.PoliceEmail) recipientEmails.add(emailDetails.PoliceEmail.trim());
+
+                        // For logging, we might need to log against the primary contact for this department pair
+                        // This part of logging needs refinement based on how sp_logEmailDetails is structured for departments
+                        // For now, just collect that an attempt will be made for these primary targets
+                        if (emailDetails.DistrictEmail) recipientDataForLogging.push({ email: emailDetails.DistrictEmail, userTypeId: 30, DistrictID, PSID: 0, CaseID });
+                        if (emailDetails.PoliceEmail) recipientDataForLogging.push({ email: emailDetails.PoliceEmail, userTypeId: 50, DistrictID: 0, PSID, CaseID });
+                        if (emailDetails.ROLegalEmail) recipientDataForLogging.push({ email: emailDetails.ROLegalEmail, userTypeId: 70, DistrictID, PSID: 0, CaseID });
+
+                    } else {
+                        console.warn(`No email details from sp_sendEmailv1 for CaseID ${CaseID}, DistrictID ${DistrictID}, PSID ${PSID}`);
+                    }
+                } catch (error) {
+                    console.error(`❌ Error processing department D:${DistrictID}/PS:${PSID} with sp_sendEmailv1:`, error.message);
+                }
+            }
+
+            if (recipientEmails.size === 0 || !commonCaseDetailsFromSP) {
+                return res.status(404).json({
+                    status: 1,
+                    message: "No valid department recipients found or case details missing.",
+                });
+            }
+
+            // 2. Fetch all assigned advocates for the case to include in the email body
+            let assignedAdvocatesListHTML = 'No advocates assigned or found.';
+            try {
+                const assignedAdvocates = await EmailController.callStoredProcedure('sp_getAssignedAdvocatelistByCaseId', [CaseID]);
+                if (assignedAdvocates && assignedAdvocates.length > 0) {
+                    assignedAdvocatesListHTML = assignedAdvocates
+                        .map(adv => `${adv.advocateName}${adv.advocateContactNumber ? ` (${adv.advocateContactNumber})` : ''}`)
+                        .join('<br>');
+                }
+            } catch (error) {
+                console.error(`❌ Error fetching assigned advocates for CaseID ${CaseID} (sendEmail):`, error.message);
+                assignedAdvocatesListHTML = "Could not retrieve advocate list.";
+            }
+
+            // 3. Fetch all assigned departments for the case to determine CC list (those NOT in the primary 'Departments' payload)
+            const ccDepartmentEmails = new Set();
+            const payloadDepartmentKeys = new Set(Departments.map(d => `${d.DistrictID}-${d.PSID}`)); // For easy lookup
+
+            try {
+                const allCaseDepartments = await EmailController.callStoredProcedure('sp_getAssignedDistrictAndPoliceByCaseId', [CaseID]);
+                if (allCaseDepartments && allCaseDepartments.length > 0) {
+                    allCaseDepartments.forEach(dept => {
+                        const deptKey = `${dept.districtId}-${dept.policeStationId}`;
+                        if (!payloadDepartmentKeys.has(deptKey)) { // If this department was not a primary target
+                            if (dept.districtEmail) ccDepartmentEmails.add(dept.districtEmail.trim());
+                            if (dept.rolegalEmail) ccDepartmentEmails.add(dept.rolegalEmail.trim());
+                            if (dept.policeEmail) ccDepartmentEmails.add(dept.policeEmail.trim());
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error(`❌ Error fetching all assigned departments for CC list (sendEmail) for CaseID ${CaseID}:`, error.message);
+            }
+
+            // Destructure common details from the first successful sp_sendEmailv1 call
+            const {
+                CaseNumber, IPCSection, BNSSection, CaseDate, HearingDate, SPName, PSName
+            } = commonCaseDetailsFromSP;
+
+            const emailTemplate = new EmailTemplate({
+                crm: BNSSection, // Or Refference if that's the field name
+                psCaseNo: CaseNumber,
+                dated: CaseDate,
+                ipcSection: IPCSection,
+                hearingDate: HearingDate,
+                SPName: SPName || "N/A", // From sp_sendEmailv1 if available, else default
+                PSName: PSName || "N/A",   // From sp_sendEmailv1 if available, else default
+                assignedAdvocatesList: assignedAdvocatesListHTML // Pass the advocate list
+            });
+
+            const emailContent = emailTemplate.generateEmailContent(); // Using the main content template
+
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST || "smtp.gmail.com",
+                port: parseInt(process.env.SMTP_PORT) || 587,
+                secure: (process.env.SMTP_SECURE === 'true'),
+                auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD },
+            });
+
+            const mailOptions = {
+                from: `"${process.env.EMAIL_FROM_NAME || 'Notifications'}" <${process.env.EMAIL_USER}>`,
+                to: process.env.EMAIL_USER, // Placeholder
+                bcc: Array.from(recipientEmails).join(', '),
+                subject: `Case Information: ${CaseNumber}`,
+                html: emailContent, // HTML from template
+                dsn: {
+                    id: `dsn-dept-${CaseID}-${Date.now()}`,
+                    return: 'headers',
+                    notify: ['failure', 'delay'],
+                    recipient: process.env.EMAIL_USER,
+                },
+            };
+
+            if (ccDepartmentEmails.size > 0) {
+                mailOptions.cc = Array.from(ccDepartmentEmails).join(', ');
+            }
+
+            const uniqueRecipientDataForLogging = Array.from(
+                new Map(recipientDataForLogging.map(item => [item.email, item])).values()
+            );
+
+            try {
+                const info = await transporter.sendMail(mailOptions);
+                console.log(`✅ Department batch email sent. Message ID: ${info.messageId}`);
+                console.log(`✉️ BCC'd to: ${Array.from(recipientEmails).join(', ')}`);
+                if (mailOptions.cc) console.log(`✉️ CC'd to: ${mailOptions.cc}`);
+
+                // Granular logging for each department contact in the BCC list
+                for (const recipient of uniqueRecipientDataForLogging) {
+                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logParams = [
+                        info.messageId,
+                        CaseID,
+                        commonCaseDetailsFromSP.CaseNumber || null,
+                        commonCaseDetailsFromSP.CaseDate || null,
+                        commonCaseDetailsFromSP.IPCSection || null,
+                        commonCaseDetailsFromSP.HearingDate || null,
+                        recipient.email,
+                        recipient.DistrictID || 0,
+                        recipient.PSID || 0,
+                        0,
+                        recipient.userTypeId,
+                        1
+                    ];
+                    // console.log("📋 Logging Success Params to sp_logEmailDetails (Department):", logParams);
+                    db.query(logQuery, logParams, (logErr) => {
+                        if (logErr) console.error(`❌ DB Log Error (Success) for department ${recipient.email}:`, logErr);
+                    });
+                }
+
+                return res.status(200).json({
+                    status: 0,
+                    message: `Batch email sent to ${recipientEmails.size} department contacts and CC'd to ${ccDepartmentEmails.size} other department contacts.`,
+                    messageId: info.messageId,
+                });
+
+            } catch (emailError) {
+                console.error(`❌ Failed to send department batch email:`, emailError);
+
+                // Granular logging for failure for each intended department contact
+                for (const recipient of uniqueRecipientDataForLogging) {
+                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logParams = [
+                        null, // No messageId on failure
+                        CaseID,
+                        commonCaseDetailsFromSP.CaseNumber || null,
+                        commonCaseDetailsFromSP.CaseDate || null,
+                        commonCaseDetailsFromSP.IPCSection || null,
+                        commonCaseDetailsFromSP.HearingDate || null,
+                        recipient.email,
+                        recipient.DistrictID || 0,
+                        recipient.PSID || 0,
+                        0,
+                        recipient.userTypeId,
+                        0 // Failure
+                    ];
+                    // console.log("📋 Logging Failure Params to sp_logEmailDetails (Department):", logParams);
+                    db.query(logQuery, logParams, (logErr) => {
+                        if (logErr) console.error(`❌ DB Log Error (Failure) for department ${recipient.email}:`, logErr);
+                    });
+                }
+
+                return res.status(500).json({
+                    status: 1,
+                    message: "Failed to send batch email to departments.",
+                    error: emailError.message,
+                });
+            }
+
         } catch (error) {
-            console.error(`❌ Error fetching all assigned departments for CC list (sendEmail) for CaseID ${CaseID}:`, error.message);
-        }
-
-        // Destructure common details from the first successful sp_sendEmailv1 call
-        const {
-            CaseNumber, IPCSection, BNSSection, CaseDate, HearingDate, SPName, PSName
-        } = commonCaseDetailsFromSP;
-
-        const emailTemplate = new EmailTemplate({
-            crm: BNSSection, // Or Refference if that's the field name
-            psCaseNo: CaseNumber,
-            dated: CaseDate,
-            ipcSection: IPCSection,
-            hearingDate: HearingDate,
-            SPName: SPName || "N/A", // From sp_sendEmailv1 if available, else default
-            PSName: PSName || "N/A",   // From sp_sendEmailv1 if available, else default
-            assignedAdvocatesList: assignedAdvocatesListHTML // Pass the advocate list
-        });
-
-        const emailContent = emailTemplate.generateEmailContent(); // Using the main content template
-
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || "smtp.gmail.com",
-            port: parseInt(process.env.SMTP_PORT) || 587,
-            secure: (process.env.SMTP_SECURE === 'true'),
-            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD },
-        });
-
-        const mailOptions = {
-            from: `"${process.env.EMAIL_FROM_NAME || 'Notifications'}" <${process.env.EMAIL_USER}>`,
-            to: process.env.EMAIL_USER, // Placeholder
-            bcc: Array.from(recipientEmails).join(', '),
-            subject: `Case Information: ${CaseNumber}`,
-            html: emailContent, // HTML from template
-            dsn: {
-                id: `dsn-dept-${CaseID}-${Date.now()}`,
-                return: 'headers',
-                notify: ['failure', 'delay'],
-                recipient: process.env.EMAIL_USER,
-            },
-        };
-
-        if (ccDepartmentEmails.size > 0) {
-            mailOptions.cc = Array.from(ccDepartmentEmails).join(', ');
-        }
-
-        try {
-            const info = await transporter.sendMail(mailOptions);
-            console.log(`✅ Department batch email sent. Message ID: ${info.messageId}`);
-            console.log(`✉️ BCC'd to: ${Array.from(recipientEmails).join(', ')}`);
-            if(mailOptions.cc) console.log(`✉️ CC'd to: ${mailOptions.cc}`);
-            
-            // Simplified logging for batch department email
-            // You might want to loop through recipientDataForLogging if more granular logs are needed
-            const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            // For a general log entry for this batch:
-             const primaryRecipientForLog = recipientDataForLogging[0] || {};
-             const logParams = [
-                info.messageId, CaseID, CaseNumber, CaseDate, IPCSection, HearingDate,
-                Array.from(recipientEmails).join(', '), // Log all BCC'd emails
-                primaryRecipientForLog.DistrictID || 0, 
-                primaryRecipientForLog.PSID || 0, 
-                0, // PPId (not applicable for this email type)
-                primaryRecipientForLog.userTypeId || 0, // A general type or first one
-                1 // Success
-            ];
-             db.query(logQuery, logParams, (logErr) => {
-                if (logErr) console.error(`❌ DB Log Error (Success) for department batch:`, logErr);
-            });
-
-
-            return res.status(200).json({
-                status: 0,
-                message: `Batch email sent to ${recipientEmails.size} department contacts and CC'd to ${ccDepartmentEmails.size} other department contacts.`,
-                messageId: info.messageId,
-            });
-
-        } catch (emailError) {
-            console.error(`❌ Failed to send department batch email:`, emailError);
-             // Log failure
-            const primaryRecipientForLog = recipientDataForLogging[0] || {};
-            const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            const logParams = [
-                null, CaseID, CaseNumber, CaseDate, IPCSection, HearingDate,
-                Array.from(recipientEmails).join(', '),
-                primaryRecipientForLog.DistrictID || 0, 
-                primaryRecipientForLog.PSID || 0, 
-                0, 
-                primaryRecipientForLog.userTypeId || 0, 
-                0 // Failure
-            ];
-            db.query(logQuery, logParams, (logErr) => {
-                if (logErr) console.error(`❌ DB Log Error (Failure) for department batch:`, logErr);
-            });
-
+            console.error("❌ Unexpected error in sendEmail (department version):", error);
             return res.status(500).json({
                 status: 1,
-                message: "Failed to send batch email to departments.",
-                error: emailError.message,
+                message: "An unexpected server error occurred in sendEmail.",
+                error: error.message,
             });
         }
-
-    } catch (error) {
-        console.error("❌ Unexpected error in sendEmail (department version):", error);
-        return res.status(500).json({
-            status: 1,
-            message: "An unexpected server error occurred in sendEmail.",
-            error: error.message,
-        });
     }
-}   
-    
+
     static async sendEmailTO(req, res) {
         try {
-            console.log("🔥 Request Body:", req.body);
+            // console.log("🔥 Request Body:", req.body);
 
             const { CaseID, PPuserID_array, ccEmail: initialCcEmail } = req.body; // Renamed to initialCcEmail
 
@@ -244,14 +260,14 @@ class EmailController {
             if (!BASE_URL) {
                 console.warn("⚠️ BASE_URL is not configured. Email links might be affected.");
             }
-            
+
             let encryptedCaseID = null;
             if (CaseID) {
-                 try {
+                try {
                     encryptedCaseID = generateEncryptedToken({ CaseID }); // Use your actual function
-                 } catch (e) {
+                } catch (e) {
                     console.error("Error encrypting CaseID", e);
-                 }
+                }
             }
 
             let commonEmailDetails = null;
@@ -310,7 +326,7 @@ class EmailController {
                 console.error(`❌ Error fetching assigned advocates list for CaseID ${CaseID}:`, error.message);
                 // Continue, but CC list might be incomplete
             }
-            
+
             // 3. Fetch assigned departments (police stations) for the email body
             let assignedDepartmentsListHTML = '';
             try {
@@ -323,7 +339,7 @@ class EmailController {
                         assignedDepartmentsListHTML = "No specific departments listed.";
                     }
                 } else {
-                     assignedDepartmentsListHTML = "No departments assigned or found.";
+                    assignedDepartmentsListHTML = "No departments assigned or found.";
                 }
             } catch (error) {
                 console.error(`❌ Error fetching assigned departments for CaseID ${CaseID}:`, error.message);
@@ -384,16 +400,17 @@ class EmailController {
                 const info = await transporter.sendMail(mailOptions);
                 console.log(`✅ Batch PP email sent. Message ID: ${info.messageId}`);
                 console.log(`✉️ BCC'd to: ${recipientEmailsForBCC.join(', ')}`);
-                if(mailOptions.cc) console.log(`✉️ CC'd to: ${mailOptions.cc}`);
+                if (mailOptions.cc) console.log(`✉️ CC'd to: ${mailOptions.cc}`);
 
                 for (const recipient of recipientDataForLogging) {
                     const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     const logParams = [
                         info.messageId, CaseID, psCaseNo, dated, ipcSection, hearingDate,
-                        recipient.PPEmail, 0, 0, 
+                        recipient.PPEmail, 0, 0,
                         recipient.PPuserID,
                         recipient.userTypeId, 1 // Success
                     ];
+                    // console.log("📋 Logging Success Params adv to sp_logEmailDetails:", logParams);
                     // Fire-and-forget logging for now
                     db.query(logQuery, logParams, (logErr) => {
                         if (logErr) console.error(`❌ DB Log Error (Success) for ${recipient.PPEmail}:`, logErr);
@@ -409,12 +426,13 @@ class EmailController {
             } catch (emailError) {
                 console.error(`❌ Failed to send batch PP email:`, emailError);
                 for (const recipient of recipientDataForLogging) {
-                     const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                     const logParams = [
+                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logParams = [
                         null, CaseID, psCaseNo, dated, ipcSection, hearingDate,
                         recipient.PPEmail, 0, 0,
                         recipient.PPuserID, recipient.userTypeId, 0 // Failure
                     ];
+                    // console.log("📋 Logging Failure Params adv to sp_logEmailDetails:", logParams);
                     db.query(logQuery, logParams, (logErr) => {
                         if (logErr) console.error(`❌ DB Log Error (Failure) for ${recipient.PPEmail}:`, logErr);
                     });
@@ -434,7 +452,7 @@ class EmailController {
             });
         }
     }
-    
+
     static async sendCaseUpdatedEmail(req, res) {
         const { CaseSummaryId } = req.body;
 
@@ -442,7 +460,7 @@ class EmailController {
         if (!CaseSummaryId) {
             return ResponseHelper.error(res, "CaseSummaryId is required");
         }
-        
+
 
         try {
             const query = "CALL sp_sendEmail_futureDetail(?)";
@@ -465,7 +483,7 @@ class EmailController {
                     });
                 }
 
-                const { receiveEmail, ccEmail, psCaseNo, dated, CaseId, NexthearingDate, CaseDescription,CaseAdditionalRemarks,sp_id,ps_id,CaseRequiredDocument  } = emailDetails;
+                const { receiveEmail, ccEmail, psCaseNo, dated, CaseId, NexthearingDate, CaseDescription, CaseAdditionalRemarks, sp_id, ps_id, CaseRequiredDocument } = emailDetails;
 
                 // Generate the email content
                 const emailTemplate = new EmailTemplate({
@@ -534,7 +552,7 @@ class EmailController {
                             message: "Email sent and logged successfully.",
                             data: {
                                 messageId: info.messageId,
-                                DistrictName :emailDetails.DistrictName,
+                                DistrictName: emailDetails.DistrictName,
                                 PoliceStationName: emailDetails.PoliceStationName,
                                 response: info.response,
                             },
@@ -542,7 +560,7 @@ class EmailController {
                     });
                 } catch (emailError) {
                     console.error("Error sending email:", emailError);
-                
+
                     // Log email details as failure
                     const logQuery = "CALL sp_logFutureEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     const logParams = [

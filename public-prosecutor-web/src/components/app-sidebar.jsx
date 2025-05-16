@@ -109,6 +109,10 @@ const data = {
           title: "Dashboard",
           url: "/ro-dashboard",
         },
+        {
+          title: "Add PS User",
+          url: "/ro-add-ps-user",
+        },
       ],
     },
     {
