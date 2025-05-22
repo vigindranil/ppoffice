@@ -35,6 +35,7 @@ router.post('/api/caseDetailsByPPuserId', authMiddleware.verifyToken,ppuserContr
 router.post('/api/assigncase', authMiddleware.verifyToken,ppuserController.assignOrUnAdvocateToCase); // show ppstaffdetails by Id
 router.get('/api/getppuserDetailsById', authMiddleware.verifyToken,ppuserController.getppuserDetailsById);
 router.post('/api/assign-case-to-advocates', authMiddleware.verifyToken,ppuserController.assignCaseToAdvocates);
+router.post('/api/update-password', authMiddleware.verifyToken,ppuserController.updatePassword);
 
 
 

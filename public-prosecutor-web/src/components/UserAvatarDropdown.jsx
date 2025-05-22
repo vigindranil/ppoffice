@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
-import { LogOut, ChevronsUpDown } from 'lucide-react'
+import { LogOut, ChevronsUpDown, KeyRound } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -39,7 +39,11 @@ export function UserAvatarDropdown() {
 
   const handleLogout = () => {
     router.push('/logout')
-  }
+  };
+
+  const handleChangePassword = () => {
+    router.push('/change-password');
+  };
 
   return (
     <DropdownMenu>
@@ -60,6 +64,10 @@ export function UserAvatarDropdown() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleChangePassword} className="cursor-pointer">
+          <KeyRound className="mr-2 h-4 w-4" />
+            <span>Change Password</span>
+          </DropdownMenuItem>
         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>

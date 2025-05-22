@@ -457,6 +457,54 @@ class PPuserController {
     }
   }
 
+  static async updatePassword(req, res) {
+    try {
+      console.log("🔥 Request Params:", req.body); // Debugging
+
+      const { UserID, OldPassWord, NewPassword, EntryUserID } = req.body;
+
+      if (!UserID || !OldPassWord || !NewPassword || !EntryUserID) {
+        console.error("❌ Validation failed: Missing required fields.");
+        return ResponseHelper.error(res, "Please enter all required fields.");
+      }
+
+      const query = "CALL sp_updatepassword(?,?,?,?,@ErrorCode)";
+      const params = [UserID, OldPassWord, NewPassword, EntryUserID];
+
+      console.log("🛠️ Executing Stored Procedure with params:", params);
+
+      // ✅ Execute the stored procedure
+      const results = await new Promise((resolve, reject) => {
+        db.query(query, params, (err, result) => {
+          if (err) {
+            console.error("❌ Error executing stored procedure:", err);
+            return reject(err);
+          }
+          resolve(result[0]);
+        });
+      });
+
+      if (!results || results.length === 0) {
+        // return ResponseHelper.error(res, "Password Not Updated.");
+        return res.status(200).json({
+          status: 1,
+          message: "Password Not Updated.",
+          data: null
+        });
+      }
+
+      return res.status(200).json({
+        status: 0,
+        message: "Password updated successfully.",
+        data: results
+      });
+
+    } catch (error) {
+      console.error("❌ Unexpected error:", error);
+      return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+    }
+  }
+
 
 }
 

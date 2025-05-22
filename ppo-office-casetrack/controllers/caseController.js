@@ -1638,7 +1638,7 @@ class CaseController {
 
 
             // ✅ 1. Call sp_Createcase_v1 (Handles both create and update based on InCaseID)
-            const caseQuery = "CALL sp_Createcase_v3(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode, @Out_crmID)";
+            const caseQuery = "CALL sp_Createcase_v4(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @CaseID, @ErrorCode, @Out_crmID)";
             const caseParams = [
                 InCaseID, // 0 for create, actual CaseId for update
                 caseNumber, CaseDate, districtId, psId, caseTypeId,
@@ -1646,7 +1646,7 @@ class CaseController {
                 EntryUserID, crmID, refferenceNumber, refferenceyear,
             ];
 
-            console.log("Executing sp_Createcase_v3 with params:", caseParams);
+            console.log("Executing sp_Createcase_v4 with params:", caseParams);
             let returnedCaseID; 
             let spErrorCode;
             let returnedCrmID;
@@ -1655,7 +1655,7 @@ class CaseController {
                 await new Promise((resolve, reject) => {
                     db.query(caseQuery, caseParams, (err) => {
                         if (err) {
-                            console.error("Error executing sp_Createcase_v3:", err);
+                            console.error("Error executing sp_Createcase_v4:", err);
                             return reject(err); // Reject on SP execution error
                         }
                         resolve();
@@ -1666,11 +1666,11 @@ class CaseController {
                 const caseOutput = await new Promise((resolve, reject) => {
                     db.query("SELECT @CaseID AS CaseID, @ErrorCode AS ErrorCode, @Out_crmID AS CrmID", (outputErr, results) => {
                         if (outputErr) {
-                            console.error("Error fetching output parameters from sp_Createcase_v1:", outputErr);
+                            console.error("Error fetching output parameters from sp_Createcase_v4:", outputErr);
                             return reject(outputErr);
                         }
                         if (!results || results.length === 0) {
-                            console.error("No output parameters returned from sp_Createcase_v1.");
+                            console.error("No output parameters returned from sp_Createcase_v4.");
                             return reject(new Error("Failed to get output from case creation/update."));
                         }
                         resolve(results[0]); // Resolve with the first row containing @CaseID, @ErrorCode
@@ -1681,7 +1681,7 @@ class CaseController {
                 spErrorCode = caseOutput.ErrorCode;
                 returnedCrmID = caseOutput.CrmID;
 
-                console.log(`sp_Createcase_v1 Result: CaseID=${returnedCaseID}, ErrorCode=${spErrorCode}, CrmID=${returnedCrmID}`);
+                console.log(`sp_Createcase_v4 Result: CaseID=${returnedCaseID}, ErrorCode=${spErrorCode}, CrmID=${returnedCrmID}`);
 
                 // Handle specific errors returned by the SP
                 if (spErrorCode !== 0) { // 0 means success
