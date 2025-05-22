@@ -286,7 +286,7 @@ class CaseController {
                 const spErrorCode = caseOutput && caseOutput.length > 0 ? caseOutput[0].ErrorCode : null;
                 if (spErrorCode === 2) {
                     return res.status(409).json({ status: 1, message: "Case already exists.", ErrorCode: "ERR_CASE_EXISTS" });
-                  }
+                }
                 return res.status(500).json({ status: 1, message: `Failed to create case (SP ErrorCode: ${spErrorCode || 'N/A'}). ErrorCode: ERR_CASE_ID` });
             }
 
@@ -1499,7 +1499,7 @@ class CaseController {
 
     static async showallCaseBetweenRangeV2(req, res) {
         try {
-            const { startDate = null, endDate = null, isAssign = 2, EntryUserID, p_ps_id = null , p_district_id = null, p_case_number = "" } = req.body;
+            const { startDate = null, endDate = null, isAssign = 2, EntryUserID, p_ps_id = null, p_district_id = null, p_case_number = "" } = req.body;
 
             const mainQuery = "CALL sp_ShowallCaseBetweenRange_v2(?, ?, ?, ?, ?, ?, ?)";
             const mainParams = [startDate, endDate, isAssign, EntryUserID, p_ps_id, p_district_id, p_case_number];
@@ -1647,7 +1647,7 @@ class CaseController {
             ];
 
             console.log("Executing sp_Createcase_v4 with params:", caseParams);
-            let returnedCaseID; 
+            let returnedCaseID;
             let spErrorCode;
             let returnedCrmID;
 
@@ -1706,15 +1706,15 @@ class CaseController {
             // ✅ 2. Handle Deletions for IPC sections
             if (Array.isArray(removedSections) && removedSections.length > 0) {
                 const deleteQuery = "CALL sp_deleteIpcSectionById(?, ?, @ErrorCode)";
-            
+
                 for (const cisId of removedSections) {
                     if (!cisId || isNaN(cisId)) {
                         console.warn("Skipping invalid CisID in removedSections:", cisId);
                         continue;
                     }
-            
+
                     console.log(`Deleting IPC Section with CisID: ${cisId}`);
-            
+
                     await new Promise((resolve, reject) => {
                         db.query(deleteQuery, [cisId, EntryUserID], (err) => {
                             if (err) {
@@ -1767,12 +1767,51 @@ class CaseController {
             return res.status(InCaseID === 0 ? 201 : 200).json({ // 201 for created, 200 for updated
                 status: 0,
                 message: `Case ${InCaseID === 0 ? 'created' : 'updated'} successfully.`,
-                data: { CaseID: finalCaseId , CrmID: finalCrmId }
+                data: { CaseID: finalCaseId, CrmID: finalCrmId }
             });
 
         } catch (error) { // Catch errors from validation or unhandled SP errors
             console.error(`Unexpected error in ${req.body.CaseId ? 'Update' : 'Create'} Case V3:`, error);
             return res.status(500).json({ status: 1, message: error.message || "An unexpected error occurred.", ErrorCode: "ERR_UNEXPECTED_V3" });
+        }
+    }
+
+    static async getCaseSearchByParam(req, res) {
+        try {
+            function emptyToNull(val) {
+                return val === '' ? null : val;
+            }
+            let {
+                SearchType,
+                CaseNumber,
+            } = req.body;
+
+            function emptyToZero(val) {
+                return val === '' ? '0' : val;
+            }
+
+            let CaseDate = emptyToNull(req.body.CaseDate);
+            let RefferenceId = emptyToZero(req.body.RefferenceId);
+            let RefferenceNumber = emptyToZero(req.body.RefferenceNumber);
+            let RefferenceYear = emptyToZero(req.body.RefferenceYear);
+
+            const mainQuery = "CALL sp_getCaseSearchByparam(?, ?, ?, ?, ?, ?)";
+            const mainParams = [SearchType, CaseNumber, CaseDate, RefferenceId, RefferenceNumber, RefferenceYear];
+
+            const [caseResults] = await new Promise((resolve, reject) => {
+                db.query(mainQuery, mainParams, (err, results) => {
+                    if (err) {
+                        console.error("Error executing sp_getCaseSearchByparam:", err);
+                        return reject(err);
+                    }
+                    resolve(results);
+                });
+            });
+
+            return ResponseHelper.success_reponse(res, "Data found", caseResults);
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred", error);
         }
     }
 

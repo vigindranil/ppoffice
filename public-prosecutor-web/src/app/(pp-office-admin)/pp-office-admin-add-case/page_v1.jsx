@@ -108,89 +108,21 @@ const AddCasePage = () => {
 
   // Form data for updating existing case
   const [updateFormData, setUpdateFormData] = useState({
-    CaseId: "", caseNumber: "", EntryUserID: "", CaseDate: "", districtId: "", psId: "",
-    caseTypeId: "", filingDate: "", petitionName: "", hearingDate: "",
-    CourtCaseDescription: "", crmID: "", refferenceNumber: "", refferenceyear: "",
+    CaseId: "",
+    caseNumber: "",
+    EntryUserID: "",
+    CaseDate: "",
+    districtId: "",
+    psId: "",
+    caseTypeId: "",
+    filingDate: "",
+    petitionName: "",
+    hearingDate: "",
   })
 
   // Years for dropdowns
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 100 }, (_, i) => (currentYear - i).toString());
-
-  const [searchType, setSearchType] = useState("1");
-  const [searchInput, setSearchInput] = useState({
-    caseNumber: "",
-    caseDate: "",
-    referenceId: "",
-    referenceNumber: "",
-    referenceYear: "",
-  });
-  const [matchedCases, setMatchedCases] = useState([]);
-  const [openUpdateReference, setOpenUpdateReference] = useState(false);
-  const [openUpdateYear, setOpenUpdateYear] = useState(false);
-
-  // --- Search Handler ---
-  const handleSearchCase = async () => {
-    const payload = {
-      SearchType: searchType,
-      CaseNumber: searchType === "1" ? searchInput.caseNumber : "",
-      CaseDate: searchType === "1" ? searchInput.caseDate : "",
-      RefferenceId: searchType === "2" ? searchInput.referenceId : "",
-      RefferenceNumber: searchType === "2" ? searchInput.referenceNumber : "",
-      RefferenceYear: searchType === "2" ? searchInput.referenceYear : "",
-    };
-    try {
-      const res = await postRequest("get-case-by-param", payload);
-      if (res.status === 0) {
-        setMatchedCases(res.data || []);
-        setUpdateFormData({ CaseId: "" }); // reset form visibility
-      } else {
-        openAlert("error", res.message || "No case found");
-        setMatchedCases([]);
-        setUpdateFormData({ CaseId: "" }); // hide form
-      }
-    } catch (err) {
-      openAlert("error", err?.message || "Search failed");
-    }
-  };
-
-  const handleSelectMatchedCase = async (caseData) => {
-    const districtId = caseData.DistrictId ? caseData.DistrictId.toString() : "";
-
-    try {
-      const psResult = await showpoliceBydistrict(districtId);
-      setAllPSList(psResult);
-    } catch (err) {
-      openAlert("error", "Failed to load police stations");
-      return;
-    }
-
-    const formatDate = (dateString) => dateString ? new Date(dateString).toISOString().split("T")[0] : "";
-
-    setUpdateFormData({
-      CaseId: caseData.CaseId.toString(),
-      caseNumber: caseData.CaseNumber,
-      EntryUserID: user.AuthorityUserID,
-      CaseDate: formatDate(caseData.CaseDate),
-      districtId,
-      psId: caseData.PoliceId ? caseData.PoliceId.toString() : "",
-      caseTypeId: caseData.CaseTypeId ? caseData.CaseTypeId.toString() : "",
-      filingDate: "", // User will enter
-      petitionName: "", // User will enter
-      hearingDate: "", // User will enter
-      CourtCaseDescription: "",
-      crmID: "",
-      refferenceNumber: "",
-      refferenceyear: "",
-    });
-
-    setSelectedIpcSections([]);
-    setSelectedReferences([]);
-    setDocuments([]);
-    setOtherSectionsList([]);
-    setCranEntries([]);
-    setOpenCaseSelect(false);
-  };
 
   useEffect(() => {
     const decoded_user = JSON.parse(decrypt(encryptedUser))
@@ -273,77 +205,72 @@ const AddCasePage = () => {
     setAddFormData(newState);
   };
 
-  // const handleUpdateSelectChange = async (name, value) => {
-  //   if (name === "caseNumber") {
-  //     const selectedCase = allCases.find((c) => c.caseNumber === value)
-  //     if (!selectedCase) return
+  const handleUpdateSelectChange = async (name, value) => {
+    if (name === "caseNumber") {
+      const selectedCase = allCases.find((c) => c.caseNumber === value)
+      if (!selectedCase) return
 
-  //     // Find the district ID based on SpId
-  //     const districtId = selectedCase.SpId ? selectedCase.SpId.toString() : ""
+      // Find the district ID based on SpId
+      const districtId = selectedCase.SpId ? selectedCase.SpId.toString() : ""
 
-  //     // Get police stations for this district
-  //     try {
-  //       const psResult = await showpoliceBydistrict(districtId)
-  //       setAllPSList(psResult)
-  //     } catch (err) {
-  //       openAlert("error", "Failed to load police stations")
-  //     }
+      // Get police stations for this district
+      try {
+        const psResult = await showpoliceBydistrict(districtId)
+        setAllPSList(psResult)
+      } catch (err) {
+        openAlert("error", "Failed to load police stations")
+      }
 
-  //     // Format the date from ISO to YYYY-MM-DD
-  //     const formatDate = (dateString) => {
-  //       if (!dateString) return ""
-  //       try {
-  //         const date = new Date(dateString)
-  //         return date.toISOString().split("T")[0]
-  //       } catch (error) {
-  //         return ""
-  //       }
-  //     }
+      // Format the date from ISO to YYYY-MM-DD
+      const formatDate = (dateString) => {
+        if (!dateString) return ""
+        try {
+          const date = new Date(dateString)
+          return date.toISOString().split("T")[0]
+        } catch (error) {
+          return ""
+        }
+      }
 
-  //     // Format hearing date from "YYYY-MM-DD HH:MM:SS" to "YYYY-MM-DD"
-  //     const formatHearingDate = (dateString) => {
-  //       if (!dateString) return ""
-  //       try {
-  //         return dateString.split(" ")[0]
-  //       } catch (error) {
-  //         return ""
-  //       }
-  //     }
+      // Format hearing date from "YYYY-MM-DD HH:MM:SS" to "YYYY-MM-DD"
+      const formatHearingDate = (dateString) => {
+        if (!dateString) return ""
+        try {
+          return dateString.split(" ")[0]
+        } catch (error) {
+          return ""
+        }
+      }
 
-  //     setUpdateFormData({
-  //       CaseId: selectedCase.CaseId.toString(),
-  //       caseNumber: selectedCase.CaseNumber,
-  //       EntryUserID: user.AuthorityUserID,
-  //       CaseDate: formatDate(selectedCase.CaseDate),
-  //       districtId: districtId,
-  //       psId: selectedCase.PsId ? selectedCase.PsId.toString() : "",
-  //       caseTypeId: selectedCase.caseTypeID ? selectedCase.caseTypeID.toString() : "",
-  //       hearingDate: formatHearingDate(selectedCase.CaseHearingDate),
-  //       filingDate: formatDate(selectedCase.CaseDate),
-  //       petitionName: selectedCase.CaseNumber,
-  //     })
+      setUpdateFormData({
+        CaseId: selectedCase.CaseId.toString(),
+        caseNumber: selectedCase.CaseNumber,
+        EntryUserID: user.AuthorityUserID,
+        CaseDate: formatDate(selectedCase.CaseDate),
+        districtId: districtId,
+        psId: selectedCase.PsId ? selectedCase.PsId.toString() : "",
+        caseTypeId: selectedCase.caseTypeID ? selectedCase.caseTypeID.toString() : "",
+        hearingDate: formatHearingDate(selectedCase.CaseHearingDate),
+        filingDate: formatDate(selectedCase.CaseDate),
+        petitionName: selectedCase.CaseNumber,
+      })
 
-  //     // Reset selected IPC sections and references
-  //     setSelectedIpcSections([])
-  //     setSelectedReferences([])
-  //   } else {
-  //     setUpdateFormData((prev) => ({
-  //       ...prev,
-  //       [name]: value,
-  //     }))
-  //   }
-  // }
-
-  const handleUpdateSelectChange = (name, value) => {
-    setUpdateFormData((prev) => ({ ...prev, [name]: value }));
-  };
+      // Reset selected IPC sections and references
+      setSelectedIpcSections([])
+      setSelectedReferences([])
+    } else {
+      setUpdateFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
+  }
 
   const handleUpdateChange = (e) => {
-    const { name, value } = e.target;
-    setUpdateFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    setUpdateFormData({ ...updateFormData, [e.target.name]: e.target.value })
+  }
 
-
+  // --- IPC/BNS Section Handlers (FIXED) ---
   const addIpcSection = async (selectedBnsId) => {
     const currentTotal = selectedIpcSections.length + otherSectionsList.length;
     if (currentTotal >= MAX_TOTAL_SECTION_ENTRIES) { openAlert("error", `Maximum ${MAX_TOTAL_SECTION_ENTRIES} sections allowed.`); return; }
@@ -665,7 +592,7 @@ const AddCasePage = () => {
       };
 
       console.log("Submitting Case Data (V3):", caseApiData);
-      const caseResult = await createOrUpdateCaseV3(caseApiData);
+      const caseResult = await createOrUpdateCaseV3(caseApiData); 
 
       if (caseResult && caseResult.status === 0 && caseResult.data?.CaseID && caseResult.data?.CrmID) { // Expecting CrmID as ReferenceID
         savedCaseId = caseResult.data.CaseID;
@@ -789,37 +716,14 @@ const AddCasePage = () => {
 
   const handleUpdateCase = async () => {
     setIsLoading(true);
-    setIsSubmitting(true);
-
-    let savedCaseId = null;
-    let savedReferenceId = null;
-    let cranSaveErrors = [];
-    let successfulCrans = 0;
-    let mainDocsUploadError = false;
-
     try {
-      const requiredFields = [
-        { field: "hearingDate", label: "Hearing Date" },
-        { field: "filingDate", label: "Filing Date" },
-        { field: "petitionName", label: "Petitioner Name" },
-        { field: "CourtCaseDescription", label: "Court Case Description" },
-        { field: "crmID", label: "Reference Type" },
-        { field: "refferenceNumber", label: "Reference Number" },
-        { field: "refferenceyear", label: "Reference Year" },
-      ];
-      const missingFields = requiredFields.filter(({ field }) => !updateFormData[field]);
-      if (missingFields.length > 0) {
-        throw `Please fill required fields: ${missingFields.map(f => f.label).join(", ")}`;
-      }
+      // ... existing validations for update form fields ...
+      if (!updateFormData.CaseId) throw "Please select a case to update";
+      if (!updateFormData.hearingDate) throw "Please provide a hearing date";
+      // ... other update specific validations ...
 
-      if (updateFormData.CourtCaseDescription.trim().split(/\s+/).filter(Boolean).length > 100) {
-        throw "Description cannot exceed 100 words.";
-      }
 
-      if (selectedIpcSections.length === 0 && otherSectionsList.length === 0) {
-        throw "Please add at least one IPC/BNS section.";
-      }
-
+      // ---> IPC/BNS sections data <---
       const finalStandardSections = selectedIpcSections.map(section => ({
         bnsId: section.bnsId.toString(),
         otherIpcAct: "",
@@ -834,126 +738,55 @@ const AddCasePage = () => {
 
       const combinedIpcSections = [...finalStandardSections, ...finalOtherSections];
 
+      // Validate total number of sections/rows
+      if (combinedIpcSections.length === 0) {
+        throw "Please add at least one Standard IPC/BNS Section or one Other Section row.";
+      }
+      if (combinedIpcSections.length > MAX_TOTAL_ENTRIES) {
+        throw `Maximum ${MAX_TOTAL_ENTRIES} total entries (Standard + Other Rows) allowed.`
+      }
+
+      // Data for API
       const apiData = {
         ...updateFormData,
         ipcSections: combinedIpcSections,
-        refferences: selectedReferences,
-        removedSections: [],
+        refferences: selectedReferences.length > 0 ? selectedReferences : [],
       };
 
-      const caseResult = await createOrUpdateCaseV3(apiData);
+      // console.log("Submitting Update API Data:", apiData); // For debugging
 
-      if (caseResult && caseResult.status === 0 && caseResult.data?.CaseID && caseResult.data?.CrmID) {
-        savedCaseId = caseResult.data.CaseID;
-        savedReferenceId = caseResult.data.CrmID;
+      // Call update API
+      await createOrUpdateCaseV3(apiData);
 
-        if (documents.length > 0) {
-          try {
-            await uploadCaseDocuments(savedCaseId, documents, user.AuthorityUserID);
-          } catch (docUploadError) {
-            mainDocsUploadError = true;
-            cranSaveErrors.push(`Main case documents failed to upload: ${docUploadError.message || String(docUploadError)}`);
-          }
-        }
-
-        if (cranEntries.length > 0) {
-          for (const entry of cranEntries) {
-            if (!entry.cranNumber?.trim() || !entry.cranYear) {
-              cranSaveErrors.push(`Skipping CRAN (Temp ID: ${entry.id}) due to missing Number/Year.`);
-              continue;
-            }
-
-            try {
-              const cranPayload = {
-                caseId: savedCaseId,
-                refferenceId: savedReferenceId,
-                cranNumber: entry.cranNumber,
-                cranYear: entry.cranYear,
-                EntryUserID: user.AuthorityUserID,
-              };
-
-              const cranSaveResult = await createCranOfficeAdmin(cranPayload);
-
-              if (cranSaveResult && cranSaveResult.status === 0 && cranSaveResult.data?.CranID) {
-                const savedCranId = cranSaveResult.data.CranID;
-
-                if (entry.documents && entry.documents.length > 0) {
-                  try {
-                    const safeDocuments = Array.isArray(entry.documents)
-                      ? entry.documents
-                      : Array.from(entry.documents || []);
-
-                    await uploadCaseDocumentsV1(
-                      savedCaseId.toString(),
-                      savedReferenceId.toString(),
-                      savedCranId.toString(),
-                      safeDocuments,
-                      user.AuthorityUserID
-                    );
-                  } catch (uploadError) {
-                    cranSaveErrors.push(`CRAN ${entry.cranNumber}/${entry.cranYear} (ID: ${savedCranId}) saved, but document upload failed: ${uploadError}`);
-                  }
-                }
-
-                successfulCrans++;
-              } else {
-                throw new Error(cranSaveResult?.message || `Failed to create CRAN ${entry.cranNumber}/${entry.cranYear}.`);
-              }
-            } catch (cranError) {
-              cranSaveErrors.push(`Error saving CRAN ${entry.cranNumber}/${entry.cranYear}: ${cranError.message || String(cranError)}`);
-            }
-          }
-        }
-      } else {
-        throw new Error(caseResult?.message || "Failed to update Case or get required IDs (CaseID/ReferenceID).");
+      // Upload documents if any
+      if (documents.length > 0) {
+        await uploadCaseDocuments(updateFormData.CaseId, documents, user.AuthorityUserID);
       }
 
-      // --- Final feedback
-      let finalAlertMessage = `Case ${savedCaseId} updated.`;
-      let finalAlertType = "success";
+      openAlert("success", "Case updated successfully");
 
-      if (cranEntries.length > 0) {
-        finalAlertMessage += ` ${successfulCrans} CRAN(s) processed.`;
-      }
+      // Reset form
+      setUpdateFormData({
+        CaseId: "", caseNumber: "", EntryUserID: user.AuthorityUserID, CaseDate: "",
+        districtId: "", psId: "", caseTypeId: "", filingDate: "",
+        petitionName: "", hearingDate: "",
+      });
+      setSelectedIpcSections([]);
+      setOtherSectionsList([]);
+      setCurrentOtherIpc("");
+      setCurrentOtherBns("");
+      setSelectedReferences([]);
+      setDocuments([]);
+      setIpcToBnsMap({});
 
-      if (mainDocsUploadError || cranSaveErrors.length > 0) {
-        finalAlertType = "warning";
-        finalAlertMessage += `\nSome operations had issues:\n`;
 
-        if (mainDocsUploadError) {
-          finalAlertMessage += "- Main document upload failed.\n";
-        }
-
-        cranSaveErrors.forEach(err => {
-          finalAlertMessage += `- ${err}\n`;
-        });
-      } else {
-        finalAlertMessage += " All operations successful!";
-      }
-
-      openAlert(finalAlertType, finalAlertMessage.trim());
-
-      // --- Reset if success
-      if (savedCaseId) {
-        setUpdateFormData({
-          CaseId: "", caseNumber: "", EntryUserID: user?.AuthorityUserID || "", CaseDate: "",
-          districtId: "", psId: "", caseTypeId: "", filingDate: "",
-          petitionName: "", hearingDate: "", CourtCaseDescription: "",
-          crmID: "", refferenceNumber: "", refferenceyear: currentYear.toString(),
-        });
-        setSelectedIpcSections([]);
-        setOtherSectionsList([]);
-        setDocuments([]);
-        setCranEntries([]);
-        setSelectedReferences([]);
-        setMatchedCases([]);
-      }
+      // Refresh case list
+      fetchCases();
 
     } catch (err) {
-      const errorMessage = typeof err === 'string' ? err : err.message || "Unknown error";
-      openAlert("error", errorMessage);
+      const errorMessage = err instanceof Error ? err.message : (typeof err === 'string' ? err : "An unknown error occurred");
+      openAlert("error", errorMessage instanceof Array ? errorMessage.join(", ") : errorMessage);
     } finally {
-      setIsSubmitting(false);
       setIsLoading(false);
     }
   };
@@ -981,7 +814,7 @@ const AddCasePage = () => {
           <Tabs defaultValue="add" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-2 mx-6 mt-4">
               <TabsTrigger value="add">Add New Case</TabsTrigger>
-              <TabsTrigger value="update">Update Existing Case</TabsTrigger>
+              {/* <TabsTrigger value="update">Update Existing Case</TabsTrigger> */}
             </TabsList>
 
             {/* Add New Case Tab */}
@@ -1269,143 +1102,275 @@ const AddCasePage = () => {
             {/* Update Existing Case Tab */}
             <TabsContent value="update">
               <div>
-
-                <CardContent className="p-6">
-                  <Card className="mb-6 border bg-gray-50 shadow-sm p-4">
-                    <CardTitle className="text-base font-semibold text-gray-700 mb-5">🔍 Search for a Case</CardTitle>
-
-                    {/* Step 1: Search Type Selector */}
-                    <div className="flex gap-4 mb-4">
-                      <Label className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="searchType"
-                          value="1"
-                          checked={searchType === "1"}
-                          onChange={() => setSearchType("1")}
-                        />
-                        Search by Case
+                <CardContent>
+                  <div className="flex flex-col gap-4">
+                    <div className="space-y-2">
+                      <Label className="font-bold" htmlFor="existingCaseNumber">
+                        Select Case <span className="text-red-500">*</span>
                       </Label>
-                      <Label className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="searchType"
-                          value="2"
-                          checked={searchType === "2"}
-                          onChange={() => setSearchType("2")}
-                        />
-                        Search by Reference
-                      </Label>
+                      <Popover open={openCaseSelect} onOpenChange={setOpenCaseSelect}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openCaseSelect}
+                            className="w-full justify-between"
+                          >
+                            {updateFormData.caseNumber || "Select a case to update"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Search case number..." />
+                            <CommandList>
+                              <CommandEmpty>No cases found.</CommandEmpty>
+                              <CommandGroup>
+                                {allCases.map((caseItem) => (
+                                  <CommandItem
+                                    key={caseItem.CaseId}
+                                    onSelect={() => {
+                                      handleUpdateSelectChange("CaseNumber", caseItem.CaseNumber)
+                                      setOpenCaseSelect(false)
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        updateFormData.CaseNumber === caseItem.CaseNumber ? "opacity-100" : "opacity-0",
+                                      )}
+                                    />
+                                    {caseItem.CaseNumber} - {caseItem.SpName}, {caseItem.PsName}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
 
-                    {/* Step 2: Conditional Inputs */}
-                    {searchType === "1" ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <Label>Case Number</Label>
-                          <Input value={searchInput.caseNumber} onChange={(e) => setSearchInput({ ...searchInput, caseNumber: e.target.value })} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label>Case Date</Label>
-                          <Input type="date" value={searchInput.caseDate} onChange={(e) => setSearchInput({ ...searchInput, caseDate: e.target.value })} />
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="font-bold" htmlFor="updateCaseDate">
+                          Case Date
+                        </Label>
+                        <Input
+                          icon={Calendar}
+                          id="updateCaseDate"
+                          name="CaseDate"
+                          type="date"
+                          value={updateFormData.CaseDate}
+                          readOnly
+                          className="bg-gray-50"
+                        />
                       </div>
-                    ) : (
-                      <>
-                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-
-                          <div className="space-y-1.5">
-                            <Label>Reference Type</Label>
-                            <Popover open={openReference} onOpenChange={setOpenReference}>
-                              <PopoverTrigger asChild>
-                                <Button variant="outline" className="w-full justify-between">
-                                  {searchInput.referenceId ? referenceList.find(r => r.refferenceId.toString() === searchInput.referenceId)?.refferenceName : "Select Reference"}
-                                  <ChevronsUpDown className="ml-2 h-4 w-4" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-full p-0">
-                                <Command>
-                                  <CommandInput placeholder="Search reference..." />
-                                  <CommandList>
-                                    <CommandEmpty>No references found</CommandEmpty>
-                                    <CommandGroup>
-                                      {referenceList.map(r => (
-                                        <CommandItem key={r.refferenceId} onSelect={() => { setSearchInput({ ...searchInput, referenceId: r.refferenceId.toString() }); setOpenReference(false); }}>
-                                          <Check className="mr-2 h-4 w-4" /> {r.refferenceName}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                          <div className="space-y-1.5">
-                            <Label>Reference Number</Label>
-                            <Input value={searchInput.referenceNumber} onChange={(e) => setSearchInput({ ...searchInput, referenceNumber: e.target.value })} />
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <Label>Reference Year</Label>
-                            <Popover open={openYear} onOpenChange={setOpenYear}>
-                              <PopoverTrigger asChild>
-                                <Button variant="outline" className="w-full justify-between">
-                                  {searchInput.referenceYear || "Select Year"}
-                                  <ChevronsUpDown className="ml-2 h-4 w-4" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-full p-0">
-                                <Command>
-                                  <CommandInput placeholder="Search year..." />
-                                  <CommandList>
-                                    <CommandEmpty>No years found</CommandEmpty>
-                                    <CommandGroup>
-                                      {years.map((year) => (
-                                        <CommandItem key={year} onSelect={() => { setSearchInput({ ...searchInput, referenceYear: year }); setOpenYear(false); }}>
-                                          <Check className="mr-2 h-4 w-4" /> {year}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-
-                        </div>
-                      </>
-                    )}
-
-                    {/* Step 3: Search Button */}
-                    <div className="mt-4">
-                      <Button onClick={handleSearchCase}>Search Case</Button>
+                      <div className="space-y-2">
+                        <Label className="font-bold" htmlFor="updateHearingDate">
+                          Hearing Date <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          icon={Clock}
+                          id="updateHearingDate"
+                          name="hearingDate"
+                          type="date"
+                          value={updateFormData.hearingDate}
+                          onChange={handleUpdateChange}
+                          min={updateFormData.CaseDate || undefined}
+                        />
+                      </div>
                     </div>
 
-                    {/* Step 4: Populate Select Dropdown */}
-                    {matchedCases.length > 0 && (
-                      <div className="space-y-2 mt-4">
-                        <Label>Select Case</Label>
-                        <Popover open={openCaseSelect} onOpenChange={setOpenCaseSelect}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="font-bold" htmlFor="updatePetitionName">
+                          Petitioner Name <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="updatePetitionName"
+                          name="petitionName"
+                          value={updateFormData.petitionName}
+                          onChange={handleUpdateChange}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="font-bold" htmlFor="updateFilingDate">
+                          Filing Date <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          icon={Calendar}
+                          id="updateFilingDate"
+                          name="filingDate"
+                          type="date"
+                          value={updateFormData.filingDate}
+                          onChange={handleUpdateChange}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="font-bold" htmlFor="updateDistrictId">
+                          District
+                        </Label>
+                        <Input
+                          id="updateDistrictId"
+                          value={
+                            allDistrictList.find((d) => d.districtId.toString() === updateFormData.districtId)
+                              ?.districtName || ""
+                          }
+                          readOnly
+                          className="bg-gray-50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="font-bold" htmlFor="updatePsId">
+                          Police Station
+                        </Label>
+                        <Input
+                          id="updatePsId"
+                          value={allPSList.find((ps) => ps.id.toString() === updateFormData.psId)?.ps_name || ""}
+                          readOnly
+                          className="bg-gray-50"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="font-bold" htmlFor="updateCaseTypeId">
+                        Case Type
+                      </Label>
+                      <Input
+                        id="updateCaseTypeId"
+                        value={
+                          caseTypeList.find((ct) => ct.CasetypeId.toString() === updateFormData.caseTypeId)
+                            ?.CasetypeName || ""
+                        }
+                        readOnly
+                        className="bg-gray-50"
+                      />
+                    </div>
+
+                    {/* IPC Sections */}
+                    <div className="space-y-2 mt-2">
+                      <Label className="font-bold">
+                        IPC Sections <span className="text-red-500">*</span> {/* (Max {MAX_STANDARD_SECTIONS}) */}
+                      </Label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {selectedIpcSections.map((section) => (
+                          <Badge key={section.bnsId} variant="secondary" className="flex items-center gap-1 py-2">
+                            {section.ipcSection}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-4 w-4 p-0 ml-1"
+                              onClick={() => removeIpcSection(section.bnsId)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Popover open={openIpcAct} onOpenChange={setOpenIpcAct}>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-between">
-                              {updateFormData.caseNumber || "Select a Case"}
-                              <ChevronsUpDown className="ml-2 h-4 w-4" />
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openIpcAct}
+                              className="w-full justify-between"
+                            >
+                              Select IPC Section
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-full p-0">
                             <Command>
-                              <CommandInput placeholder="Search cases..." />
+                              <CommandInput placeholder="Search IPC section..." />
                               <CommandList>
-                                <CommandEmpty>No cases found</CommandEmpty>
+                                <CommandEmpty>No IPC section found.</CommandEmpty>
                                 <CommandGroup>
-                                  {matchedCases.map(c => (
-                                    <CommandItem key={c.CaseId} onSelect={() => handleSelectMatchedCase(c)}>
-                                      <Check className="mr-2 h-4 w-4" /> {c.CaseNumber}
+                                  {ipcActList
+                                    .filter(
+                                      (ipc) => !selectedIpcSections.some((selected) => selected.bnsId === ipc.bnsId),
+                                    )
+                                    .map((ipc) => (
+                                      <CommandItem
+                                        key={ipc.bnsId}
+                                        onSelect={() => {
+                                          addIpcSection(ipc.bnsId.toString())
+                                          setOpenIpcAct(false)
+                                        }}
+                                      >
+                                        {ipc.ipcSection}
+                                      </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+
+                    {/* References */}
+                    <div className="space-y-2 mt-2">
+                      <Label className="font-bold">References {/* (Max {MAX_STANDARD_SECTIONS}) */}</Label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {selectedReferences.map((ref, index) => (
+                          <Badge key={index} variant="secondary" className="flex items-center gap-1 py-2">
+                            {referenceList.find((r) => r.refferenceId.toString() === ref.crmID)?.refferenceName} -
+                            {ref.refferenceNumber} ({ref.refferenceyear})
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-4 w-4 p-0 ml-1"
+                              onClick={() => removeReference(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="w-full">
+                        <Popover open={openReference} onOpenChange={setOpenReference}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openReference}
+                              className="w-full justify-between"
+                            >
+                              {currentReference.crmID
+                                ? referenceList.find((ref) => ref.refferenceId.toString() === currentReference.crmID)
+                                  ?.refferenceName
+                                : "Select Reference Type"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0 z-50" style={{ width: "300px" }}>
+                            <Command>
+                              <CommandInput placeholder="Search reference..." />
+                              <CommandList>
+                                <CommandEmpty>No reference found.</CommandEmpty>
+                                <CommandGroup>
+                                  {referenceList.map((ref) => (
+                                    <CommandItem
+                                      key={ref.refferenceId}
+                                      onSelect={() => {
+                                        handleReferenceChange("crmID", ref.refferenceId.toString())
+                                        setOpenReference(false)
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          currentReference.crmID === ref.refferenceId.toString()
+                                            ? "opacity-100"
+                                            : "opacity-0",
+                                        )}
+                                      />
+                                      {ref.refferenceName}
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>
@@ -1414,230 +1379,103 @@ const AddCasePage = () => {
                           </PopoverContent>
                         </Popover>
                       </div>
-                    )}
-                  </Card>
-
-                  <Card className="mt-6 border bg-white shadow p-4">
-                    <CardTitle className="text-base font-semibold text-gray-700 mb-4">📝 Update Selected Case</CardTitle>
-
-
-                    {/* Step 5: Render Update Form if Case Selected */}
-                    {updateFormData.CaseId && (
-                      <div className="mt-6 border-t pt-6">
-
-                        {/* Render update form fields same as add tab here... */}
-                        {/* Include: petitionName, filingDate, hearingDate, IPCs, References, Document upload, Submit Button */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-1.5"> <Label className="font-semibold" htmlFor="petitionName">Petitioner Name<span className="text-red-500">*</span></Label> <Input id="petitionName" name="petitionName" value={updateFormData.petitionName} onChange={handleUpdateChange} disabled={isSubmitting} /> </div>
-                          <div className="space-y-1.5"> <Label className="font-semibold" htmlFor="filingDate">Filing Date<span className="text-red-500">*</span></Label> <Input id="filingDate" name="filingDate" type="date" value={updateFormData.filingDate} onChange={handleUpdateChange} max={new Date().toISOString().split("T")[0]} disabled={isSubmitting} /> </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                          <div className="space-y-1.5">
-                            <Label className="font-semibold" htmlFor="hearingDate">
-                              Hearing Date<span className="text-red-500">*</span>
-                            </Label>
-                            <Input id="hearingDate" name="hearingDate" type="date" value={updateFormData.hearingDate} onChange={handleUpdateChange} min={updateFormData.CaseDate || undefined} disabled={isSubmitting} />
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5"> <Label className="font-semibold" htmlFor="CourtCaseDescription">Description<span className="text-red-500">*</span> (Max 100 words)</Label> <textarea id="CourtCaseDescription" name="CourtCaseDescription" rows={3} value={updateFormData.CourtCaseDescription} onChange={handleUpdateChange} className="w-full border rounded-md px-3 py-2 text-sm" disabled={isSubmitting} /> <p className={cn("text-xs text-right", updateFormData.CourtCaseDescription.trim().split(/\s+/).filter(Boolean).length > 100 ? "text-red-600" : "text-gray-500")}> {updateFormData.CourtCaseDescription.trim().split(/\s+/).filter(Boolean).length} / 100 words </p> </div>
-
-                        {/* --- Single Reference Section --- */}
-                        <div className="space-y-3 border-t pt-4 mt-2">
-
-                          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                            <Label className="font-semibold text-gray-700 text-md">Reference Details <span className="text-red-500">*</span></Label>
-                            <div className="space-y-1.5">
-                              <Label className="text-sm text-gray-700" htmlFor="crmID">Reference Type</Label>
-                              <Popover open={openUpdateReference} onOpenChange={setOpenUpdateReference}>
-                                <PopoverTrigger asChild>
-                                  <Button variant="outline" role="combobox" className="w-full justify-between text-sm font-normal">
-                                    {updateFormData.crmID
-                                      ? referenceList.find(r => r.refferenceId.toString() === updateFormData.crmID)?.refferenceName
-                                      : "Select Reference Type"}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                  <Command>
-                                    <CommandInput />
-                                    <CommandList>
-                                      <CommandEmpty />
-                                      <CommandGroup>
-                                        {referenceList.map(r => (
-                                          <CommandItem key={r.refferenceId} value={r.refferenceName} onSelect={() => {
-                                            handleUpdateSelectChange("crmID", r.refferenceId.toString());
-                                            setOpenUpdateReference(false);
-                                          }}>
-                                            <Check className={cn(updateFormData.crmID === r.refferenceId.toString() ? "opacity-100" : "opacity-0", "mr-2 h-4 w-4")} />
-                                            {r.refferenceName}
-                                          </CommandItem>
-                                        ))}
-                                      </CommandGroup>
-                                    </CommandList>
-                                  </Command>
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="space-y-1.5">
-                                <Label className="text-sm text-gray-700" htmlFor="refferenceNumber">Reference Number</Label>
-                                <Input id="refferenceNumber" name="refferenceNumber" value={updateFormData.refferenceNumber} onChange={handleUpdateChange} className="text-sm" />
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-sm text-gray-700" htmlFor="refferenceyear">Reference Year</Label>
-                                <Popover open={openUpdateYear} onOpenChange={setOpenUpdateYear}>
-                                  <PopoverTrigger asChild>
-                                    <Button variant="outline" role="combobox" className="w-full justify-between text-sm font-normal">
-                                      {updateFormData.refferenceyear || "Select Year"}
-                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                    <Command>
-                                      <CommandInput />
-                                      <CommandList>
-                                        <CommandEmpty />
-                                        <CommandGroup>
-                                          {years.map(y => (
-                                            <CommandItem key={y} value={y} onSelect={() => {
-                                              handleUpdateSelectChange("refferenceyear", y);
-                                              setOpenUpdateYear(false);
-                                            }}>
-                                              <Check className={cn(updateFormData.refferenceyear === y ? "opacity-100" : "opacity-0", "mr-2 h-4 w-4")} />
-                                              {y}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* --- IPC/BNS Sections --- */}
-                        <div className="space-y-3 border-t pt-4 mt-2">
-                          <Label className="font-semibold text-gray-700 text-md">IPC / BNS Sections <span className="text-red-500">*</span></Label>
-                          <div className={`relative w-20 h-8 rounded-full flex items-center cursor-pointer transition-all ${useIpcDisplay ? "bg-blue-600" : "bg-green-600"} mb-2`} onClick={() => setUseIpcDisplay(prev => !prev)}> <span className="absolute w-full text-xs font-bold text-white flex justify-center transition-all"> {useIpcDisplay ? "IPC" : "BNS"} </span> <div className={`absolute w-7 h-7 bg-white rounded-full shadow-md transform transition-all ${useIpcDisplay ? "translate-x-1" : "translate-x-12"}`} /> </div>
-                          <div className="flex flex-wrap gap-2 mb-2 min-h-[30px]">
-                            {selectedIpcSections.map((section) => (<Badge key={section.bnsId} variant="secondary" className="flex items-center gap-2 py-1.5 px-2.5 text-xs"> <div>{useIpcDisplay ? section.ipcSection : section.bnsSection}</div> <Button variant="ghost" size="sm" className="h-4 w-4 p-0 ml-1" onClick={() => removeIpcSection(section.bnsId)} disabled={isSubmitting}><X className="h-3 w-3" /></Button> </Badge>))}
-                          </div>
-                          <Popover open={openIpcAct} onOpenChange={setOpenIpcAct}>
-                            <PopoverTrigger asChild>
-                              <Button variant="outline" role="combobox" className="w-full justify-between font-normal text-sm" disabled={isLoading || isSubmitting || selectedIpcSections.length + otherSectionsList.length >= MAX_TOTAL_SECTION_ENTRIES}> {useIpcDisplay ? "Select IPC..." : "Select BNS..."}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                              <Command>
-                                <CommandInput placeholder={`Search ${useIpcDisplay ? 'IPC' : 'BNS'}...`} />
-                                <CommandList>
-                                  <CommandEmpty />
-                                  <CommandGroup>{(useIpcDisplay ? ipcActList : bnsSectionList).filter(e => !selectedIpcSections.some(s => s.bnsId.toString() === e.bnsId.toString())).map(e => (<CommandItem key={e.bnsId} value={useIpcDisplay ? e.ipcSection : e.bnsSection} onSelect={() => { addIpcSection(e.bnsId.toString()); setOpenIpcAct(false); }}>
-                                    <Check className={cn("mr-2 h-4 w-4", "opacity-0")} />{useIpcDisplay ? e.ipcSection : e.bnsSection}</CommandItem>))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-
-                        {/* --- Other Sections --- */}
-                        <div className="space-y-3 mt-2">
-                          <Label className="font-semibold text-gray-700 text-md">Other Sections</Label>
-                          <div className="flex items-end gap-2 mb-2">
-                            <div className="flex-1 space-y-1"><Label htmlFor="otherIpc" className="text-xs">Other IPC Act</Label><Input id="otherIpc" value={currentOtherIpc} onChange={e => setCurrentOtherIpc(e.target.value)} className="text-sm" disabled={isSubmitting || otherSectionsList.length >= MAX_OTHER_ROWS || selectedIpcSections.length + otherSectionsList.length >= MAX_TOTAL_SECTION_ENTRIES} /></div>
-                            <div className="flex-1 space-y-1"><Label htmlFor="otherBns" className="text-xs">Corresp. BNS</Label><Input id="otherBns" value={currentOtherBns} onChange={e => setCurrentOtherBns(e.target.value)} className="text-sm" disabled={isSubmitting || otherSectionsList.length >= MAX_OTHER_ROWS || selectedIpcSections.length + otherSectionsList.length >= MAX_TOTAL_SECTION_ENTRIES} /></div>
-                            <Button size="icon" onClick={addOtherSectionRow} className="h-9 w-9 shrink-0" disabled={isLoading || isSubmitting || (!currentOtherIpc.trim() && !currentOtherBns.trim()) || otherSectionsList.length >= MAX_OTHER_ROWS || selectedIpcSections.length + otherSectionsList.length >= MAX_TOTAL_SECTION_ENTRIES}><Plus className="h-4 w-4" /></Button>
-                          </div>
-                          {otherSectionsList.length > 0 && (<div className="border rounded-md overflow-hidden mt-4"><Table><TableHeader><TableRow><TableHead>Other IPC</TableHead><TableHead>Other BNS</TableHead><TableHead className="w-[50px] text-right">Act</TableHead></TableRow></TableHeader><TableBody>{otherSectionsList.map(s => (<TableRow key={s.id}><TableCell className="text-sm">{s.ipcValue || "-"}</TableCell><TableCell className="text-sm">{s.bnsValue || "-"}</TableCell><TableCell className="text-right"><Button variant="ghost" size="icon" onClick={() => removeOtherSectionRow(s.id)} className="h-7 w-7 text-red-500 hover:bg-red-100" disabled={isSubmitting}><Trash className="h-3.5 w-3.5" /></Button></TableCell></TableRow>))}</TableBody></Table></div>)}
-                        </div>
-
-                        {/* --- Main Case Document Upload --- */}
-                        <div className="space-y-3 border-t pt-4 mt-2">
-                          <Label className="font-semibold text-gray-700 text-md">Upload Case Documents (Optional)</Label>
-                          <Input type="file" multiple onChange={handleMainCaseFileChange} accept=".pdf" className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 h-11" disabled={isSubmitting} />
-                          {mainCaseDocuments.length > 0 && (<div className="mt-3 space-y-2"> <p className="text-sm font-medium text-gray-600">Selected Case Documents:</p> <ul className="space-y-1 max-h-40 overflow-y-auto border rounded-md p-2 bg-gray-50"> {mainCaseDocuments.map((file, index) => (<li key={index} className="flex items-center justify-between text-xs p-1.5 rounded hover:bg-gray-100"> <div className="flex items-center overflow-hidden mr-2"> <FileText className="h-4 w-4 mr-2 text-gray-500 shrink-0" /> <span className="truncate" title={file.name}>{file.name}</span> <span className="ml-2 text-gray-500 shrink-0">({(file.size / 1024 / 1024).toFixed(2)} MB)</span> </div> <Button size="sm" variant="ghost" onClick={() => removeMainCaseDocument(index)} className="h-6 w-6 p-0 text-red-500 hover:bg-red-100" disabled={isSubmitting}><Trash className="h-3.5 w-3.5" /></Button> </li>))} </ul> </div>)}
-                          <p className="text-xs text-gray-500">Max file size: {MAX_FILE_SIZE_MB} MB. Allowed format: PDF</p>
-                        </div>
-
-
-                        {/* --- CRAN Entry Section (Conditional on Reference Selection) --- */}
-                        <div className="space-y-4 border-t pt-4 mt-4">
-                          <div className="flex justify-between items-center">
-                            <Label className="font-semibold text-gray-700 text-lg block">
-                              CRAN Details for Reference
-                            </Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <Input
+                          placeholder="Reference Number"
+                          value={currentReference.refferenceNumber}
+                          onChange={(e) => handleReferenceChange("refferenceNumber", e.target.value)}
+                        />
+                        <Popover open={openYear} onOpenChange={setOpenYear}>
+                          <PopoverTrigger asChild>
                             <Button
                               variant="outline"
-                              size="sm"
-                              onClick={() => openCranModal()} // Opens modal for NEW CRAN
-                              disabled={!updateFormData.crmID || !updateFormData.refferenceNumber || !updateFormData.refferenceyear || isSubmitting || cranEntries.length >= MAX_CRAN_PER_REF}
-                              className="text-xs"
+                              role="combobox"
+                              aria-expanded={openYear}
+                              className="w-full justify-between"
                             >
-                              <Plus className="h-4 w-4 mr-1" /> Add CRAN Entry
+                              {currentReference.refferenceyear || "Select Year"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
-                          </div>
-                          {updateFormData.crmID && (
-                            <p className="text-sm text-gray-600">
-                              CRANs will be associated with reference: <span className="font-medium">{referenceList.find(r => r.refferenceId.toString() === updateFormData.crmID)?.refferenceName || updateFormData.crmID} - {updateFormData.refferenceNumber}/{updateFormData.refferenceyear}</span>
-                            </p>
-                          )}
-                          {!updateFormData.crmID && <p className="text-sm text-muted-foreground">Please fill in reference details above to add CRAN entries.</p>}
-
-                          {/* Table to display added CRAN entries */}
-                          {cranEntries.length > 0 && (
-                            <div className="border rounded-md overflow-hidden mt-2">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead className="w-[30%]">CRAN Number</TableHead>
-                                    <TableHead className="w-[20%]">CRAN Year</TableHead>
-                                    <TableHead>Documents</TableHead>
-                                    <TableHead className="text-right w-[100px]">Actions</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {cranEntries.map((entry) => (
-                                    <TableRow key={entry.id}>
-                                      <TableCell className="text-sm font-medium">{entry.cranNumber}</TableCell>
-                                      <TableCell className="text-sm">{entry.cranYear}</TableCell>
-                                      <TableCell className="text-xs">
-                                        {entry.documents.length > 0 ? `${entry.documents.length} file(s)` : "No documents"}
-                                      </TableCell>
-                                      <TableCell className="text-right space-x-1">
-                                        <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => openCranModal(entry)} disabled={isSubmitting}>
-                                          <Edit3 className="h-3.5 w-3.5" />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:bg-red-100" onClick={() => removeCranEntryFromTable(entry.id)} disabled={isSubmitting}>
-                                          <Trash className="h-3.5 w-3.5" />
-                                        </Button>
-                                      </TableCell>
-                                    </TableRow>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Search year..." />
+                              <CommandList>
+                                <CommandEmpty>No year found.</CommandEmpty>
+                                <CommandGroup>
+                                  {years.map((year) => (
+                                    <CommandItem
+                                      key={year}
+                                      onSelect={() => {
+                                        handleReferenceChange("refferenceyear", year)
+                                        setOpenYear(false)
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          currentReference.refferenceyear === year ? "opacity-100" : "opacity-0",
+                                        )}
+                                      />
+                                      {year}
+                                    </CommandItem>
                                   ))}
-                                </TableBody>
-                              </Table>
-                            </div>
-                          )}
-                          {cranEntries.length >= MAX_CRAN_PER_REF && updateFormData.crmID && (
-                            <p className="text-xs text-muted-foreground mt-2">Maximum {MAX_CRAN_PER_REF} CRAN entries reached for this reference.</p>
-                          )}
-                        </div>
-
-                        {/* Submit Button */}
-                        <div className="flex justify-center mt-6 border-t pt-6">
-                          <Button onClick={handleUpdateCase} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-md shadow-md text-base" disabled={isSubmitting || isLoading}>
-                            {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</> : "Add Case and Associated CRANs"}
-                          </Button>
-                        </div>
-
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
-                    )}
-                  </Card>
+                      <div className="flex justify-end">
+                        <Button type="button" size="sm" onClick={addReference} className="mt-2">
+                          <Plus className="h-4 w-4 mr-1" /> Add Reference
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mt-2">
+                      <Label>Upload Additional Documents</Label>
+                      <Input type="file" multiple onChange={handleFileChange} accept=".pdf" />
+
+                      {documents.length > 0 && (
+                        <div className="mt-3">
+                          <p className="font-semibold mb-2">Selected Documents:</p>
+                          <ul className="space-y-2 max-h-40 overflow-y-auto">
+                            {documents.map((file, index) => (
+                              <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded">
+                                <div className="flex items-center">
+                                  <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                                  <span className="truncate max-w-[200px]">{file.name}</span>
+                                  <span className="ml-2 text-xs text-gray-500">
+                                    ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                                  </span>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => removeDocument(index)}
+                                  className="ml-2"
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <p className="text-sm text-gray-500">Max file size: 50 MB. Allowed formats: PDF</p>
+                    </div>
+
+                    <div className="flex justify-center mt-6">
+                      <Button
+                        onClick={handleUpdateCase}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2"
+                        disabled={isLoading || !updateFormData.CaseId}
+                      >
+                        {isLoading ? "Processing..." : "Update Case"}
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </div>
             </TabsContent>

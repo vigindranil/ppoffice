@@ -53,19 +53,27 @@ class EmailTemplate {
             ? `<p><strong>List of Assigned Advocates:</strong><br>${this.assignedAdvocatesList}</p>`
             : '';
 
+        const formattedDated = this.dated
+            ? new Date(this.dated).toDateString()  
+            : '';
+
+        const formattedHearingDate = this.hearingDate
+            ? this.hearingDate.split(' ')[0]       
+            : '';
+
         return `
         <div style="${this.commonStyle}">
             <p>To: CP/Superintendent of Police<br>
             The Officer-in-Charge P.S.<br>
             From: The Public Prosecutor, High Court, Calcutta.</p>
 
-            <p>Begins Ref. (${this.crm}/24)<br>
-            P.S. Case No: ${this.psCaseNo}<br>
-            Dated: ${this.dated}<br>
-            U/S IPC ${this.ipcSection}<br>
-            M/S VS: State</p>
+            <p>P.S Case No : ${this.psCaseNo}<br>
+            Dated : ${formattedDated}<br>
+            U/S IPC : ${this.ipcSection}<br>
+            Ref. : ${this.crm})<br>
+            M/S VS : State</p>
 
-            <p>Direct Investigating Officer of the above case to meet the Learned Advocate for the State (High Court, Calcutta) on ${this.hearingDate} with the Photocopy of the case diary with M.O.E.</p>
+            <p>Direct Investigating Officer of the above case to meet the Learned Advocate for the State (High Court, Calcutta) on ${formattedHearingDate} with the Photocopy of the case diary with M.O.E.</p>
             
             ${advocatesSection}
 
@@ -104,12 +112,20 @@ class EmailTemplate {
     generateEmailAdvocateAssignToA() { // Used by sendEmailTO
         const caseResourcesLinkHTML = (this.baseURL && this.encryptedCaseID)
             ? `<p><strong>Case Resources Link:</strong><br>
-<a href="${this.baseURL}/secure-documents?data=${this.encryptedCaseID}" target="_blank" style="color: #27548A; font-weight: bold;">Login & View Documents</a></p>`
+            <a href="${this.baseURL}/secure-documents?data=${this.encryptedCaseID}" target="_blank" style="color: #27548A; font-weight: bold;">Login & View Documents</a></p>`
             : '<p>Case Resources Link: Not available</p>';
 
         // For Assigned Departments list (used in sendEmailTO)
         const departmentsSection = this.assignedDepartmentsList
             ? `<p><strong>List of Assigned Departments:</strong><br>${this.assignedDepartmentsList}</p>`
+            : '';
+
+        const formattedDated = this.dated
+            ? new Date(this.dated).toDateString()  
+            : '';
+
+        const formattedHearingDate = this.hearingDate
+            ? this.hearingDate.split(' ')[0]       
             : '';
 
         return `
@@ -118,13 +134,15 @@ class EmailTemplate {
             Advocate<br>
             From: The Public Prosecutor, High Court, Calcutta.</p>
 
-            <p>P.S. Case No: ${this.psCaseNo}<br>
-            Dated: ${this.dated}<br>
-            S.P.Name : ${this.SPName || 'N/A'}<br>
-            P.S.Name : ${this.PSName || 'N/A'}<br>
+            <p>P.S Case No: ${this.psCaseNo}<br>
+            Dated: ${formattedDated}<br>
+            S.P Name : ${this.SPName || 'N/A'}<br>
+            P.S Name : ${this.PSName || 'N/A'}<br>
+            U/S IPC : ${this.ipcSection}<br>
+            Ref. : ${this.crm}<br>
             M/S VS: State</p>
 
-            <p>You are assigned to the above case. The hearing is scheduled for ${this.hearingDate}. Please meet with the Investigating Officer with the photocopy of the case diary and M.O.E.</p>
+            <p>You are assigned to the above case. The hearing is scheduled for ${formattedHearingDate}.</p>
             
             ${departmentsSection}
             ${caseResourcesLinkHTML}

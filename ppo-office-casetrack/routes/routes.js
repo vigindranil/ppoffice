@@ -63,6 +63,7 @@ router.post("/api/show-section-by-case", authMiddleware.verifyToken,CaseControll
 router.post("/api/show-reference-by-case", authMiddleware.verifyToken,CaseController.showRefferenceNumberByCaseId);
 router.post("/api/add-crr", authMiddleware.verifyToken,CaseController.saveCrr);
 router.post("/api/add-cran", authMiddleware.verifyToken,CaseController.saveCran);
+router.post("/api/get-case-by-param", authMiddleware.verifyToken,CaseController.getCaseSearchByParam);
 
 // send email
 const EmailController = require("../controllers/emailController");
