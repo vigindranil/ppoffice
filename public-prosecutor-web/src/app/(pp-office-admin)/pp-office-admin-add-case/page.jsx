@@ -35,6 +35,7 @@ import { postRequest } from "@/app/commonAPI"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import moment from "moment-timezone";
 
 const OTHER_SECTION_BNS_ID = 534;
 const MAX_STANDARD_SECTIONS = 10;
@@ -141,7 +142,11 @@ const AddCasePage = () => {
     };
     try {
       const res = await postRequest("get-case-by-param", payload);
-      if (res.status === 0) {
+      if (res.status === 210) {
+        openAlert("success", res.message || "No matching Cases Found!");
+        setMatchedCases(res.data || []);
+        setUpdateFormData({ CaseId: "" }); // reset form visibility
+      } else if (res.status === 0) {
         setMatchedCases(res.data || []);
         setUpdateFormData({ CaseId: "" }); // reset form visibility
       } else {
@@ -152,6 +157,13 @@ const AddCasePage = () => {
     } catch (err) {
       openAlert("error", err?.message || "Search failed");
     }
+  };
+
+  
+  const formatDate = (dateString) => {
+    return dateString
+      ? moment.utc(dateString).tz("Asia/Kolkata").format("YYYY-MM-DD")
+      : "";
   };
 
   const handleSelectMatchedCase = async (caseData) => {
@@ -165,7 +177,7 @@ const AddCasePage = () => {
       return;
     }
 
-    const formatDate = (dateString) => dateString ? new Date(dateString).toISOString().split("T")[0] : "";
+    // const formatDate = (dateString) => dateString ? new Date(dateString).toISOString().split("T")[0] : "";
 
     setUpdateFormData({
       CaseId: caseData.CaseId.toString(),
@@ -272,67 +284,6 @@ const AddCasePage = () => {
     }
     setAddFormData(newState);
   };
-
-  // const handleUpdateSelectChange = async (name, value) => {
-  //   if (name === "caseNumber") {
-  //     const selectedCase = allCases.find((c) => c.caseNumber === value)
-  //     if (!selectedCase) return
-
-  //     // Find the district ID based on SpId
-  //     const districtId = selectedCase.SpId ? selectedCase.SpId.toString() : ""
-
-  //     // Get police stations for this district
-  //     try {
-  //       const psResult = await showpoliceBydistrict(districtId)
-  //       setAllPSList(psResult)
-  //     } catch (err) {
-  //       openAlert("error", "Failed to load police stations")
-  //     }
-
-  //     // Format the date from ISO to YYYY-MM-DD
-  //     const formatDate = (dateString) => {
-  //       if (!dateString) return ""
-  //       try {
-  //         const date = new Date(dateString)
-  //         return date.toISOString().split("T")[0]
-  //       } catch (error) {
-  //         return ""
-  //       }
-  //     }
-
-  //     // Format hearing date from "YYYY-MM-DD HH:MM:SS" to "YYYY-MM-DD"
-  //     const formatHearingDate = (dateString) => {
-  //       if (!dateString) return ""
-  //       try {
-  //         return dateString.split(" ")[0]
-  //       } catch (error) {
-  //         return ""
-  //       }
-  //     }
-
-  //     setUpdateFormData({
-  //       CaseId: selectedCase.CaseId.toString(),
-  //       caseNumber: selectedCase.CaseNumber,
-  //       EntryUserID: user.AuthorityUserID,
-  //       CaseDate: formatDate(selectedCase.CaseDate),
-  //       districtId: districtId,
-  //       psId: selectedCase.PsId ? selectedCase.PsId.toString() : "",
-  //       caseTypeId: selectedCase.caseTypeID ? selectedCase.caseTypeID.toString() : "",
-  //       hearingDate: formatHearingDate(selectedCase.CaseHearingDate),
-  //       filingDate: formatDate(selectedCase.CaseDate),
-  //       petitionName: selectedCase.CaseNumber,
-  //     })
-
-  //     // Reset selected IPC sections and references
-  //     setSelectedIpcSections([])
-  //     setSelectedReferences([])
-  //   } else {
-  //     setUpdateFormData((prev) => ({
-  //       ...prev,
-  //       [name]: value,
-  //     }))
-  //   }
-  // }
 
   const handleUpdateSelectChange = (name, value) => {
     setUpdateFormData((prev) => ({ ...prev, [name]: value }));
@@ -1405,7 +1356,7 @@ const AddCasePage = () => {
                                 <CommandGroup>
                                   {matchedCases.map(c => (
                                     <CommandItem key={c.CaseId} onSelect={() => handleSelectMatchedCase(c)}>
-                                      <Check className="mr-2 h-4 w-4" /> {c.CaseNumber}
+                                      <Check className="mr-2 h-4 w-4" /> {`${c.CaseType} ${c.CaseNumber} | Dept.-${c.DistrictName} | PS-${c.PoliceName} | ${formatDate(c.CaseDate)}`}
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>
@@ -1425,8 +1376,6 @@ const AddCasePage = () => {
                     {updateFormData.CaseId && (
                       <div className="mt-6 border-t pt-6">
 
-                        {/* Render update form fields same as add tab here... */}
-                        {/* Include: petitionName, filingDate, hearingDate, IPCs, References, Document upload, Submit Button */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1.5"> <Label className="font-semibold" htmlFor="petitionName">Petitioner Name<span className="text-red-500">*</span></Label> <Input id="petitionName" name="petitionName" value={updateFormData.petitionName} onChange={handleUpdateChange} disabled={isSubmitting} /> </div>
                           <div className="space-y-1.5"> <Label className="font-semibold" htmlFor="filingDate">Filing Date<span className="text-red-500">*</span></Label> <Input id="filingDate" name="filingDate" type="date" value={updateFormData.filingDate} onChange={handleUpdateChange} max={new Date().toISOString().split("T")[0]} disabled={isSubmitting} /> </div>

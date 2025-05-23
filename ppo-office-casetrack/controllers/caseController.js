@@ -1781,22 +1781,21 @@ class CaseController {
             function emptyToNull(val) {
                 return val === '' ? null : val;
             }
-            let {
-                SearchType,
-                CaseNumber,
-            } = req.body;
-
             function emptyToZero(val) {
                 return val === '' ? '0' : val;
             }
 
-            let CaseDate = emptyToNull(req.body.CaseDate);
-            let RefferenceId = emptyToZero(req.body.RefferenceId);
-            let RefferenceNumber = emptyToZero(req.body.RefferenceNumber);
-            let RefferenceYear = emptyToZero(req.body.RefferenceYear);
+            const { SearchType, CaseNumber } = req.body;
+            const CaseDate = emptyToNull(req.body.CaseDate);
+            const RefferenceId = emptyToZero(req.body.RefferenceId);
+            const RefferenceNumber = emptyToZero(req.body.RefferenceNumber);
+            const RefferenceYear = emptyToZero(req.body.RefferenceYear);
 
             const mainQuery = "CALL sp_getCaseSearchByparam(?, ?, ?, ?, ?, ?)";
             const mainParams = [SearchType, CaseNumber, CaseDate, RefferenceId, RefferenceNumber, RefferenceYear];
+
+            console.log("params", mainParams);
+
 
             const [caseResults] = await new Promise((resolve, reject) => {
                 db.query(mainQuery, mainParams, (err, results) => {
@@ -1808,12 +1807,42 @@ class CaseController {
                 });
             });
 
+            if (!caseResults || caseResults.length === 0) {
+                return res.status(210).json({
+                    success: true,
+                    message: "No matching cases found",
+                    data: []
+                });
+            }
+
             return ResponseHelper.success_reponse(res, "Data found", caseResults);
+
+            // const uniqueCases = [];
+            // const seenCaseNumbers = new Set();
+
+            // for (const caseObj of caseResults) {
+            //     if (!seenCaseNumbers.has(caseObj.CaseNumber)) {
+            //         seenCaseNumbers.add(caseObj.CaseNumber);
+            //         uniqueCases.push(caseObj);
+            //     }
+            // }
+
+            // if (uniqueCases.length === 0) {
+            //     return res.status(210).json({
+            //         success: false,
+            //         message: "No matching cases found",
+            //         data: []
+            //     });
+            // }
+
+            // return ResponseHelper.success_reponse(res, "Data found", uniqueCases);
+
         } catch (error) {
             console.error("Unexpected error:", error);
             return ResponseHelper.error(res, "An unexpected error occurred", error);
         }
     }
+
 
 }
 
