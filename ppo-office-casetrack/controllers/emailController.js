@@ -147,7 +147,7 @@ class EmailController {
                 from: `"${process.env.EMAIL_FROM_NAME || 'Notifications'}" <${process.env.EMAIL_USER}>`,
                 to: process.env.EMAIL_USER, // Placeholder
                 bcc: Array.from(recipientEmails).join(', '),
-                subject: `Case Information: ${CaseNumber}`,
+                subject: `Case Information: ${CaseNumber} | ${BNSSection}`,
                 html: emailContent, // HTML from template
                 dsn: {
                     id: `dsn-dept-${CaseID}-${Date.now()}`,
@@ -382,7 +382,7 @@ class EmailController {
                 from: `"${process.env.EMAIL_FROM_NAME || 'Notifications'}" <${process.env.EMAIL_USER}>`,
                 to: process.env.EMAIL_USER, // Placeholder 'to' as primary recipients are in BCC
                 bcc: recipientEmailsForBCC.join(', '),
-                subject: `Case Assignment Update: ${psCaseNo}`,
+                subject: `Case Assignment Update: ${psCaseNo} | ${Refference}`,
                 html: emailContentPP, // HTML content from template
                 dsn: {
                     id: `dsn-batch-pp-${CaseID}-${Date.now()}`,

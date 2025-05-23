@@ -70,7 +70,7 @@ class EmailTemplate {
             <p>P.S Case No : ${this.psCaseNo}<br>
             Dated : ${formattedDated}<br>
             U/S IPC : ${this.ipcSection}<br>
-            Ref. : ${this.crm})<br>
+            Ref. : ${this.crm}<br>
             M/S VS : State</p>
 
             <p>Direct Investigating Officer of the above case to meet the Learned Advocate for the State (High Court, Calcutta) on ${formattedHearingDate} with the Photocopy of the case diary with M.O.E.</p>
