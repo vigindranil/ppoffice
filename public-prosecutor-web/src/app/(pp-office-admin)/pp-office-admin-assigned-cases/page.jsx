@@ -16,6 +16,7 @@ import * as XLSX from 'xlsx'
 import AddHearingPage from '../add-hearing-summary/page'
 import HearingListPage from '../pp-office-admin-hearing-summary-list/page'
 import { Skeleton } from '@/components/ui/skeleton';
+import SmartPagination from '@/components/SmartPagination'
 
 const PPAllCaseList = () => {
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
@@ -333,32 +334,13 @@ const PPAllCaseList = () => {
                 </Table>
               </div>
               <div className="mt-4">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() => paginate(Math.max(1, currentPage - 1))}
-                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-                    {[...Array(totalPages || 0)].map((_, index) => (
-                      <PaginationItem key={index}>
-                        <PaginationLink
-                          onClick={() => paginate(index + 1)}
-                          isActive={currentPage === index + 1}
-                        >
-                          {index + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+
+                <SmartPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={paginate}
+                />
+
               </div>
             </div>
           </CardContent>

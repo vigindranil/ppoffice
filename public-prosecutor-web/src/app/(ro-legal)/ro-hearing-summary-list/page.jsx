@@ -4,14 +4,6 @@ import { PORT_URL } from "@/app/constants"
 import React, { useState, useEffect, useCallback } from "react"
 import { showHearingSummaryList } from "@/app/api"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
 import { Button } from "@/components/ui/button"
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
@@ -22,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { ChevronDown, ChevronUp, FileSpreadsheet, Search, Undo2 } from "lucide-react"
 import * as XLSX from "xlsx"
 import { Skeleton } from "@/components/ui/skeleton"
+import SmartPagination from '@/components/SmartPagination'
 
 const HearingListPage = ({ onBack, caseDetails }) => {
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
@@ -42,21 +35,6 @@ const HearingListPage = ({ onBack, caseDetails }) => {
     const decoded_user = JSON.parse(decrypt(encryptedUser))
     setUser(decoded_user)
   }, [encryptedUser])
-
-  // const fetchCaseTypes = useCallback(async () => {
-  //   try {
-  //     const result = await getcasetype()
-  //     setCaseTypeList(result)
-  //   } catch (err) {
-  //     openAlert("error", err?.message || "An unexpected error occurred")
-  //   }
-  // }, [openAlert])
-
-  // useEffect(() => {
-  //   if (user) {
-  //     fetchCaseTypes()
-  //   }
-  // }, [user, fetchCaseTypes])
 
   useEffect(() => {
     if (caseDetails && caseTypeList.length > 0) {
@@ -337,29 +315,13 @@ const HearingListPage = ({ onBack, caseDetails }) => {
                 </Table>
               </div>
               <div className="mt-4">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() => paginate(Math.max(1, currentPage - 1))}
-                        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                      />
-                    </PaginationItem>
-                    {[...Array(totalPages || 0)].map((_, index) => (
-                      <PaginationItem key={index}>
-                        <PaginationLink onClick={() => paginate(index + 1)} isActive={currentPage === index + 1}>
-                          {index + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+
+                <SmartPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={paginate}
+                />
+
               </div>
             </div>
           </CardContent>

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { showPPOfficeHeadUserList } from '@/app/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { ChevronDown, ChevronUp, FileSpreadsheet, Search } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useDispatch, useSelector } from 'react-redux'
@@ -11,6 +10,7 @@ import { decrypt } from '@/utils/crypto'
 import { Input } from '@/components/ui/input'
 import * as XLSX from 'xlsx'
 import { Button } from '@/components/ui/button'
+import SmartPagination from '@/components/SmartPagination'
 
 const PPHeadList = () => {
   const [headList, setHeadList] = useState([])
@@ -169,32 +169,13 @@ const PPHeadList = () => {
                   </Table>
                 </div>
                 <div className="mt-4">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => paginate(Math.max(1, currentPage - 1))}
-                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-                      {[...Array(totalPages || 0)].map((_, index) => (
-                        <PaginationItem key={index}>
-                          <PaginationLink
-                            onClick={() => paginate(index + 1)}
-                            isActive={currentPage === index + 1}
-                          >
-                            {index + 1}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+
+                  <SmartPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={paginate}
+                  />
+
                 </div>
               </div>
             )}

@@ -4,7 +4,6 @@ import { PORT_URL } from '@/app/constants';
 import React, { useState, useEffect } from 'react'
 import { showHearingSummaryList, getcasetype } from '@/app/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { Button } from "@/components/ui/button"
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
 import { useAlertDialog } from "@/hooks/useAlertDialog"
@@ -16,6 +15,7 @@ import { ChevronDown, ChevronUp, ClipboardPlus, Download, FileSpreadsheet, Searc
 import * as XLSX from 'xlsx'
 import AddHearingPage from '../add-hearing-summary/page'
 import { Skeleton } from '@/components/ui/skeleton'
+import SmartPagination from '@/components/SmartPagination'
 
 const HearingListPage = ({ onBack, caseDetails }) => {
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
@@ -316,32 +316,13 @@ const HearingListPage = ({ onBack, caseDetails }) => {
                 </Table>
               </div>
               <div className="mt-4">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() => paginate(Math.max(1, currentPage - 1))}
-                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-                    {[...Array(totalPages || 0)].map((_, index) => (
-                      <PaginationItem key={index}>
-                        <PaginationLink
-                          onClick={() => paginate(index + 1)}
-                          isActive={currentPage === index + 1}
-                        >
-                          {index + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+
+                <SmartPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={paginate}
+                />
+
               </div>
             </div>
           </CardContent>

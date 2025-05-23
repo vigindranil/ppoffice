@@ -5,7 +5,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { ClipboardPlus, Eye, LoaderCircle, Search } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useSelector } from 'react-redux'
@@ -15,7 +14,7 @@ import { useAlertDialog } from "@/hooks/useAlertDialog"
 import { Input } from './ui/input'
 import { DatePicker } from './date-picker'
 import { fetchPPUsers, handleNotifyToPPUser } from "@/app/api";
-
+import SmartPagination from '@/components/SmartPagination'
 
 export default function CaseTable({ps}) {
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
@@ -206,7 +205,7 @@ export default function CaseTable({ps}) {
                       <DialogTitle>Case Details</DialogTitle>
                     </DialogHeader>
                     <DialogDescription>
-                      These informations are for case {selectedCase?.CaseNumber}
+                      These details are for case {selectedCase?.CaseNumber}
                     </DialogDescription>
                     <Card>
                       <CardContent>
@@ -238,32 +237,13 @@ export default function CaseTable({ps}) {
         </TableBody>
       </Table>
       <div className="mt-4">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => paginate(Math.max(1, currentPage - 1))}
-                className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-              />
-            </PaginationItem>
-            {[...Array(totalPages)].map((_, index) => (
-              <PaginationItem key={index}>
-                <PaginationLink
-                  onClick={() => paginate(index + 1)}
-                  isActive={currentPage === index + 1}
-                >
-                  {index + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+
+        <SmartPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={paginate}
+        />
+
       </div>
     </div>
   )

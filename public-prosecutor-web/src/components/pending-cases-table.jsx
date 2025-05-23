@@ -6,9 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { Calendar, ClipboardPlus, Edit, Eye, LoaderCircle, Search } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent
+} from "@/components/ui/hover-card"
 import { useSelector } from 'react-redux'
 import { decrypt } from '@/utils/crypto'
 import { CustomAlertDialog } from "@/components/custom-alert-dialog"
@@ -18,7 +22,7 @@ import { DatePicker } from './date-picker'
 import { Badge } from './ui/badge'
 import { Label } from "@/components/ui/label"
 import { postRequest } from '@/app/commonAPI'
-
+import SmartPagination from '@/components/SmartPagination'
 
 export default function CaseTable() {
   const router = useRouter();
@@ -107,11 +111,31 @@ export default function CaseTable() {
     showallCaseBetweenRange(null, null)
   }, [])
 
-  const filteredData = allCases?.filter((data) =>
-    Object?.values(data)?.some((value) =>
-      value?.toString()?.toLowerCase()?.includes(searchTerm?.toLowerCase())
-    )
-  )
+  // const filteredData = allCases?.filter((data) =>
+  //   Object?.values(data)?.some((value) =>
+  //     value?.toString()?.toLowerCase()?.includes(searchTerm?.toLowerCase())
+  //   )
+  // )
+
+  const filteredData = allCases?.filter((data) => {
+    const lowerSearch = searchTerm.toLowerCase();
+
+    const matchesCaseFields = Object?.values(data)?.some((value) =>
+      value?.toString()?.toLowerCase()?.includes(lowerSearch)
+    );
+
+    const matchesReferences = data.references?.some(ref =>
+      `${ref.RefferenceNumber} ${ref.CrmName} ${ref.RefferenceYear}`
+        .toLowerCase()
+        .includes(lowerSearch)
+    );
+
+    const matchesIPC = data.ipcSections?.some(ipc =>
+      ipc?.IpcSection?.toLowerCase().includes(lowerSearch)
+    );
+
+    return matchesCaseFields || matchesReferences || matchesIPC;
+  })
 
   const indexOfLastCase = currentPage * casesPerPage
   const indexOfFirstCase = indexOfLastCase - casesPerPage
@@ -206,6 +230,7 @@ export default function CaseTable() {
                   <TableHeader>
                     <TableRow className="bg-slate-100">
                       <TableHead className="font-bold">Case Date</TableHead>
+                      <TableHead className="font-bold">Reference</TableHead>
                       <TableHead className="font-bold">Case Number</TableHead>
                       <TableHead className="font-bold">PS Name</TableHead>
                       <TableHead className="font-bold">Case Status</TableHead>
@@ -217,6 +242,34 @@ export default function CaseTable() {
                     {currentCases.map((caseItem, index) => (
                       <TableRow key={index}>
                         <TableCell>{formatDate(caseItem.CaseDate)}</TableCell>
+                        <TableCell className="max-w-[300px]">
+                          {caseItem.references && caseItem.references.length > 0 ? (
+                            <HoverCard>
+                              <HoverCardTrigger asChild>
+                                <span className="cursor-pointer hover:text-blue-600 hover:underline transition-colors duration-200">
+                                  {
+                                    caseItem.references
+                                      .slice(0, 1)
+                                      // .map((ref, idx) => `${idx + 1}. ${ref.RefferenceNumber} - ${ref.CrmName} (${ref.RefferenceYear})`)
+                                      .map((ref, idx) => `${ref.RefferenceNumber} - ${ref.CrmName} (${ref.RefferenceYear})`)
+                                  }
+                                  {caseItem.references.length > 1 ? '...' : ''}
+                                </span>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-80">
+                                <ol className="list-decimal list-inside text-sm">
+                                  {caseItem.references.map((ref, idx) => (
+                                    <li key={idx}>
+                                      {ref.RefferenceNumber} - {ref.CrmName} ({ref.RefferenceYear})
+                                    </li>
+                                  ))}
+                                </ol>
+                              </HoverCardContent>
+                            </HoverCard>
+                          ) : (
+                            <span>No references</span>
+                          )}
+                        </TableCell>
                         <TableCell>{caseItem.CaseNumber}</TableCell>
                         <TableCell>{caseItem.PsName}</TableCell>
                         <TableCell>{caseItem.IsAssigned ? <Badge className='bg-emerald-400'>Assigned</Badge> : <Badge className='bg-orange-300'>Pending</Badge>}</TableCell>
@@ -238,7 +291,7 @@ export default function CaseTable() {
                                 <DialogTitle>Case Details</DialogTitle>
                               </DialogHeader>
                               <DialogDescription>
-                                These informations are for case {selectedCase?.CaseNumber}
+                                These details are for case {selectedCase?.CaseNumber}
                               </DialogDescription>
                               <Card>
                                 <CardContent>
@@ -284,32 +337,13 @@ export default function CaseTable() {
                   </TableBody>
                 </Table>
                 <div className="mt-4">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => paginate(Math.max(1, currentPage - 1))}
-                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-                      {[...Array(totalPages)].map((_, index) => (
-                        <PaginationItem key={index}>
-                          <PaginationLink
-                            onClick={() => paginate(index + 1)}
-                            isActive={currentPage === index + 1}
-                          >
-                            {index + 1}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+
+                  <SmartPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={paginate}
+                  />
+
                 </div>
               </div>
             </div>
