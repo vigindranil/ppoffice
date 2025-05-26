@@ -273,7 +273,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
           Departments: uniqueDepts,
         });
 
-        if (emailRes?.success) {
+        if (emailRes?.status === 0) {
           updateStepStatus("emailDepts", "success");
         } else {
           updateStepStatus("emailDepts", "error", "Some departments failed to receive email.");

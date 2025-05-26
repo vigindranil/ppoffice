@@ -11,7 +11,7 @@ export const postRequest = async (url, request_body = {}, dispatch) => {
       Authorization: `Bearer ${authToken}`,
       "Content-Type": "application/json",
     };
-    
+
     const requestOptions = {
       method: "POST",
       headers: new Headers(HEADERS),
@@ -25,7 +25,8 @@ export const postRequest = async (url, request_body = {}, dispatch) => {
       // clearUserData(dispatch);
       window.location.href = "/unauthorized";
     } else if (!response.ok) {
-      throw new Error(response);
+      const errorText = await response.text();
+      throw new Error(errorText || `Error ${response.status}`);
     } else {
       return await response.json();
     }

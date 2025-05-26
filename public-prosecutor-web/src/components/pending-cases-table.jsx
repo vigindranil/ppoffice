@@ -23,6 +23,7 @@ import { Badge } from './ui/badge'
 import { Label } from "@/components/ui/label"
 import { postRequest } from '@/app/commonAPI'
 import SmartPagination from '@/components/SmartPagination'
+import AdvocateSelectorModal from "@/components/AdvocateSelectorModal"
 
 export default function CaseTable() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function CaseTable() {
   const [isCaseSelected, setIsCaseSelected] = useState(false)
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
+  const [showAdvocateModal, setShowAdvocateModal] = useState(false)
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
@@ -236,6 +238,7 @@ export default function CaseTable() {
                       <TableHead className="font-bold">Case Status</TableHead>
                       <TableHead className="font-bold">View</TableHead>
                       <TableHead className="font-bold">Actions</TableHead>
+                      <TableHead className="font-bold">Advocates</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -332,6 +335,17 @@ export default function CaseTable() {
                             <Edit /> Take Action
                           </Button>
                         </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedCase(caseItem)
+                              setShowAdvocateModal(true)
+                            }}
+                          >
+                            Manage
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -348,6 +362,13 @@ export default function CaseTable() {
               </div>
             </div>
           </div>
+          {selectedCase && (
+            <AdvocateSelectorModal
+              open={showAdvocateModal}
+              onClose={() => setShowAdvocateModal(false)}
+              caseId={selectedCase.CaseId}
+            />
+          )}
         </main>
       </div>
     </div>
