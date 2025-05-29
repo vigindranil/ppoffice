@@ -69,6 +69,8 @@ class EmailTemplate {
 
             <p>P.S Case No : ${this.psCaseNo}<br>
             Dated : ${formattedDated}<br>
+            S.P Name : ${this.SPName || 'N/A'}<br>
+            P.S Name : ${this.PSName || 'N/A'}<br>
             U/S IPC : ${this.ipcSection}<br>
             Ref. : ${this.crm}<br>
             M/S VS : State</p>
