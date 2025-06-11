@@ -17,6 +17,7 @@ router.post('/api/assigned-dept', authMiddleware.verifyToken,districtController.
 // router.post('/api/unassigned-dept', authMiddleware.verifyToken,districtController.getUnassignedAdvocatesByCaseId); 
 router.post('/api/alldistrict-case', authMiddleware.verifyToken,districtController.getUnassignedDistrictByCaseId); 
 router.post('/api/allps-case-district', authMiddleware.verifyToken,districtController.getUnassignedPoliceStationsByCaseAndDistrict ); 
+router.post('/api/get-ps-users', authMiddleware.verifyToken,districtController.getPSStaffDetail ); 
 
 
 
@@ -64,11 +65,15 @@ router.post("/api/show-reference-by-case", authMiddleware.verifyToken,CaseContro
 router.post("/api/add-crr", authMiddleware.verifyToken,CaseController.saveCrr);
 router.post("/api/add-cran", authMiddleware.verifyToken,CaseController.saveCran);
 router.post("/api/get-case-by-param", authMiddleware.verifyToken,CaseController.getCaseSearchByParam);
+router.post("/api/get-cran-by-case", authMiddleware.verifyToken,CaseController.getCranDetailsByCaseID);
+router.post("/api/get-doc-by-cran", authMiddleware.verifyToken,CaseController.getCranDocumentsByCranID);
 
 // send email
 const EmailController = require("../controllers/emailController");
 router.post("/api/send-email", authMiddleware.verifyToken,EmailController.sendEmail);
 router.post("/api/send-email-pp", authMiddleware.verifyToken,EmailController.sendEmailTO);
+router.post("/api/send-email-pp-v2", authMiddleware.verifyToken,EmailController.sendEmailTOV2);
+router.get("/api/download-engagement-letter", EmailController.downloadEngagementLetter);
 router.post("/api/send-email-caseDetails", authMiddleware.verifyToken,EmailController.sendCaseUpdatedEmail)
 
 // psStaff 
@@ -94,9 +99,10 @@ router.post("/api/emailDetails",authMiddleware.verifyToken,notifications.showMai
 router.post("/api/emailRead",authMiddleware.verifyToken,notifications.checkMailRead);
 
 
+const { sendOtpV1, verifyOtpV1 } = require('../controllers/otpController');
 
-
-
+router.post("/api/send-otp-v1", sendOtpV1);
+router.post('/api/verify-otp-v1', verifyOtpV1);
 
 
 module.exports = router;

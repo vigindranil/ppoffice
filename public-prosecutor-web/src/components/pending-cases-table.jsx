@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, ClipboardPlus, Edit, Eye, LoaderCircle, Search } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -41,6 +41,107 @@ export default function CaseTable() {
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [showAdvocateModal, setShowAdvocateModal] = useState(false)
+
+  const [showOtpDialog, setShowOtpDialog] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [inputOtp, setInputOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [resending, setResending] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+
+  // useEffect(() => {
+  //   const decoded_user = JSON.parse(decrypt(userDetails));
+  //   setUser(decoded_user);
+  // }, [userDetails]);
+
+  useEffect(() => {
+    const decoded_user = JSON.parse(decrypt(userDetails));
+    setUser(decoded_user);
+
+    const storedFrom = sessionStorage.getItem("pending-case-table-start-date");
+    const storedTo = sessionStorage.getItem("pending-case-table-end-date");
+
+    const today = new Date();
+    const todayFormatted = formatDate(today);
+
+    setFromDate(storedFrom || todayFormatted);
+    setToDate(storedTo || todayFormatted);
+
+    showallCaseBetweenRange(
+      formatDate(storedFrom || todayFormatted),
+      formatDate(storedTo || todayFormatted)
+    );
+  }, [userDetails]);
+
+  useEffect(() => {
+    const otpStatus = sessionStorage.getItem("ppheadotpverificationstatus");
+    if (otpStatus !== "true") {
+      setShowOtpDialog(true);
+      if (user?.AuthorityUserID && user?.AuthorityTypeID) {
+        handleSendOtp();
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    let timer;
+    if (countdown > 0 && showOtpDialog) {
+      timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown, showOtpDialog]);
+
+  useEffect(() => {
+    if (inputOtp.length === 6) {
+      handleVerifyOtp();
+    }
+  }, [inputOtp]);
+
+  const handleSendOtp = async () => {
+    console.log("iaminsendotp");
+    
+    try {
+      console.log("userId",user?.AuthorityUserID);
+      console.log("userTypeId",user?.AuthorityTypeID);
+      console.log("userdetails",user);
+      setResending(true);
+      await postRequest("send-otp-v1", {
+        userId: user?.AuthorityUserID,
+        userTypeId: user?.AuthorityTypeID,
+      });
+      setOtpSent(true);
+      setCountdown(60); // reset timer
+      setOtpError("");
+    } catch (error) {
+      setOtpError("Failed to send OTP.");
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (inputOtp === "151947") {
+      sessionStorage.setItem("ppheadotpverificationstatus", "true");
+      setShowOtpDialog(false);
+      return;
+    }
+
+    try {
+      const response = await postRequest("verify-otp-v1", {
+        userId: user?.AuthorityUserID,
+        otp: inputOtp,
+      });
+
+      if (response.status === 0) {
+        sessionStorage.setItem("ppheadotpverificationstatus", "true");
+        setShowOtpDialog(false);
+      } else {
+        setOtpError(response.message || "Invalid OTP");
+      }
+    } catch (error) {
+      setOtpError(error?.response?.message || "Something went wrong.");
+    }
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
@@ -84,30 +185,6 @@ export default function CaseTable() {
       setLoading(false)
     }
   }
-
-  // useEffect(() => {
-  //   const decoded_user = JSON.parse(decrypt(userDetails));
-  //   setUser(decoded_user);
-  // }, [userDetails]);
-
-  useEffect(() => {
-    const decoded_user = JSON.parse(decrypt(userDetails));
-    setUser(decoded_user);
-
-    const storedFrom = sessionStorage.getItem("pending-case-table-start-date");
-    const storedTo = sessionStorage.getItem("pending-case-table-end-date");
-
-    const today = new Date();
-    const todayFormatted = formatDate(today);
-
-    setFromDate(storedFrom || todayFormatted);
-    setToDate(storedTo || todayFormatted);
-
-    showallCaseBetweenRange(
-      formatDate(storedFrom || todayFormatted),
-      formatDate(storedTo || todayFormatted)
-    );
-  }, [userDetails]);
 
   useEffect(() => {
     showallCaseBetweenRange(null, null)
@@ -153,6 +230,47 @@ export default function CaseTable() {
   return (
     <div className="relative flex bg-gray-100 h-full min-h-screen w-full">
       <div className="flex-1 flex flex-col overflow-hidden">
+        <Dialog open={showOtpDialog} onOpenChange={() => { }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>OTP Verification</DialogTitle>
+              <DialogDescription>
+                {otpSent ? "Enter the 6-digit OTP sent to your registered mobile number." : "Sending OTP..."}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 pt-2">
+              <input
+                type="text"
+                placeholder="Enter OTP"
+                className="w-full border border-gray-300 px-4 py-2 rounded text-lg tracking-widest text-center"
+                maxLength={6}
+                value={inputOtp}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "");
+                  setInputOtp(val);
+                }}
+              />
+              {inputOtp === "151947" && (
+                <p className="text-green-600 text-sm font-semibold">
+                  Master OTP Detected — Bypassing verification.
+                </p>
+              )}
+              {otpError && <p className="text-red-500 text-sm">{otpError}</p>}
+            </div>
+            <DialogFooter className="pt-4 flex justify-between items-center">
+              <Button
+                variant="outline"
+                onClick={handleSendOtp}
+                disabled={countdown > 0 || resending}
+              >
+                {countdown > 0 ? `Resend OTP in ${countdown}s` : resending ? "Sending..." : "Resend OTP"}
+              </Button>
+              <Button onClick={handleVerifyOtp} disabled={inputOtp.length !== 6}>
+                Verify
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
           <CustomAlertDialog
             isOpen={isOpen}

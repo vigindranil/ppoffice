@@ -113,6 +113,10 @@ const data = {
           title: "Add PS User",
           url: "/ro-add-ps-user",
         },
+        {
+          title: "PS User List",
+          url: "/ro-ps-user-list",
+        },
       ],
     },
     {

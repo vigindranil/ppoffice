@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const db = require('../config/db'); // Import your database connection
+// const db = require('../config/db'); // Import your database connection
+const { db } = require('../config/db'); // Import your database connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
 
 // Secret key for signing the JWT (store this securely, e.g., in an environment variable)

@@ -1,4 +1,4 @@
-const db = require("../config/db"); // Import your database connection
+const { db } = require("../config/db"); // Import your database connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
 const path = require("path");
 const validateFields = require('../utils/validators.js');
@@ -1684,9 +1684,18 @@ class CaseController {
                 console.log(`sp_Createcase_v4 Result: CaseID=${returnedCaseID}, ErrorCode=${spErrorCode}, CrmID=${returnedCrmID}`);
 
                 // Handle specific errors returned by the SP
-                if (spErrorCode !== 0) { // 0 means success
-                    // Map ErrorCode to a meaningful message if possible
-                    throw new Error(`Case ${InCaseID === 0 ? 'creation' : 'update'} failed. SP Error Code: ${spErrorCode}`);
+                if (spErrorCode !== 0) {
+                    if (spErrorCode === 2) {
+                        return res.status(409).json({
+                            status: 1,
+                            message: `A case with the same reference number and year already exists. ErrorCode: ERR_DUPLICATE_REFERENCE`
+                        });
+                    }
+
+                    return res.status(400).json({
+                        status: 1,
+                        message: `Case ${InCaseID === 0 ? 'creation' : 'update'} failed. ErrorCode: SP_ERROR_${spErrorCode}`
+                    });
                 }
                 if (!returnedCaseID) {
                     // This shouldn't happen if ErrorCode is 0, but check just in case
@@ -1843,6 +1852,77 @@ class CaseController {
         }
     }
 
+    static async getCranDetailsByCaseID(req, res) {
+        try {
+            const { CaseId, RefferenceId, UserId } = req.body;
+
+            const mainQuery = "CALL sp_getCranDetailsByCaseID(?, ?, ?)";
+            const mainParams = [CaseId, RefferenceId, UserId];
+
+            // Step 1: Fetch all cases
+            const [cranResults] = await new Promise((resolve, reject) => {
+                db.query(mainQuery, mainParams, (err, results) => {
+                    if (err) {
+                        console.error("Error executing sp_getCranDetailsByCaseID:", err);
+                        return reject(err);
+                    }
+                    resolve(results);
+                });
+            });
+
+            return ResponseHelper.success_reponse(res, "Data found", cranResults);
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred", error);
+        }
+    }
+
+    static async getCranDocumentsByCranID(req, res) {
+        try {
+            console.log("🔥 Request Params:", req.body); // Debugging
+
+            const { CranId, UserId } = req.body;
+
+            // ✅ Validate required input
+            if (!CranId) {
+                console.error("❌ Validation failed: Missing CranId.");
+                return ResponseHelper.error(res, "Please provide a valid CranId.");
+            }
+
+            // ✅ Define the stored procedure call
+            const query = "CALL sp_getCranDocumentsByCranID(?,?)";
+            const params = [CranId, UserId];
+
+            console.log("🛠️ Executing Stored Procedure with params:", params);
+
+            // ✅ Execute the stored procedure
+            const results = await new Promise((resolve, reject) => {
+                db.query(query, params, (err, result) => {
+                    if (err) {
+                        console.error("❌ Error executing stored procedure:", err);
+                        return reject(err);
+                    }
+                    resolve(result[0]); // ✅ First array contains result set
+                });
+            });
+
+            // ✅ Check if any documents are found
+            if (!results || results.length === 0) {
+                return ResponseHelper.error(res, "No documents found for the given CranId.");
+            }
+
+            // ✅ Success response
+            return res.status(200).json({
+                status: 0,
+                message: "Cran documents retrieved successfully.",
+                data: results
+            });
+
+        } catch (error) {
+            console.error("❌ Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+        }
+    }
 
 }
 

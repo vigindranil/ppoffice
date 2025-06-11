@@ -1,5 +1,5 @@
 // controllers/showController.js
-const db = require('../config/db'); // Import the DB connection
+const { db } = require('../config/db'); // Import the DB connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
 
 class DistrictController {
@@ -251,6 +251,58 @@ class DistrictController {
     }
   }
 
+  static async getPSStaffDetail(req, res) {
+    try {
+        console.log("🔥 Request Params:", req.body); // Debugging
+
+        const { UserID } = req.body;
+
+        // ✅ Validate required input fields
+        if (!UserID) {
+            return res.status(400).json({
+                status: 1,
+                message: "Invalid User Identification.",
+            });
+        }
+
+        // ✅ Call stored procedure
+        const query = "CALL sp_getPSStaffDetail(?)";
+        db.query(query, [UserID], (err, results) => {
+            if (err) {
+                console.error("❌ Error executing stored procedure:", err);
+                return res.status(500).json({
+                    status: 1,
+                    message: "Error retrieving police station users.",
+                });
+            }
+
+            // ✅ Extract result set
+            const psUsers = results[0];
+
+            if (!psUsers || psUsers.length === 0) {
+                return res.status(404).json({
+                    status: 1,
+                    message: "No police station users found under this user.",
+                });
+            }
+
+            // ✅ Respond with success
+            return res.status(200).json({
+                status: 0,
+                message: "Police station users retrieved successfully.",
+                data: psUsers,
+            });
+        });
+
+    } catch (error) {
+        console.error("❌ Unexpected error:", error);
+        return res.status(500).json({
+            status: 1,
+            message: "An unexpected error occurred.",
+            error: error.message,
+        });
+    }
+  }
 
 }
 

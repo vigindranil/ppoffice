@@ -1,6 +1,6 @@
 const { uploadToSFTP, downloadFromSFTP } = require("../utils/ftpUploader");
 const fs = require("fs");
-const db = require("../config/db"); // Import your database connection
+const { db } = require("../config/db"); // Import your database connection
 const ResponseHelper = require('./ResponseHelper'); // Import the helper
 const path = require("path");
 // const basePath = `D:\\CaseTrack\\ppoffice\\ppo-office-casetrack\\`;

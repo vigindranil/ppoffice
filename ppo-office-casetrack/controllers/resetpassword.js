@@ -1,4 +1,4 @@
-const db = require('../config/db'); // Import your DB connection
+const { db } = require('../config/db'); // Import your DB connection
 const ResponseHelper = require('./ResponseHelper'); 
 class PasswordResetController {
     static async resetPassword(req, res) {

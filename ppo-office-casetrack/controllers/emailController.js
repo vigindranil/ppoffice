@@ -1,13 +1,21 @@
 const nodemailer = require("nodemailer");
 const CryptoJS = require('crypto-js');
 const ResponseHelper = require('./ResponseHelper');
-const db = require("../config/db");
+const { db } = require("../config/db");
+const pdf = require('html-pdf');
 const EmailTemplate = require('./emailTemplate');
 const { BASE_URL, AES_SECRET } = process.env;
 
 const generateEncryptedToken = (data) => {
     const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), AES_SECRET).toString();
     return encodeURIComponent(ciphertext);
+};
+
+const decryptToken = (encryptedData) => {
+    const decodedCiphertext = decodeURIComponent(encryptedData);
+    const bytes = CryptoJS.AES.decrypt(decodedCiphertext, AES_SECRET);
+    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    return decryptedData;
 };
 
 class EmailController {
@@ -590,6 +598,347 @@ class EmailController {
             });
         }
     }
+
+    static async sendEmailTOV2(req, res) {
+        try {
+            const { CaseID, PPuserID_array } = req.body;
+
+            if (!CaseID || !PPuserID_array || !Array.isArray(PPuserID_array) || PPuserID_array.length === 0) {
+                return res.status(400).json({
+                    status: 1,
+                    message: "Fields 'CaseID' and a non-empty array 'PPuserID_array' are required.",
+                });
+            }
+
+            const BASE_URL = process.env.BASE_URL;
+            if (!BASE_URL) {
+                console.warn("⚠️ BASE_URL is not configured. Email links might be affected.");
+            }
+
+            // 1. Fetch all assigned advocates for the case (includes primary recipients and others)
+            let allAssignedAdvocates = [];
+            try {
+                allAssignedAdvocates = await EmailController.callStoredProcedure('sp_getAssignedAdvocatelistByCaseId', [CaseID]);
+                if (!allAssignedAdvocates || allAssignedAdvocates.length === 0) {
+                    return res.status(404).json({
+                        status: 1,
+                        message: "No advocates found for the given CaseID.",
+                    });
+                }
+            } catch (error) {
+                console.error(`❌ Error fetching all assigned advocates for CaseID ${CaseID}:`, error.message);
+                return res.status(500).json({
+                    status: 1,
+                    message: "Failed to retrieve assigned advocates.",
+                    error: error.message,
+                });
+            }
+
+            // Filter advocates based on PPuserID_array to determine actual primary recipients
+            const primaryRecipientAdvocates = allAssignedAdvocates.filter(adv =>
+                PPuserID_array.includes(adv.advocateId)
+            );
+
+            if (primaryRecipientAdvocates.length === 0) {
+                return res.status(404).json({
+                    status: 1,
+                    message: "No valid primary recipients (PPs) found from the provided PPuserID_array.",
+                });
+            }
+
+            // 2. Fetch common case details once (e.g., PS Case No, Ref, Dated, IPC Section, etc.)
+            let commonCaseDetails = null;
+            let encryptedCaseID = null; // For the generic case resources link if needed
+            try {
+                // Call sp_sendEmail_ppv2 with the first PPuserID to get common details
+                const firstPPUserID = primaryRecipientAdvocates[0].advocateId;
+                const results = await EmailController.callStoredProcedure('sp_sendEmail_ppv2', [CaseID, firstPPUserID]);
+                if (results && results[0]) {
+                    commonCaseDetails = results[0];
+                    // Also generate encryptedCaseID here for the existing 'Case Resources Link'
+                    encryptedCaseID = generateEncryptedToken({ CaseID });
+                }
+            } catch (error) {
+                console.error(`❌ Error fetching common case details for CaseID ${CaseID}:`, error.message);
+                return res.status(500).json({
+                    status: 1,
+                    message: "Failed to retrieve common case details.",
+                    error: error.message,
+                });
+            }
+
+            if (!commonCaseDetails) {
+                return res.status(404).json({
+                    status: 1,
+                    message: "Case details not found.",
+                });
+            }
+
+            // 3. Fetch assigned departments for the *existing* email body's department list (simplified names)
+            let assignedDepartmentsListHTML = '';
+            try {
+                const assignedDepts = await EmailController.callStoredProcedure('sp_getAssignedDistrictAndPoliceByCaseId', [CaseID]);
+                if (assignedDepts && assignedDepts.length > 0) {
+                    const deptNames = assignedDepts.map(dept => dept.policeStationName).filter(name => name);
+                    if (deptNames.length > 0) {
+                        assignedDepartmentsListHTML = deptNames.join('<br>');
+                    } else {
+                        assignedDepartmentsListHTML = "No specific departments listed.";
+                    }
+                } else {
+                    assignedDepartmentsListHTML = "No departments assigned or found.";
+                }
+            } catch (error) {
+                console.error(`❌ Error fetching assigned departments for CaseID ${CaseID} (sendEmailTOV2):`, error.message);
+                assignedDepartmentsListHTML = "Could not retrieve department list.";
+            }
+
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST || "smtp.gmail.com",
+                port: parseInt(process.env.SMTP_PORT) || 587,
+                secure: (process.env.SMTP_SECURE === 'true'),
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASSWORD,
+                },
+            });
+
+            const sentEmails = [];
+            const failedEmails = [];
+
+            // Loop through each primary recipient to send a separate email
+            for (const recipientAdvocate of primaryRecipientAdvocates) {
+                const { advocateId, advocateName, advocateEmail } = recipientAdvocate;
+
+                if (!advocateEmail) {
+                    console.warn(`Skipping email for advocate ${advocateName} (ID: ${advocateId}) due to missing email address.`);
+                    failedEmails.push({ advocateId, advocateName, reason: "Missing email" });
+                    continue;
+                }
+
+                // Encrypt the current advocate's PPuserID and CaseID for the PDF download link
+                const encryptedPPID = generateEncryptedToken({ PPuserID: advocateId, CaseID: CaseID });
+
+                // Prepare parameters for the existing email template (generateEmailAdvocateAssignToA)
+                const emailTemplateDetails = {
+                    ...commonCaseDetails, // Contains psCaseNo, Refference, dated, hearingDate, SPName, PSName, ipcSection
+                    PPName: advocateName, // This will be "You" for the existing template, but for logging it's the advocateName
+                    encryptedCaseID: encryptedCaseID, // For the existing Case Resources Link
+                    baseURL: BASE_URL,
+                    // Pass the new encrypted PPID for the PDF download link
+                    encryptedPPID: encryptedPPID,
+                    // Pass the existing department list for the existing email body
+                    assignedDepartmentsList: assignedDepartmentsListHTML
+                };
+
+                const emailTemplatePP = new EmailTemplate(emailTemplateDetails);
+                // Call the existing template function, which will now have the PDF link embedded
+                const emailContentPP = emailTemplatePP.generateEmailAdvocateAssignToA2();
+
+                const mailOptions = {
+                    from: `"${process.env.EMAIL_FROM_NAME || 'Notifications'}" <${process.env.EMAIL_USER}>`,
+                    to: advocateEmail,
+                    subject: `Case Assignment Update: ${commonCaseDetails.psCaseNo} | ${commonCaseDetails.Refference}`,
+                    html: emailContentPP,
+                    dsn: {
+                        id: `dsn-ppv2-${CaseID}-${advocateId}-${Date.now()}`,
+                        return: 'headers',
+                        notify: ['failure', 'delay'],
+                        recipient: process.env.EMAIL_USER,
+                    },
+                };
+
+                try {
+                    const info = await transporter.sendMail(mailOptions);
+                    console.log(`✅ Email sent to ${advocateEmail}. Message ID: ${info.messageId}`);
+                    sentEmails.push({ advocateId, advocateName, email: advocateEmail, messageId: info.messageId });
+
+                    // Log success (using existing logging mechanism)
+                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logParams = [
+                        info.messageId, CaseID, commonCaseDetails.psCaseNo, commonCaseDetails.dated, commonCaseDetails.ipcSection, commonCaseDetails.hearingDate,
+                        advocateEmail, 0, 0,
+                        advocateId, // PPuserID
+                        60, // userTypeId for PP/Advocate
+                        1 // Success
+                    ];
+                    db.query(logQuery, logParams, (logErr) => {
+                        if (logErr) console.error(`❌ DB Log Error (Success) for ${advocateEmail}:`, logErr);
+                    });
+
+                } catch (emailError) {
+                    console.error(`❌ Failed to send email to ${advocateEmail}:`, emailError);
+                    failedEmails.push({ advocateId, advocateName, email: advocateEmail, reason: emailError.message });
+
+                    // Log failure (using existing logging mechanism)
+                    const logQuery = "CALL sp_logEmailDetails(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    const logParams = [
+                        null, CaseID, commonCaseDetails.psCaseNo, commonCaseDetails.dated, commonCaseDetails.ipcSection, commonCaseDetails.hearingDate,
+                        advocateEmail, 0, 0,
+                        advocateId, // PPuserID
+                        60, // userTypeId for PP/Advocate
+                        0 // Failure
+                    ];
+                    db.query(logQuery, logParams, (logErr) => {
+                        if (logErr) console.error(`❌ DB Log Error (Failure) for ${advocateEmail}:`, logErr);
+                    });
+                }
+            }
+
+            if (sentEmails.length > 0) {
+                return res.status(200).json({
+                    status: 0,
+                    message: `Emails sent successfully to ${sentEmails.length} advocates. ${failedEmails.length > 0 ? `(${failedEmails.length} failed)` : ''}`,
+                    sent: sentEmails,
+                    failed: failedEmails,
+                });
+            } else {
+                return res.status(500).json({
+                    status: 1,
+                    message: "No emails were sent successfully.",
+                    failed: failedEmails,
+                });
+            }
+
+        } catch (error) {
+            console.error("❌ Unexpected error in sendEmailTOV2:", error);
+            return res.status(500).json({
+                status: 1,
+                message: "An unexpected error occurred in sendEmailTOV2.",
+                error: error.message,
+            });
+        }
+    }
+
+    static async downloadEngagementLetter(req, res) {
+        try {
+            const { data } = req.query; // encrypted PPuserID and CaseID
+            if (!data) {
+                return ResponseHelper.error(res, "Encrypted data is missing.", 400);
+            }
+
+            let decryptedData;
+            try {
+                decryptedData = decryptToken(data);
+                if (!decryptedData || !decryptedData.PPuserID || !decryptedData.CaseID) {
+                    throw new Error("Invalid or incomplete decrypted data.");
+                }
+            } catch (decryptionError) {
+                console.error("❌ Decryption error for engagement letter:", decryptionError);
+                return ResponseHelper.error(res, "Invalid or tampered link.", 403);
+            }
+
+            const { PPuserID, CaseID } = decryptedData;
+
+            // 1. Fetch details of the recipient advocate
+            let recipientAdvocate = null;
+            try {
+                // Assuming you have a stored procedure to get advocate by ID
+                const advocates = await EmailController.callStoredProcedure('sp_getPPUserDetailsbyId', [PPuserID]);
+                if (advocates && advocates[0]) {
+                    recipientAdvocate = advocates[0];
+                }
+            } catch (error) {
+                console.error(`❌ Error fetching recipient advocate for ID ${PPuserID}:`, error.message);
+                return ResponseHelper.error(res, "Could not retrieve recipient advocate details.", 500);
+            }
+
+            if (!recipientAdvocate) {
+                return ResponseHelper.error(res, "Recipient advocate not found.", 404);
+            }
+
+            // 2. Fetch all assigned advocates for the case (to list others in PDF)
+            let allAssignedAdvocates = [];
+            try {
+                allAssignedAdvocates = await EmailController.callStoredProcedure('sp_getAssignedAdvocatelistByCaseId', [CaseID]);
+            } catch (error) {
+                console.error(`❌ Error fetching all assigned advocates for CaseID ${CaseID}:`, error.message);
+                return ResponseHelper.error(res, "Could not retrieve other assigned advocates.", 500);
+            }
+
+            const otherAdvocatesListHTML = allAssignedAdvocates
+                .filter(adv => adv.advocateId !== PPuserID && adv.advocateName)
+                .map(adv => `${adv.advocateName}, Ld. Advocate${adv.barAssociation ? `, Bar Association room No.${adv.barAssociation}` : ''}`) // Include Bar Association if available
+                .join('<br>');
+
+
+            // 3. Fetch all assigned departments for the case (detailed for PDF content)
+            let assignedDepartmentsListHTMLDetailed = '';
+            try {
+                const assignedDepartments = await EmailController.callStoredProcedure('sp_getAssignedDistrictAndPoliceByCaseId', [CaseID]);
+                if (assignedDepartments && assignedDepartments.length > 0) {
+                    assignedDepartmentsListHTMLDetailed = assignedDepartments.map((dept, index) => {
+                        const contactDetails = [];
+                        if (dept.mobileNumber) contactDetails.push(`Mobile: ${dept.mobileNumber}`);
+                        if (dept.phoneNumber) contactDetails.push(`Phone: ${dept.phoneNumber}`);
+                        if (dept.districtEmail) contactDetails.push(`Email: ${dept.districtEmail}`);
+                        if (dept.rolegalEmail) contactDetails.push(`${dept.districtEmail ? ', ' : ''}Email: ${dept.rolegalEmail}`);
+                        if (dept.policeEmail) contactDetails.push(`${contactDetails.length > 0 || dept.districtEmail || dept.rolegalEmail ? ', ' : ''}Email: ${dept.policeEmail}`);
+
+                        return `
+                            <p>(${index + 1})${dept.officerInCharge ? ` Officer in Charge,` : ''} ${dept.policeStationName || dept.districtName || 'N/A'}${dept.address ? `, ${dept.address}` : ''}<br>
+                            ${contactDetails.join(', ')}</p>
+                        `;
+                    }).join('');
+                } else {
+                    assignedDepartmentsListHTMLDetailed = "<p>No specific departments listed.</p>";
+                }
+            } catch (error) {
+                console.error(`❌ Error fetching assigned departments for CaseID ${CaseID}:`, error.message);
+                assignedDepartmentsListHTMLDetailed = "<p>Could not retrieve department list.</p>";
+            }
+
+            // 4. Fetch common case details for the PDF content
+            let commonCaseDetails = null;
+            try {
+                const results = await EmailController.callStoredProcedure('sp_sendEmail_ppv2', [CaseID, PPuserID]);
+                if (results && results[0]) {
+                    commonCaseDetails = results[0];
+                }
+            } catch (error) {
+                console.error(`❌ Error fetching common case details for CaseID ${CaseID}:`, error.message);
+                return ResponseHelper.error(res, "Could not retrieve case details for PDF.", 500);
+            }
+
+            if (!commonCaseDetails) {
+                return ResponseHelper.error(res, "Case details not found for PDF generation.", 404);
+            }
+
+            // Prepare details for the PDF content template
+            const pdfTemplateDetails = {
+                ...commonCaseDetails, // Contains psCaseNo, Refference, dated, ipcSection, etc.
+                recipientAdvocateName: recipientAdvocate.pp_name,
+                advocateContactNumber: recipientAdvocate.pp_contactnumber,
+                advocateBarAssociation: recipientAdvocate.barAssociation,
+                advocateBarAssociation: recipientAdvocate.barAssociation || 'N/A',
+                otherAdvocatesListHTML: otherAdvocatesListHTML,
+                assignedDepartmentsListHTMLDetailed: assignedDepartmentsListHTMLDetailed,
+                caseReference: commonCaseDetails.Refference,
+            };
+
+            const emailTemplatePDF = new EmailTemplate(pdfTemplateDetails);
+            const pdfHTMLContent = emailTemplatePDF.generateEngagementLetterPDFContent(); // New template for PDF content
+
+            // Generate PDF from HTML
+            pdf.create(pdfHTMLContent, { format: 'A4', border: '15mm' }).toBuffer((err, buffer) => {
+                if (err) {
+                    console.error("❌ Error generating PDF:", err);
+                    return ResponseHelper.error(res, "Failed to generate PDF.", 500);
+                }
+
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', `attachment; filename="Appointment_Letter_Case_${commonCaseDetails.psCaseNo}_${PPuserID}.pdf"`);
+                res.send(buffer);
+            });
+
+        } catch (error) {
+            // MODIFIED: Log the entire error object to see the stack trace
+            console.error("❌ FULL UNEXPECTED ERROR in downloadEngagementLetter:", error);
+
+            return ResponseHelper.error(res, "An unexpected server error occurred during PDF download.", 500);
+        }
+    }
+
 }
 
 module.exports = EmailController;

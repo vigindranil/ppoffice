@@ -37,8 +37,31 @@ class EmailTemplate {
         this.assignedAdvocatesList = details.assignedAdvocatesList;
         this.assignedDepartmentsList = details.assignedDepartmentsList;
 
+        // New properties for V2 PDF functionality
+        this.encryptedPPID = details.encryptedPPID; // For the PDF download link in email body
+        // These are for the PDF content itself
+        this.recipientAdvocateName = details.recipientAdvocateName;
+        this.advocateContactNumber = details.advocateContactNumber;
+        this.advocateBarAssociation = details.advocateBarAssociation;
+        this.otherAdvocatesListHTML = details.otherAdvocatesListHTML;
+        this.assignedDepartmentsListHTMLDetailed = details.assignedDepartmentsListHTMLDetailed;
+        this.caseReference = details.caseReference;
+
         // Common style for emails
         this.commonStyle = "font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.6;";
+        // Styles specific to the PDF content
+        this.pdfStyle = `
+            body { font-family: 'Times New Roman', serif; font-size: 12px; line-height: 1.5; margin: 40px; }
+            p { margin-bottom: 8px; }
+            strong { font-weight: bold; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header img { height: 50px; vertical-align: middle; margin-right: 10px; }
+            .address { font-size: 10px; text-align: right; }
+            .date { text-align: right; margin-top: 10px; }
+            .signature { margin-top: 40px; text-align: right; }
+            .footer { margin-top: 50px; font-size: 10px; text-align: center; }
+            .section-title { font-weight: bold; margin-top: 15px; margin-bottom: 5px; }
+        `;
     }
 
     /**
@@ -179,6 +202,137 @@ class EmailTemplate {
 
             <p>[Message ends]</p>
         </div>
+        `;
+    }
+
+    // Modified generateEmailAdvocateAssignToA to include the PDF download link
+    generateEmailAdvocateAssignToA2() { // Used by sendEmailTO and now sendEmailTOV2
+        const caseResourcesLinkHTML = (this.baseURL && this.encryptedCaseID)
+            ? `<p><strong>Case Resources Link:</strong><br>
+            <a href="${this.baseURL}/secure-documents?data=${this.encryptedCaseID}" target="_blank" style="color: #27548A; font-weight: bold;">Login & View Documents</a></p>`
+            : '<p>Case Resources Link: Not available</p>';
+
+        // For Assigned Departments list (used in sendEmailTO)
+        const departmentsSection = this.assignedDepartmentsList
+            ? `<p><strong>List of Assigned Departments:</strong><br>${this.assignedDepartmentsList}</p>`
+            : '';
+
+        const formattedDated = this.dated
+            ? new Date(this.dated).toDateString()
+            : '';
+
+        const formattedHearingDate = this.hearingDate
+            ? this.hearingDate.split(' ')[0]
+            : '';
+
+        // New PDF download link section
+        const pdfDownloadLinkHTML = (this.baseURL && this.encryptedPPID)
+            ? `<p style="margin-top: 20px;">
+                <strong>Download Your Appointment Letter (PDF):</strong><br>
+                <a href="${this.baseURL}/api/download-engagement-letter?data=${this.encryptedPPID}" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                    Click Here to Download
+                </a>
+            </p>`
+            : '';
+
+        return `
+        <div style="${this.commonStyle}">
+            <p>To: Public Prosecutor<br>
+            Advocate<br>
+            From: The Public Prosecutor, High Court, Calcutta.</p>
+
+            <p>P.S Case No: ${this.psCaseNo}<br>
+            Dated: ${formattedDated}<br>
+            S.P Name : ${this.SPName || 'N/A'}<br>
+            P.S Name : ${this.PSName || 'N/A'}<br>
+            U/S IPC : ${this.ipcSection}<br>
+            Ref. : ${this.caseReference}<br>
+            M/S VS: State</p>
+
+            <p>You are assigned to the above case. The hearing is scheduled for ${formattedHearingDate}.</p>
+
+            ${departmentsSection}
+            ${caseResourcesLinkHTML}
+
+            ${pdfDownloadLinkHTML} <p>[Message ends]</p>
+        </div>
+        `;
+    }
+
+    // New template for the HTML content that will be converted into a PDF
+    generateEngagementLetterPDFContent() {
+        const otherAdvocatesSection = this.otherAdvocatesListHTML
+            ? `you along with ${this.otherAdvocatesListHTML}`
+            : 'you';
+
+        // const formattedDated = this.dated
+        //     ? new Date(this.dated).toDateString()
+        //     : '';
+
+        const today = new Date();
+        const formattedDate = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
+
+        // Extract year from dated for the "CRM(M) No. 487 of 2025" style
+        const datedYear = this.dated ? new Date(this.dated).getFullYear() : 'YYYY';
+        const crmWithYear = this.caseReference ? `${this.caseReference} of ${datedYear}` : 'N/A';
+
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Appointment Letter</title>
+                <style>
+                    ${this.pdfStyle}
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <img src="/images/high_court_logo.png" alt="High Court Logo" style="height: 50px; vertical-align: middle;">
+                    High Court Cases Monitoring Cell<br>
+                    High Court at Calcutta
+                    <div class="address">
+                        2nd Floor (above Protocol Department)<br>
+                        High Court at Calcutta, Kolkata-700 001<br>
+                        Phone: 033-22627404/05<br>
+                        Website: ppcts.wb.gov.in
+                    </div>
+                </div>
+
+                <p class="date">Date: ${formattedDate}</p>
+
+                <p>No.: ${crmWithYear}</p>
+
+                <p>To,<br>
+                Mr. ${this.recipientAdvocateName}, Ld. Advocate<br>
+                Bar Association High Court at Calcutta</p>
+
+                <p>Sub.: Appointment Letter.</p>
+
+                <p>Sir,</p>
+                <p>I am directed to inform you that ${otherAdvocatesSection} have/has been appointed by the Ld. Public Prosecutor, High Court at Calcutta, as State Advocate in ${crmWithYear}.</p>
+
+                <p>You are requested to contact the State Respondents to get the necessary instruction. The necessary contact details of the State Respondents are given below:</p>
+
+                ${this.assignedDepartmentsListHTMLDetailed}
+
+                <p>The PDF copy of the relevant case file will be available at ppcts.wb.gov.in as and when will be received from the office of the Ld. Public Prosecutor, High Court at Calcutta.</p>
+
+                <div class="signature">
+                    <p>Yours faithfully,</p>
+                    <p>sd/-</p>
+                    <p>Nodal Officer,<br>
+                    High Court Cases Monitoring Cell,<br>
+                    High Court at Calcutta.</p>
+                </div>
+
+                <p>Enclo.: As above.</p>
+                ${this.otherAdvocatesListHTML ? `
+                <p>Copy to:</p>
+                <p>${this.otherAdvocatesListHTML.split('<br>').map(adv => `${adv}<br>`).join('')}</p>
+                ` : ''}
+            </body>
+            </html>
         `;
     }
 

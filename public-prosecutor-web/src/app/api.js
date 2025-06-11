@@ -1196,3 +1196,13 @@ export const uploadCaseDocumentsV1 = async (caseId, RefferenceID, CranID, docume
     }
   });
 };
+
+export const getPsUsers = async (payload, token) => {
+  try {
+    const response = await postRequest("get-ps-users", payload);
+    return response;
+  } catch (error) {
+    console.error("Error fetching PS users:", error.response?.data || error.message);
+    throw error.response?.data?.message || "Failed to fetch PS users.";
+  }
+};
