@@ -262,7 +262,7 @@ const data = {
         //   url: "/add-crr",
         // },
         {
-          title: "Update CRAN",
+          title: "Add CRAN to Existing Case",
           url: "/add-cran",
         },
         {
