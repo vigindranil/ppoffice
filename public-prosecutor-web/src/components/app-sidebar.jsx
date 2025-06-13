@@ -261,10 +261,10 @@ const data = {
         //   title: "Add CRR",
         //   url: "/add-crr",
         // },
-        // {
-        //   title: "Add CRAN",
-        //   url: "/add-cran",
-        // },
+        {
+          title: "Update CRAN",
+          url: "/add-cran",
+        },
         {
           title: "Add New Advocate",
           url: "/add-pp-user",

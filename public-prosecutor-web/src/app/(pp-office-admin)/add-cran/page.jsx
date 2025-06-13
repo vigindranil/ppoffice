@@ -504,7 +504,7 @@ const AddCranPage = () => {
 
           <Tabs defaultValue="add" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-2 mx-6 mt-4">
-              <TabsTrigger value="add">Add</TabsTrigger>
+              <TabsTrigger value="add">Add CRAN to existing Case</TabsTrigger>
               {/* <TabsTrigger value="update">Update Existing Case</TabsTrigger> */}
             </TabsList>
 
