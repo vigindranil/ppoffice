@@ -238,7 +238,7 @@ const UnassignedTable = ({ documents, isLoadingDocumentTable, identity }) => {
       updateStepStatus("emailAdvocates", "loading");
 
       try {
-        await postRequest("send-email-pp", {
+        await postRequest("send-email-pp-v2", {
           CaseID: identity,
           PPuserID_array: response.assignedPPUserIDs,
         });

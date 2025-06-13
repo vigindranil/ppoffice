@@ -353,7 +353,7 @@ export default function AdvocateSelectorModal({ open, onClose, caseId }) {
             // 3. Email Advocates
             updateStepStatus("emailAdvocates", "loading")
             try {
-                await postRequest("send-email-pp", {
+                await postRequest("send-email-pp-v2", {
                     CaseID: caseId,
                     PPuserID_array: assignRes.assignedPPUserIDs,
                 })
