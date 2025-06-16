@@ -10,6 +10,7 @@ class EmailTemplate {
      * @param {string} details.PPName 
      * @param {string} details.SPName 
      * @param {string} details.PSName 
+     * @param {string} details.Refference 
      * @param {string} details.NexthearingDate 
      * @param {string} details.CaseDescription 
      * @param {string} details.CaseAdditionalRemarks 
@@ -45,7 +46,8 @@ class EmailTemplate {
         this.advocateBarAssociation = details.advocateBarAssociation;
         this.otherAdvocatesListHTML = details.otherAdvocatesListHTML;
         this.assignedDepartmentsListHTMLDetailed = details.assignedDepartmentsListHTMLDetailed;
-        this.caseReference = details.caseReference;
+        this.caseReference = details.Refference;
+        this.Refference = details.Refference;
 
         // Common style for emails
         this.commonStyle = "font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.6;";
@@ -246,7 +248,7 @@ class EmailTemplate {
             S.P Name : ${this.SPName || 'N/A'}<br>
             P.S Name : ${this.PSName || 'N/A'}<br>
             U/S IPC : ${this.ipcSection}<br>
-            Ref. : ${this.caseReference}<br>
+            Ref. : ${this.Refference}<br>
             M/S VS: State</p>
 
             <p>You are assigned to the above case. The hearing is scheduled for ${formattedHearingDate}.</p>
