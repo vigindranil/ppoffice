@@ -42,6 +42,53 @@ export default function SecureDocAccess() {
   const router = useRouter();
   const dispatch = useDispatch();
 
+  const redirectToPublicDocuments = async () => {
+    if (typeof window === "undefined") {
+      console.log("redirectToPublicDocuments: Window is undefined.");
+      return;
+    }
+
+    const encrypted = sessionStorage.getItem("secure-docs-data");
+    if (!encrypted) {
+      console.warn("redirectToPublicDocuments: No encrypted data found in sessionStorage for public access. Redirecting to /");
+      window.location.href = "/"; // Redirect to home if no data
+      return;
+    }
+    console.log("redirectToPublicDocuments: Encrypted data found in sessionStorage.");
+
+    try {
+      // Dynamically import crypto-js to avoid server-side issues
+      const CryptoJS = await import("crypto-js");
+      console.log("redirectToPublicDocuments: CryptoJS imported successfully.");
+
+      // Decode URI component before decryption
+      const decryptedStr = CryptoJS.AES.decrypt(
+        decodeURIComponent(encrypted),
+        process.env.NEXT_PUBLIC_AES_SECRET || "fallback-secret"
+      ).toString(CryptoJS.enc.Utf8);
+
+      // console.log("DECRYPTED STRING:", decryptedStr);
+      const decrypted = JSON.parse(decryptedStr);
+      // console.log("PARSED OBJECT:", decrypted);
+
+      if (!decrypted?.CaseID) {
+        console.warn("redirectToPublicDocuments: No CaseID found in decrypted payload for public access. Redirecting to /");
+        window.location.href = "/"; // Redirect to home if no CaseID
+        return;
+      }
+      console.log("redirectToPublicDocuments: CaseID found:", decrypted.CaseID);
+
+      const encodedCaseId = encodeURIComponent(btoa(decrypted.CaseID));
+      console.log("redirectToPublicDocuments: Encoded CaseID:", encodedCaseId);
+      // Navigate to the public documents page using direct window location
+      window.location.href = `/public-prosecutor-public-documents/${encodedCaseId}`;
+      console.log(`redirectToPublicDocuments: Redirecting to /public-prosecutor-public-documents/${encodedCaseId}`);
+    } catch (err) {
+      console.error("redirectToPublicDocuments: Decryption error for public access:", err);
+      window.location.href = "/"; // Redirect to home on error
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -108,9 +155,9 @@ export default function SecureDocAccess() {
                 process.env.NEXT_PUBLIC_AES_SECRET || "fallback-secret"
               ).toString(CryptoJS.enc.Utf8);
 
-              console.log("DECRYPTED STRING:", decryptedStr); 
+              console.log("DECRYPTED STRING:", decryptedStr);
               const decrypted = JSON.parse(decryptedStr);
-              console.log("PARSED OBJECT:", decrypted);       
+              console.log("PARSED OBJECT:", decrypted);
 
               if (!decrypted?.CaseID) {
                 console.warn("No caseId found in decrypted payload");
@@ -225,6 +272,16 @@ export default function SecureDocAccess() {
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? "Please Wait..." : "Access"}
               </Button>
+
+              <Button
+                type="button" // Important: set type to button to prevent form submission
+                variant="outline"
+                className="w-full mt-2"
+                onClick={redirectToPublicDocuments}
+              >
+                View Documents without Login
+              </Button>
+
             </form>
           </CardContent>
         </Card>

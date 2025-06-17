@@ -1924,6 +1924,58 @@ class CaseController {
         }
     }
 
+    static async getPublicCaseDocuments(req, res) {
+        try {
+            console.log("🔥 Request Params:", req.body); // Debugging
+
+            const { caseId } = req.body;
+
+            // ✅ Validate required input
+            if (!caseId) {
+                console.error("❌ Validation failed: Missing caseId.");
+                return ResponseHelper.error(res, "Please provide a valid caseId.");
+            }
+
+            // ✅ Define the stored procedure call
+            const query = "CALL sp_getPublicCaseDocumentByCaseId(?)";
+            const params = [caseId];
+
+            console.log("🛠️ Executing Stored Procedure with params:", params);
+
+            // ✅ Execute the stored procedure
+            const results = await new Promise((resolve, reject) => {
+                db.query(query, params, (err, result) => {
+                    if (err) {
+                        console.error("❌ Error executing stored procedure:", err);
+                        return reject(err);
+                    }
+                    resolve(result[0]); // ✅ First array contains result set
+                });
+            });
+
+            // ✅ Check if any documents are found
+            if (!results || results.length === 0) {
+                return ResponseHelper.error(res, "No documents found for the given caseId.");
+                // return res.status(200).json({
+                // status: 0,
+                // message: "Case documents retrieved successfully.",
+                // data: results
+                // });
+            }
+
+            // ✅ Success response
+            return res.status(200).json({
+                status: 0,
+                message: "Case documents retrieved successfully.",
+                data: results
+            });
+
+        } catch (error) {
+            console.error("❌ Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred while processing the request.", error);
+        }
+    }
+
 }
 
 
