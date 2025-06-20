@@ -10,6 +10,7 @@ class EmailTemplate {
      * @param {string} details.PPName 
      * @param {string} details.SPName 
      * @param {string} details.PSName 
+     * @param {string} details.Petitioner 
      * @param {string} details.Refference 
      * @param {string} details.NexthearingDate 
      * @param {string} details.CaseDescription 
@@ -29,6 +30,7 @@ class EmailTemplate {
         this.ppname = details.PPName;
         this.SPName = details.SPName;
         this.PSName = details.PSName;
+        this.Petitioner = details.Petitioner;
         this.NexthearingDate = details.NexthearingDate;
         this.CaseDescription = details.CaseDescription;
         this.CaseAdditionalRemarks = details.CaseAdditionalRemarks;
@@ -98,9 +100,9 @@ class EmailTemplate {
             P.S Name : ${this.PSName || 'N/A'}<br>
             U/S IPC : ${this.ipcSection}<br>
             Ref. : ${this.crm}<br>
-            M/S VS : State</p>
+            ${this.Petitioner} VS : State</p>
 
-            <p>Direct Investigating Officer of the above case to meet the Learned Advocate for the State (High Court, Calcutta) on ${formattedHearingDate} with the Photocopy of the case diary with M.O.E.</p>
+            <p>Direct Investigating Officer of the above case to contact the Learned Advocate for the State (High Court, Calcutta) on ${formattedHearingDate} with the Photocopy of the case diary with M.O.E.</p>
             
             ${advocatesSection}
 
@@ -249,7 +251,7 @@ class EmailTemplate {
             P.S Name : ${this.PSName || 'N/A'}<br>
             U/S IPC : ${this.ipcSection}<br>
             Ref. : ${this.Refference}<br>
-            M/S VS: State</p>
+            ${this.Petitioner || 'M/S'} VS: State</p>
 
             <p>You are assigned to the above case. The hearing is scheduled for ${formattedHearingDate}.</p>
 

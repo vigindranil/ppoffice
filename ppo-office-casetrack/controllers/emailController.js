@@ -130,8 +130,10 @@ class EmailController {
 
             // Destructure common details from the first successful sp_sendEmailv1 call
             const {
-                CaseNumber, IPCSection, BNSSection, CaseDate, HearingDate, SPName, PSName
+                CaseNumber, IPCSection, BNSSection, CaseDate, HearingDate, SPName, PSName, Petitioner
             } = commonCaseDetailsFromSP;
+
+            // console.log(commonCaseDetailsFromSP);
 
             const emailTemplate = new EmailTemplate({
                 crm: BNSSection, // Or Refference if that's the field name
@@ -139,8 +141,9 @@ class EmailController {
                 dated: CaseDate,
                 ipcSection: IPCSection,
                 hearingDate: HearingDate,
-                SPName: SPName || "N/A", // From sp_sendEmailv1 if available, else default
-                PSName: PSName || "N/A",   // From sp_sendEmailv1 if available, else default
+                SPName: SPName || "N/A", 
+                PSName: PSName || "N/A",   
+                Petitioner: Petitioner || "M/S",   
                 assignedAdvocatesList: assignedAdvocatesListHTML // Pass the advocate list
             });
 
@@ -676,6 +679,9 @@ class EmailController {
                 });
             }
 
+            // console.log(commonCaseDetails);
+            
+
             // 3. Fetch assigned departments for the *existing* email body's department list (simplified names)
             let assignedDepartmentsListHTML = '';
             try {
@@ -723,7 +729,7 @@ class EmailController {
 
                 // Prepare parameters for the existing email template (generateEmailAdvocateAssignToA)
                 const emailTemplateDetails = {
-                    ...commonCaseDetails, // Contains psCaseNo, Refference, dated, hearingDate, SPName, PSName, ipcSection
+                    ...commonCaseDetails, // Contains psCaseNo, Refference, dated, hearingDate, SPName, PSName, ipcSection, Petitioner
                     PPName: advocateName, // This will be "You" for the existing template, but for logging it's the advocateName
                     encryptedCaseID: encryptedCaseID, // For the existing Case Resources Link
                     baseURL: BASE_URL,
