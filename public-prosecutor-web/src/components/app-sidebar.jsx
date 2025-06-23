@@ -266,6 +266,10 @@ const data = {
           url: "/add-cran",
         },
         {
+          title: "Edit Unassigned Case",
+          url: "/edit-case-list",
+        },
+        {
           title: "Add New Advocate",
           url: "/add-pp-user",
         },
