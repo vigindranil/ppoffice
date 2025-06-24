@@ -48,7 +48,7 @@ router.post('/api/changepassword', authMiddleware.verifyToken,passwordfControlle
 const CaseController = require('../controllers/caseController');
 
 router.get('/api/getcasetype', authMiddleware.verifyToken,CaseController.getcasetype);
-router.get("/api/caseDetailsById",authMiddleware.verifyToken,CaseController.getCaseById);
+router.post("/api/caseDetailsById",authMiddleware.verifyToken,CaseController.getCaseById);
 router.get("/api/showRefferenceDetails",authMiddleware.verifyToken,CaseController.showRefference);
 router.post("/api/addCase",authMiddleware.verifyToken,CaseController.createCase); // firsttime create case by ppOffice
 router.get("/api/showallCase",authMiddleware.verifyToken,CaseController.showallCase); // firsttime create case by ppOffice

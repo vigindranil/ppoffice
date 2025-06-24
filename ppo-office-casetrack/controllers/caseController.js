@@ -33,50 +33,35 @@ class CaseController {
     }
 
     static async getCaseById(req, res) {
-        const { CaseID } = req.query; // Get the CaseNumber from query parameters
+        const { CaseID } = req.body;
 
-        // Validate input
         if (!CaseID) {
             return ResponseHelper.error(res, "CaseID is required.");
-
         }
 
         try {
-            // Call the stored procedure
             const query = "CALL sp_getCaseDetailsByCaseId(?)";
             const params = [CaseID];
 
-            // Execute the query
             const results = await new Promise((resolve, reject) => {
                 db.query(query, params, (err, results) => {
                     if (err) {
                         console.error("SQL Error executing stored procedure:", err);
                         return reject({ sqlError: true, error: err });
                     }
-                    resolve(results[0]); // The first result set contains the data
+                    resolve(results[0]);
                 });
             });
-
-            // // Check if any record was found
-            // if (results.length === 0) {
-
-            //     return ResponseHelper.error(res, "No case data found for CaseNumber");
-
-            // }
-
-            // // Respond with the case assignment details
-            // return ResponseHelper.success_reponse(res, " case assignment found for CaseNumber", results);
 
             let transformedResponse = {
                 status: 0,
                 message: "Case data found for CaseNumber",
-                data: {} // This will hold our single, structured object
+                data: {}
             };
 
             if (results && results.length > 0) {
                 const firstCase = results[0];
 
-                // Extract common fields
                 transformedResponse.data = {
                     CaseNumber: firstCase.CaseNumber,
                     SpName: firstCase.SpName,
@@ -92,36 +77,40 @@ class CaseController {
                     PetitionName: firstCase.PetitionName,
                     CourtCaseDescription: firstCase.CourtCaseDescription,
                     FilingDate: firstCase.FilingDate,
-                    Reference: { // Nested object for Reference details
+                    Reference: {
                         RefferenceID: firstCase.RefferenceID,
+                        RefferenceDropDownID: firstCase.RefferenceDropDownID,
                         RefferenceName: firstCase.RefferenceName,
                         RefferenceNumber: firstCase.RefferenceNumber,
                         RefferenceYear: firstCase.RefferenceYear,
                     },
-                    IPCSecs: [] // Array to hold multiple IPC sections
+                    IPCSecs: [],
+                    OtherIPCSecs: []  // NEW array
                 };
 
-                // Populate the IPCSecs array from all results
                 results.forEach(caseItem => {
-                    transformedResponse.data.IPCSecs.push({
-                        IPCID: caseItem.IPCID,
+                    const ipcEntry = {
+                        IPCBnsId: caseItem.IPCBnsId,
+                        CaseIPCBnsId: caseItem.CaseIPCBnsId,
                         IPCName: caseItem.IPCName,
-                        BnsId: caseItem.BnsId,
-                        BnsNumber: caseItem.BnsNumber
-                    });
+                        BnsName: caseItem.BnsName,
+                        IPCBnsSubject: caseItem.IPCBnsSubject
+                    };
+
+                    if (caseItem.IPCBnsId === 534) {
+                        transformedResponse.data.OtherIPCSecs.push(ipcEntry);
+                    } else {
+                        transformedResponse.data.IPCSecs.push(ipcEntry);
+                    }
                 });
             } else {
-                // If no results, you might want to return an empty data object or handle it as per your ResponseHelper.error logic
-                return ResponseHelper.error(res, "No case assignment found for CaseNumber");
+                return ResponseHelper.error(res, "No case data found for CaseNumber");
             }
 
-            // Then send this transformedResponse
             return ResponseHelper.success_reponse(res, transformedResponse.message, transformedResponse.data);
-
 
         } catch (error) {
             if (error.sqlError) {
-                // SQL-specific error handling
                 return res.status(500).json({
                     status: 1,
                     message: "A database error occurred while processing your request.",
@@ -132,9 +121,7 @@ class CaseController {
                     },
                 });
             } else {
-                // General error handling
-                return ResponseHelper.error(res, "An unexpected error occurred while retrieving the case assignment.");
-
+                return ResponseHelper.error(res, "An unexpected error occurred while retrieving the case data.");
             }
         }
     }
