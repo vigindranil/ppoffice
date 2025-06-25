@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState, useEffect, useCallback } from "react"
+import { use, useState, useEffect, useCallback, useMemo } from "react"
 import {
   uploadCaseDocuments,
   getcasetype,
@@ -10,33 +10,34 @@ import {
   showIpcSection,
   showBnsSection,
   showIbsByBnsId,
-} from "@/app/api" // Corrected import path
+} from "@/app/api" // Changed back to @ alias
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { CustomAlertDialog } from "@/components/custom-alert-dialog"
-import { useAlertDialog } from "@/hooks/useAlertDialog"
-import { useSelector } from "react-redux"
+import { CustomAlertDialog } from "@/components/custom-alert-dialog" // Changed back to @ alias
+import { useAlertDialog } from "@/hooks/useAlertDialog" // Changed back to @ alias
+import { useSelector } from "react-redux" // Mark as external if build fails: external: ['react-redux']
 import { Calendar, FileText, Hash, Clock, Trash, Plus, X, Loader2, FileUp, Edit3 } from "lucide-react"
-import { decrypt } from "@/utils/crypto"
+import { decrypt } from "@/utils/crypto" // Changed back to @ alias
 import { Check, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils" // Changed back to @ alias
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { postRequest } from "@/app/commonAPI"
+import { postRequest } from "@/app/commonAPI" // Changed back to @ alias
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import moment from "moment-timezone";
+import moment from "moment-timezone"; // Mark as external if build fails: external: ['moment-timezone']
 
 // Constants
-const OTHER_SECTION_BNS_ID = 534;
+const OTHER_SECTION_BNS_ID = 534; // This is the IPCBnsId for "Other" sections
 const MAX_TOTAL_SECTION_ENTRIES = 20;
 const MAX_OTHER_ROWS = 10;
 const MAX_FILE_SIZE_MB = 50;
 
+// Helper to extract file name from document path
 const getFileName = (path) => {
   return path ? path.split("/").pop().replace(/^[0-9]+_/, "") : "Unknown";
 };
@@ -65,8 +66,8 @@ const UpdateCasePage = ({ params }) => {
   const [allDistrictList, setAllDistrictList] = useState([])
   const [allPSList, setAllPSList] = useState([])
   const [caseTypeList, setCaseTypeList] = useState([])
-  const [bnsSectionList, setBnsSectionList] = useState([])
-  const [ipcActList, setIpcActList] = useState([])
+  const [bnsSectionList, setBnsSectionList] = useState([]) // Contains BNSName and IPCBnsId
+  const [ipcActList, setIpcActList] = useState([]) // Contains IPCName and IPCBnsId
 
   // Main Case Documents (for newly added docs to be uploaded)
   const [mainCaseDocuments, setMainCaseDocuments] = useState([]);
@@ -88,19 +89,20 @@ const UpdateCasePage = ({ params }) => {
     petitionName: "",
     hearingDate: "",
     CourtCaseDescription: "",
-    crmID: "", // Reference Type ID
+    crmID: "", // Reference Type ID (maps to RefferenceDropDownID)
     refferenceNumber: "",
     refferenceyear: "",
-    refferenceId: "", // New field for sp_Createcase_v5, will be filled from fetched data
+    refferenceId: "", // Actual RefferenceID for sp_Createcase_v5
   });
 
   // IPC/BNS Section State
-  const [selectedIpcSections, setSelectedIpcSections] = useState([]); // Array of { bnsId, ipcSection, bnsSection, CaseIpcID (for existing) }
-  const [otherSectionsList, setOtherSectionsList] = useState([]); // Array of { id, ipcValue, bnsValue, CaseIpcID (for existing)}
+  // Added a 'localId' for newly added sections for stable keys before CaseIPCBnsId is assigned
+  const [selectedIpcSections, setSelectedIpcSections] = useState([]); // Array of { IPCBnsId, IPCName, BnsName, IPCBnsSubject, CaseIPCBnsId, localId }
+  const [otherSectionsList, setOtherSectionsList] = useState([]); // Array of { id (localId), ipcValue (IPCName), bnsValue (IPCBnsSubject), CaseIPCBnsId}
   const [currentOtherIpc, setCurrentOtherIpc] = useState("");
   const [currentOtherBns, setCurrentOtherBns] = useState("");
   const [useIpcDisplay, setUseIpcDisplay] = useState(true);
-  const [removedIpcSectionIds, setRemovedIpcSectionIds] = useState([]); // To track IPC sections removed by user
+  const [removedIpcSectionIds, setRemovedIpcSectionIds] = useState([]); // To track CaseIPCBnsId of sections removed by user
 
   // Dropdown open/close state
   const [openDistrict, setOpenDistrict] = useState(false);
@@ -148,8 +150,8 @@ const UpdateCasePage = ({ params }) => {
           setCaseTypeList(caseTypes || []);
           setReferenceList(references || []);
           setAllDistrictList(districts || []);
-          setIpcActList(ipcSections || []);
-          setBnsSectionList(bnsSections || []);
+          setIpcActList(ipcSections || []); // Now contains IPCBnsId, IPCName, IPCBnsSubject
+          setBnsSectionList(bnsSections || []); // Now contains IPCBnsId, BnsName, IPCBnsSubject
 
           // Fetch specific case details using case_id
           setIsLoadingDocumentTable(true); // Separate loading for docs/history
@@ -171,55 +173,60 @@ const UpdateCasePage = ({ params }) => {
               petitionName: caseData.PetitionName || "",
               hearingDate: formatDateForInput(caseData.CaseHearingDate) || "",
               CourtCaseDescription: caseData.CourtCaseDescription || "",
-              crmID: caseData.Reference?.RefferenceDropDownID ? caseData.Reference.RefferenceDropDownID.toString() : "", // Reference Type ID
+              crmID: caseData.Reference?.RefferenceDropDownID ? caseData.Reference.RefferenceDropDownID.toString() : "", // Use RefferenceDropDownID for dropdown
               refferenceNumber: caseData.Reference?.RefferenceNumber || "",
               refferenceyear: caseData.Reference?.RefferenceYear ? caseData.Reference.RefferenceYear.toString() : "",
-              refferenceId: caseData.Reference?.RefferenceID || "" // Store actual reference ID
+              refferenceId: caseData.Reference?.RefferenceID || "" // Store actual RefferenceID for update SP
             }));
 
             // Populate IPC Sections
             if (caseData.IPCSecs && Array.isArray(caseData.IPCSecs)) {
               const standardSections = [];
-              const otherSections = [];
-
               caseData.IPCSecs.forEach(ipcSec => {
-                if (ipcSec.BnsId && ipcSec.BnsId.toString() === OTHER_SECTION_BNS_ID.toString()) {
-                  // This is an 'Other' section
-                  otherSections.push({
-                    id: ipcSec.CaseIpcID, // Use CaseIpcID as unique ID for existing
-                    ipcValue: ipcSec.IPCName || "",
-                    bnsValue: ipcSec.BnsNumber || "",
-                    CaseIpcID: ipcSec.CaseIpcID // Keep original ID for deletion tracking
-                  });
-                } else {
-                  // This is a standard IPC section
-                  standardSections.push({
-                    bnsId: ipcSec.BnsId ? ipcSec.BnsId.toString() : "",
-                    ipcSection: ipcSec.IPCName || "",
-                    bnsSection: ipcSec.BnsNumber || "", // Assuming BnsNumber is the BNS Name
-                    CaseIpcID: ipcSec.CaseIpcID // Keep original ID for deletion tracking
-                  });
-                }
+                standardSections.push({
+                  IPCBnsId: ipcSec.IPCBnsId ? ipcSec.IPCBnsId.toString() : "",
+                  CaseIPCBnsId: ipcSec.CaseIPCBnsId,
+                  IPCName: ipcSec.IPCName || "",
+                  BnsName: ipcSec.BnsName || "",
+                  IPCBnsSubject: ipcSec.IPCBnsSubject || "",
+                  localId: crypto.randomUUID() // Add a unique localId for existing items too
+                });
               });
               setSelectedIpcSections(standardSections);
+            }
+
+            // Populate Other IPC Sections
+            if (caseData.OtherIPCSecs && Array.isArray(caseData.OtherIPCSecs)) {
+              const otherSections = [];
+              caseData.OtherIPCSecs.forEach(otherSec => {
+                otherSections.push({
+                  id: crypto.randomUUID(), // Use a new local ID for existing other sections
+                  ipcValue: otherSec.IPCName || "",
+                  bnsValue: otherSec.IPCBnsSubject || "",
+                  CaseIPCBnsId: otherSec.CaseIPCBnsId
+                });
+              });
               setOtherSectionsList(otherSections);
             }
 
-            // Populate existing case documents
-            // Assuming caseDetailsResponse.data might have a 'CaseDocuments' array
-            // If the API response for 'caseDetailsById' includes document details:
-            // For now, I'll use the user provided `getPublicDocByCaseId` for documents
+            if (caseData.IPCSecs || caseData.OtherIPCSecs) {
+              const allCaseIpcIds = [
+                ...(caseData.IPCSecs || []).map(sec => sec.CaseIPCBnsId),
+                ...(caseData.OtherIPCSecs || []).map(sec => sec.CaseIPCBnsId),
+              ].filter(Boolean);
+
+              setRemovedIpcSectionIds(allCaseIpcIds);
+            }
+
           } else {
             openAlert("error", caseDetailsResponse?.message || "Failed to load case details.");
           }
 
-          // Fetch documents using getPublicDocByCaseId
-          const documentResponse = await postRequest("show-public-case-document", { caseId: case_id }); // Assuming this is exposed as POST and needs CaseID in body
+          // Fetch documents using show-public-case-document
+          const documentResponse = await postRequest("show-public-case-document", { caseId: case_id });
           if (documentResponse && documentResponse.status === 0 && documentResponse.data) {
             setExistingCaseDocuments(documentResponse.data.map(doc => ({
-              ...doc,
-              name: doc.DocumentName, // Map to 'name' for consistency with file objects
-              CaseDocumentID: doc.CaseDocumentID // Keep original ID for deletion
+              ...doc, // Keep all original doc fields including documentId and caseDocument
             })));
           } else {
             console.warn("Failed to load existing documents:", documentResponse?.message);
@@ -250,6 +257,14 @@ const UpdateCasePage = ({ params }) => {
     }
   }, [updateFormData.districtId]);
 
+  const filteredIpcBnsList = useMemo(() => {
+    const sourceList = useIpcDisplay ? ipcActList : bnsSectionList;
+    return sourceList.filter(e =>
+      !selectedIpcSections.some(s => s.IPCBnsId?.toString() === e.IPCBnsId?.toString() && s.CaseIPCBnsId !== null) &&
+      !selectedIpcSections.some(s => s.IPCBnsId?.toString() === e.IPCBnsId?.toString() && s.CaseIPCBnsId === null)
+    );
+  }, [useIpcDisplay, ipcActList, bnsSectionList, selectedIpcSections]); // Dependencies for memoization
+
   // --- Form Field Change Handlers ---
   const handleUpdateChange = (e) => {
     const { name, value } = e.target;
@@ -261,34 +276,47 @@ const UpdateCasePage = ({ params }) => {
   };
 
   // --- IPC/BNS Section Management ---
-  const addIpcSection = async (selectedBnsId) => {
+  const addIpcSection = async (selectedIPCBnsId) => {
     const currentTotal = selectedIpcSections.length + otherSectionsList.length;
-    if (currentTotal >= MAX_TOTAL_SECTION_ENTRIES) { openAlert("error", `Maximum ${MAX_TOTAL_SECTION_ENTRIES} sections allowed.`); return; }
-    if (selectedIpcSections.some(item => item.bnsId?.toString() === selectedBnsId)) { openAlert("error", "Section already added."); return; }
+    if (currentTotal >= MAX_TOTAL_SECTION_ENTRIES) {
+      openAlert("error", `Maximum ${MAX_TOTAL_SECTION_ENTRIES} sections allowed.`);
+      return;
+    }
 
-    const ipcItem = ipcActList.find(ipc => ipc.bnsId?.toString() === selectedBnsId);
-    const bnsItem = bnsSectionList.find(bns => bns.bnsId?.toString() === selectedBnsId);
+    // Prevent duplicates (new or existing)
+    if (selectedIpcSections.some(item => item.IPCBnsId?.toString() === selectedIPCBnsId)) {
+      openAlert("error", "Section already added or already associated with the case.");
+      return;
+    }
 
-    let finalIpcSection = ipcItem?.ipcSection;
-    let finalBnsSection = bnsItem?.bnsSection;
+    // ✅ FIX: lookup by `bnsId`
+    const ipcItem = ipcActList.find(ipc => ipc.bnsId?.toString() === selectedIPCBnsId);
+    const bnsItem = bnsSectionList.find(bns => bns.bnsId?.toString() === selectedIPCBnsId);
 
-    if (!finalIpcSection || !finalBnsSection) {
+    let finalIpcName = ipcItem?.ipcSection;
+    let finalBnsName = bnsItem?.bnsSection;
+    let finalIpcBnsSubject = ""; // You can fetch this from another API or set a default
+
+    if (!finalIpcName || !finalBnsName) {
       try {
         setIsLoading(true);
-        const mappingResult = await showIbsByBnsId(selectedBnsId);
+        const mappingResult = await showIbsByBnsId(selectedIPCBnsId);
         if (mappingResult && mappingResult.length > 0) {
-          finalIpcSection = finalIpcSection || mappingResult[0].IpcSection;
-          finalBnsSection = finalBnsSection || mappingResult[0].BnsSection;
+          finalIpcName = finalIpcName || mappingResult[0].IpcSection;
+          finalBnsName = finalBnsName || mappingResult[0].BnsSection;
+          finalIpcBnsSubject = finalIpcBnsSubject || mappingResult[0].IpcBnsSubject || '';
         } else {
-          console.warn(`Mapping not found for BNS ID: ${selectedBnsId}`);
-          finalIpcSection = finalIpcSection || `IPC for ${selectedBnsId}`;
-          finalBnsSection = finalBnsSection || `BNS for ${selectedBnsId}`;
+          console.warn(`Mapping not found for IPCBns ID: ${selectedIPCBnsId}`);
+          finalIpcName = finalIpcName || `IPC for ${selectedIPCBnsId}`;
+          finalBnsName = finalBnsName || `BNS for ${selectedIPCBnsId}`;
+          finalIpcBnsSubject = finalIpcBnsSubject || '';
         }
       } catch (err) {
         console.error("Failed to fetch mapping:", err);
         openAlert("error", "Failed to fetch section mapping.");
-        finalIpcSection = finalIpcSection || `IPC for ${selectedBnsId}`;
-        finalBnsSection = finalBnsSection || `BNS for ${selectedBnsId}`;
+        finalIpcName = finalIpcName || `IPC for ${selectedIPCBnsId}`;
+        finalBnsName = finalBnsName || `BNS for ${selectedIPCBnsId}`;
+        finalIpcBnsSubject = finalIpcBnsSubject || '';
       } finally {
         setIsLoading(false);
       }
@@ -297,21 +325,32 @@ const UpdateCasePage = ({ params }) => {
     setSelectedIpcSections(prev => [
       ...prev,
       {
-        bnsId: selectedBnsId,
-        ipcSection: finalIpcSection || 'N/A',
-        bnsSection: finalBnsSection || 'N/A',
-        CaseIpcID: null, // New sections don't have a CaseIpcID yet
+        IPCBnsId: selectedIPCBnsId,
+        IPCName: finalIpcName || 'N/A',
+        BnsName: finalBnsName || 'N/A',
+        IPCBnsSubject: finalIpcBnsSubject || 'N/A',
+        CaseIPCBnsId: null,
+        localId: crypto.randomUUID(),
       }
     ]);
   };
 
   const removeIpcSection = (sectionToRemove) => {
-    // If the section has an existing CaseIpcID, mark it for deletion in backend
-    if (sectionToRemove.CaseIpcID) {
-      setRemovedIpcSectionIds(prev => [...prev, sectionToRemove.CaseIpcID]);
+    // If the section has an existing CaseIPCBnsId, mark it for deletion in backend
+    if (sectionToRemove.CaseIPCBnsId) {
+      setRemovedIpcSectionIds(prev => [...prev, sectionToRemove.CaseIPCBnsId]);
     }
-    // Remove from local state (UI)
-    setSelectedIpcSections(prev => prev.filter(item => item.bnsId !== sectionToRemove.bnsId || item.CaseIpcID !== sectionToRemove.CaseIpcID));
+    // Remove from local state (UI) using localId for new items, or CaseIPCBnsId for existing
+    setSelectedIpcSections(prev =>
+      prev.filter(item => {
+        // If it's an existing section, match by CaseIPCBnsId
+        if (item.CaseIPCBnsId && sectionToRemove.CaseIPCBnsId) {
+          return item.CaseIPCBnsId !== sectionToRemove.CaseIPCBnsId;
+        }
+        // If it's a newly added section (CaseIPCBnsId is null), match by localId
+        return item.localId !== sectionToRemove.localId;
+      })
+    );
   };
 
   const addOtherSectionRow = () => {
@@ -319,19 +358,32 @@ const UpdateCasePage = ({ params }) => {
     if (currentTotal >= MAX_TOTAL_SECTION_ENTRIES) { openAlert("error", `Maximum ${MAX_TOTAL_SECTION_ENTRIES} sections allowed.`); return; }
     if (otherSectionsList.length >= MAX_OTHER_ROWS) { openAlert("error", `Maximum ${MAX_OTHER_ROWS} 'Other' section rows allowed.`); return; }
     const ipcInput = currentOtherIpc.trim();
-    const bnsInput = currentOtherBns.trim();
+    const bnsInput = currentOtherBns.trim(); // This will be stored as IPCBnsSubject in DB
     if (!ipcInput && !bnsInput) { openAlert("error", "Please enter at least an IPC Act or BNS Section."); return; }
-    setOtherSectionsList(prev => [...prev, { id: Date.now(), ipcValue: ipcInput, bnsValue: bnsInput, CaseIpcID: null }]); // New other section
+
+    setOtherSectionsList(prev => [...prev, {
+      id: crypto.randomUUID(), // Generate a unique ID for stability
+      ipcValue: ipcInput,
+      bnsValue: bnsInput,
+      CaseIPCBnsId: null // New other sections don't have a CaseIPCBnsId yet
+    }]);
     setCurrentOtherIpc(""); setCurrentOtherBns("");
   };
 
   const removeOtherSectionRow = (sectionToRemove) => {
-    // If the section has an existing CaseIpcID, mark it for deletion in backend
-    if (sectionToRemove.CaseIpcID) {
-      setRemovedIpcSectionIds(prev => [...prev, sectionToRemove.CaseIpcID]);
+    // If the section has an existing CaseIPCBnsId, mark it for deletion in backend
+    if (sectionToRemove.CaseIPCBnsId) {
+      setRemovedIpcSectionIds(prev => [...prev, sectionToRemove.CaseIPCBnsId]);
     }
-    // Remove from local state (UI)
-    setOtherSectionsList(prev => prev.filter(section => section.id !== sectionToRemove.id || section.CaseIpcID !== sectionToRemove.CaseIpcID));
+    // Remove from local state (UI) using the 'id' (which is localId or CaseIPCBnsId for existing)
+    setOtherSectionsList(prev =>
+      prev.filter(section => {
+        if (section.CaseIPCBnsId && sectionToRemove.CaseIPCBnsId) {
+          return section.CaseIPCBnsId !== sectionToRemove.CaseIPCBnsId;
+        }
+        return section.id !== sectionToRemove.id;
+      })
+    );
   };
 
   // --- Main Case Document Upload (for new documents) ---
@@ -358,7 +410,7 @@ const UpdateCasePage = ({ params }) => {
     // Add the document ID to the list of documents to be deleted
     setDocumentsToDelete(prev => [...prev, documentIdToRemove]);
     // Remove the document from the display list immediately
-    setExistingCaseDocuments(prev => prev.filter(doc => doc.CaseDocumentID !== documentIdToRemove));
+    setExistingCaseDocuments(prev => prev.filter(doc => doc.documentId !== documentIdToRemove)); // Filter by documentId
   };
 
 
@@ -409,23 +461,23 @@ const UpdateCasePage = ({ params }) => {
 
       // --- 2. Prepare Payload for Case Update ---
       const finalStandardSections = selectedIpcSections.map(section => ({
-        bnsId: section.bnsId.toString(),
-        otherIpcAct: "",
-        otherBnsAct: "",
-        CaseIpcID: section.CaseIpcID, // Include CaseIpcID for existing sections
+        bnsId: section.IPCBnsId.toString(), // Map IPCBnsId to bnsId for the SP
+        otherIpcAct: section.IPCName, // Pass IPCName as otherIpcAct for the SP
+        otherBnsAct: section.IPCBnsSubject, // Pass IPCBnsSubject as otherBnsAct for the SP
+        CaseIpcID: section.CaseIPCBnsId, // Include CaseIpcID for existing sections
       }));
       const finalOtherSections = otherSectionsList.map(row => ({
-        bnsId: OTHER_SECTION_BNS_ID.toString(),
-        otherIpcAct: row.ipcValue,
-        otherBnsAct: row.bnsValue,
-        CaseIpcID: row.CaseIpcID, // Include CaseIpcID for existing 'other' sections
+        bnsId: OTHER_SECTION_BNS_ID.toString(), // Hardcode for 'other'
+        otherIpcAct: row.ipcValue, // This is otherIpcAct
+        otherBnsAct: row.bnsValue, // This is otherBnsAct
+        CaseIpcID: row.CaseIPCBnsId, // Include CaseIpcID for existing 'other' sections
       }));
       const combinedIpcSections = [...finalStandardSections, ...finalOtherSections];
 
       // Payload for the update-case API
       const caseApiData = {
         CaseId: updateFormData.CaseId,
-        InRefferenceID: updateFormData.refferenceId, // Pass the existing ReferenceID
+        InRefferenceID: updateFormData.refferenceId, // Pass the existing RefferenceID
         caseNumber: updateFormData.caseNumber,
         CaseDate: updateFormData.CaseDate,
         districtId: updateFormData.districtId,
@@ -436,12 +488,16 @@ const UpdateCasePage = ({ params }) => {
         hearingDate: updateFormData.hearingDate,
         CourtCaseDescription: updateFormData.CourtCaseDescription,
         EntryUserID: user.AuthorityUserID,
-        crmID: updateFormData.crmID, // Reference Type ID
+        crmID: updateFormData.crmID, // This is RefferenceDropDownID
+        refferenceId: updateFormData.refferenceId,
         refferenceNumber: updateFormData.refferenceNumber,
         refferenceyear: updateFormData.refferenceyear,
         ipcSections: combinedIpcSections,
         removedSections: removedIpcSectionIds, // IDs of IPC sections removed by user
       };
+
+      console.log("Removed Section IDs to delete:", removedIpcSectionIds);
+      console.log("IPC Sections to save:", combinedIpcSections);
 
       console.log("Submitting Case Update Data:", caseApiData);
       // Assuming 'update-case' endpoint maps to the updateCase controller
@@ -683,7 +739,7 @@ const UpdateCasePage = ({ params }) => {
                         <Label className="font-semibold text-gray-700 text-md">IPC / BNS Sections <span className="text-red-500">*</span></Label>
                         <div className={`relative w-20 h-8 rounded-full flex items-center cursor-pointer transition-all ${useIpcDisplay ? "bg-blue-600" : "bg-green-600"} mb-2`} onClick={() => setUseIpcDisplay(prev => !prev)}> <span className="absolute w-full text-xs font-bold text-white flex justify-center transition-all"> {useIpcDisplay ? "IPC" : "BNS"} </span> <div className={`absolute w-7 h-7 bg-white rounded-full shadow-md transform transition-all ${useIpcDisplay ? "translate-x-1" : "translate-x-12"}`} /> </div>
                         <div className="flex flex-wrap gap-2 mb-2 min-h-[30px]">
-                          {selectedIpcSections.map((section) => (<Badge key={section.CaseIpcID || section.bnsId} variant="secondary" className="flex items-center gap-2 py-1.5 px-2.5 text-xs"> <div>{useIpcDisplay ? section.ipcSection : section.bnsSection}</div> <Button variant="ghost" size="sm" className="h-4 w-4 p-0 ml-1" onClick={() => removeIpcSection(section)} disabled={isSubmitting}><X className="h-3 w-3" /></Button> </Badge>))}
+                          {selectedIpcSections.map((section) => (<Badge key={section.CaseIPCBnsId || section.localId} variant="secondary" className="flex items-center gap-2 py-1.5 px-2.5 text-xs"> <div>{useIpcDisplay ? section.IPCName : section.BnsName}</div> <Button variant="ghost" size="sm" className="h-4 w-4 p-0 ml-1" onClick={() => removeIpcSection(section)} disabled={isSubmitting}><X className="h-3 w-3" /></Button> </Badge>))}
                         </div>
                         <Popover open={openIpcAct} onOpenChange={setOpenIpcAct}>
                           <PopoverTrigger asChild>
@@ -696,8 +752,34 @@ const UpdateCasePage = ({ params }) => {
                               <CommandInput placeholder={`Search ${useIpcDisplay ? 'IPC' : 'BNS'}...`} />
                               <CommandList>
                                 <CommandEmpty />
-                                <CommandGroup>{(useIpcDisplay ? ipcActList : bnsSectionList).filter(e => !selectedIpcSections.some(s => s.bnsId.toString() === e.bnsId.toString())).map(e => (<CommandItem key={e.bnsId} value={useIpcDisplay ? e.ipcSection : e.bnsSection} onSelect={() => { addIpcSection(e.bnsId.toString()); setOpenIpcAct(false); }}>
-                                  <Check className={cn("mr-2 h-4 w-4", "opacity-0")} />{useIpcDisplay ? e.ipcSection : e.bnsSection}</CommandItem>))}
+                                {/* Changed key to use e.IPCBnsId + e.IPCName/BnsName as a more robust unique key during initial selection if multiple items share the same IPCBnsId but different names (which should ideally not happen but for safety) */}
+                                <CommandGroup>
+                                  {(useIpcDisplay ? ipcActList : bnsSectionList)
+                                    .filter(e => {
+                                      const alreadySelected = selectedIpcSections.some(s => s.IPCBnsId?.toString() === e.bnsId?.toString());
+                                      const isOther = e.bnsId === 534;
+                                      return !alreadySelected && !isOther;
+                                    })
+                                    .map((e, index) => (
+                                      <CommandItem
+                                        key={`option-${e.bnsId}-${index}`}
+                                        value={useIpcDisplay ? e.ipcSection : e.bnsSection}
+                                        onSelect={() => {
+                                          addIpcSection(e.bnsId.toString());
+                                          setOpenIpcAct(false);
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            selectedIpcSections.some(s => s.IPCBnsId?.toString() === e.bnsId?.toString())
+                                              ? "opacity-100"
+                                              : "opacity-0",
+                                            "mr-2 h-4 w-4"
+                                          )}
+                                        />
+                                        {useIpcDisplay ? e.ipcSection : e.bnsSection}
+                                      </CommandItem>
+                                    ))}
                                 </CommandGroup>
                               </CommandList>
                             </Command>
@@ -713,7 +795,7 @@ const UpdateCasePage = ({ params }) => {
                           <div className="flex-1 space-y-1"><Label htmlFor="otherBns" className="text-xs">Corresp. BNS</Label><Input id="otherBns" value={currentOtherBns} onChange={e => setCurrentOtherBns(e.target.value)} className="text-sm" disabled={isSubmitting || otherSectionsList.length >= MAX_OTHER_ROWS || selectedIpcSections.length + otherSectionsList.length >= MAX_TOTAL_SECTION_ENTRIES} /></div>
                           <Button size="icon" onClick={addOtherSectionRow} className="h-9 w-9 shrink-0" disabled={isLoading || isSubmitting || (!currentOtherIpc.trim() && !currentOtherBns.trim()) || otherSectionsList.length >= MAX_OTHER_ROWS || selectedIpcSections.length + otherSectionsList.length >= MAX_TOTAL_SECTION_ENTRIES}><Plus className="h-4 w-4" /></Button>
                         </div>
-                        {otherSectionsList.length > 0 && (<div className="border rounded-md overflow-hidden mt-4"><Table><TableHeader><TableRow><TableHead>Other IPC</TableHead><TableHead>Other BNS</TableHead><TableHead className="w-[50px] text-right">Act</TableHead></TableRow></TableHeader><TableBody>{otherSectionsList.map(s => (<TableRow key={s.id || s.CaseIpcID}><TableCell className="text-sm">{s.ipcValue || "-"}</TableCell><TableCell className="text-sm">{s.bnsValue || "-"}</TableCell><TableCell className="text-right"><Button variant="ghost" size="icon" onClick={() => removeOtherSectionRow(s)} className="h-7 w-7 text-red-500 hover:bg-red-100" disabled={isSubmitting}><Trash className="h-3.5 w-3.5" /></Button></TableCell></TableRow>))}</TableBody></Table></div>)}
+                        {otherSectionsList.length > 0 && (<div className="border rounded-md overflow-hidden mt-4"><Table><TableHeader><TableRow><TableHead>Other IPC</TableHead><TableHead>Other BNS</TableHead><TableHead className="w-[50px] text-right">Act</TableHead></TableRow></TableHeader><TableBody>{otherSectionsList.map(s => (<TableRow key={s.CaseIPCBnsId || s.id}><TableCell className="text-sm">{s.ipcValue || "-"}</TableCell><TableCell className="text-sm">{s.bnsValue || "-"}</TableCell><TableCell className="text-right"><Button variant="ghost" size="icon" onClick={() => removeOtherSectionRow(s)} className="h-7 w-7 text-red-500 hover:bg-red-100" disabled={isSubmitting}><Trash className="h-3.5 w-3.5" /></Button></TableCell></TableRow>))}</TableBody></Table></div>)}
                       </div>
 
                       {/* --- Main Case Document Upload (for new docs) --- */}
@@ -727,7 +809,6 @@ const UpdateCasePage = ({ params }) => {
                       {/* --- Existing Case Documents List (from backend) --- */}
                       <div className="space-y-3 border-t pt-4 mt-2">
                         <Label className="font-semibold text-gray-700 text-md">Existing Case Documents</Label>
-
                         {isLoadingDocumentTable ? (
                           <div className="flex justify-center items-center h-24">
                             <Loader2 className="mr-2 h-6 w-6 animate-spin text-blue-600" />
@@ -759,7 +840,6 @@ const UpdateCasePage = ({ params }) => {
                         ) : (
                           <p className="text-sm text-muted-foreground">No existing documents for this case.</p>
                         )}
-
                       </div>
 
                       {/* Submit Button */}
