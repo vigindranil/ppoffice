@@ -2133,6 +2133,7 @@ class CaseController {
             const finalCrmId = returnedCrmID;
             console.log(`Case ${InCaseID === 0 ? 'created' : 'updated'} successfully with CaseID:`, finalCaseId);
 
+            console.log("Deleting sections for IDs:", removedSections);
             // ✅ 2. Handle Deletions for IPC sections
             if (Array.isArray(removedSections) && removedSections.length > 0) {
                 const deleteQuery = "CALL sp_deleteIpcSectionById(?, ?, @ErrorCode)";

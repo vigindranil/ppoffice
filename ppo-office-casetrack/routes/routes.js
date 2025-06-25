@@ -68,6 +68,7 @@ router.post("/api/add-cran", authMiddleware.verifyToken,CaseController.saveCran)
 router.post("/api/get-case-by-param", authMiddleware.verifyToken,CaseController.getCaseSearchByParam);
 router.post("/api/get-cran-by-case", authMiddleware.verifyToken,CaseController.getCranDetailsByCaseID);
 router.post("/api/get-doc-by-cran", authMiddleware.verifyToken,CaseController.getCranDocumentsByCranID);
+router.post("/api/update-case", authMiddleware.verifyToken,CaseController.updateCase);
 
 // send email
 const EmailController = require("../controllers/emailController");
