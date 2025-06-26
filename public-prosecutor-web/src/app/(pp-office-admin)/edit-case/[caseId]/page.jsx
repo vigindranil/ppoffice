@@ -56,6 +56,7 @@ const UpdateCasePage = ({ params }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingDocumentTable, setIsLoadingDocumentTable] = useState(false);
+  const [caseNumber, setCaseNumber] = useState("");
 
   // User state from Redux
   const [user, setUser] = useState(null)
@@ -160,6 +161,7 @@ const UpdateCasePage = ({ params }) => {
 
           if (caseDetailsResponse && caseDetailsResponse.status === 0 && caseDetailsResponse.data) {
             const caseData = caseDetailsResponse.data;
+            setCaseNumber(caseData.CaseNumber);
 
             // Populate main form data
             setUpdateFormData(prev => ({
@@ -541,6 +543,10 @@ const UpdateCasePage = ({ params }) => {
     } finally {
       setIsSubmitting(false);
       setIsLoading(false);
+
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
     }
   };
 
@@ -561,7 +567,7 @@ const UpdateCasePage = ({ params }) => {
 
         <Card className="w-full max-w-6xl mx-auto bg-white/100 backdrop-blur-sm my-4 overflow-hidden border-slate-500">
           <CardHeader className="mb-0 bg-gradient-to-r from-cyan-600 to-violet-600 px-6 py-3">
-            <CardTitle className="text-white text-xl">Update Case Details (Case ID: {case_id})</CardTitle>
+            <CardTitle className="text-white text-xl">Update Case Details [{caseNumber}]</CardTitle>
           </CardHeader>
 
           {/* This page is now solely for updating, no tabs needed as per implied requirement */}

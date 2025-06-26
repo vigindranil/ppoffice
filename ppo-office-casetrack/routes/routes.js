@@ -69,6 +69,7 @@ router.post("/api/get-case-by-param", authMiddleware.verifyToken,CaseController.
 router.post("/api/get-cran-by-case", authMiddleware.verifyToken,CaseController.getCranDetailsByCaseID);
 router.post("/api/get-doc-by-cran", authMiddleware.verifyToken,CaseController.getCranDocumentsByCranID);
 router.post("/api/update-case", authMiddleware.verifyToken,CaseController.updateCase);
+router.post("/api/delete-doc", authMiddleware.verifyToken,CaseController.deleteCaseDocument);
 
 // send email
 const EmailController = require("../controllers/emailController");
