@@ -2249,6 +2249,31 @@ class CaseController {
         }
     }
 
+    static async getAssignCaseDetailByDate(req, res) {
+        try {
+            const { userId, startDate = null, enddate = null} = req.body;
+
+            const mainQuery = "CALL sp_getAssignCaseDetailByDate(?, ?, ?)";
+            const mainParams = [userId, startDate, enddate];
+
+            // Step 1: Fetch all cases
+            const [caseResults] = await new Promise((resolve, reject) => {
+                db.query(mainQuery, mainParams, (err, results) => {
+                    if (err) {
+                        console.error("Error executing sp_getAssignCaseDetailByDate:", err);
+                        return reject(err);
+                    }
+                    resolve(results);
+                });
+            });
+
+            return ResponseHelper.success_reponse(res, "Data found", caseResults);
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred", error);
+        }
+    }
+
 }
 
 

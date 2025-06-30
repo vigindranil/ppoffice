@@ -75,6 +75,10 @@ const data = {
           title: "Pending Cases",
           url: "/pp-head-pending-cases",
         },
+        {
+          title: "Advocate Assignment Report",
+          url: "/pp-head-adv-assign-details",
+        },
       ],
     },
     {
@@ -294,6 +298,10 @@ const data = {
           title: "All Cases",
           url: "/pp-office-admin-all-cases",
         },
+        // {
+        //   title: "Assigned Advocates",
+        //   url: "/pp-office-admin-adv-assign-details",
+        // },
       ],
     },
     {

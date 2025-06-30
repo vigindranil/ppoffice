@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, ClipboardPlus, Edit, Eye, LoaderCircle, Search } from 'lucide-react'
+import { Calendar, ClipboardPlus, Edit, Eye, LoaderCircle, Search, SquareArrowOutUpRight } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   HoverCard,
@@ -99,11 +99,11 @@ export default function CaseTable() {
 
   const handleSendOtp = async () => {
     console.log("iaminsendotp");
-    
+
     try {
-      console.log("userId",user?.AuthorityUserID);
-      console.log("userTypeId",user?.AuthorityTypeID);
-      console.log("userdetails",user);
+      console.log("userId", user?.AuthorityUserID);
+      console.log("userTypeId", user?.AuthorityTypeID);
+      console.log("userdetails", user);
       setResending(true);
       await postRequest("send-otp-v1", {
         userId: user?.AuthorityUserID,
@@ -327,6 +327,15 @@ export default function CaseTable() {
                       }}
                     >
                       {loading ? 'Loading...' : 'Get Cases'}
+                    </Button>
+
+                    <Button
+                      className="ml-4 bg-blue-400 hover:bg-blue-600"
+                      onClick={() => {
+                        window.location.href = "pp-head-adv-assign-details";
+                      }}
+                    >
+                      Advocate Assignment Report <SquareArrowOutUpRight />
                     </Button>
                   </div>
                 </div>
