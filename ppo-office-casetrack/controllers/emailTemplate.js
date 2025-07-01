@@ -402,12 +402,12 @@ class EmailTemplate {
         <p>No.: ${crmWithYear}</p>
 
         <p>To,<br>
-        Mr. ${this.recipientAdvocateName}, Ld. Advocate<br>
+        Mr./Mrs. ${this.recipientAdvocateName}, Ld. Advocate<br>
         Bar Association High Court at Calcutta</p>
 
         <p>Sub.: Appointment Letter.</p>
 
-        <p>Sir,</p>
+        <p>Sir/Madam,</p>
         <p>
             I am directed to inform you that ${otherAdvocatesSection} have/has been appointed by the Ld. Public Prosecutor, High Court at Calcutta, as State Advocate in ${crmWithYear}.
         </p>
