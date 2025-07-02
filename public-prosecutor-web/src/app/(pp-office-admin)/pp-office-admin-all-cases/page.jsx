@@ -25,8 +25,10 @@ import { Label } from '@/components/ui/label'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 import SmartPagination from '@/components/SmartPagination'
+import { useRouter } from "next/navigation"
 
 export default function CaseTable() {
+  const router = useRouter();
   const { isOpen, alertType, alertMessage, openAlert, closeAlert } = useAlertDialog()
   const [selectedCase, setSelectedCase] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -351,6 +353,19 @@ export default function CaseTable() {
                                           {selectedCase.ipcSections && selectedCase.ipcSections.length > 0
                                             ? selectedCase.ipcSections.map(ipc => ipc.IpcSection).filter(Boolean).join(', ')
                                             : 'None'}
+                                        </p>
+                                        <p>
+                                          <strong>Documents:</strong>{' '}
+                                          <span
+                                            className="text-blue-600 underline cursor-pointer"
+                                            onClick={() => {
+                                              const caseID = selectedCase.CaseId;
+                                              const enc_caseId = btoa(caseID);
+                                              router.push(`/pp-office-admin-case-control-center/${enc_caseId}`);
+                                            }}
+                                          >
+                                            View
+                                          </span>
                                         </p>
                                       </div>
                                     </>
