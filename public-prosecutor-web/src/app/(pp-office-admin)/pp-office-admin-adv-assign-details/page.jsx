@@ -43,46 +43,7 @@ export default function CaseTable() {
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
 
-  const exportToExcel = () => {
-    const dataForExport = allCases.map((item) => {
-      return {
-        "Case Number": item.CaseNumber,
-        "Reference": item.RefferenceName,
-        "District": item.SpName,
-        "Police Station": item.PsName,
-        "Petitioner Name": item.PetitionName,
-        "Advocate Name": item.AdvocateName || 'N/A', // Handle cases where AdvocateName might be null
-        "Assignment Time": formatDateTime(item.CaseAssignDate),
-      };
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(dataForExport, { origin: 'A1' });
-
-    // Auto-fit columns (optional)
-    const columnWidths = dataForExport.reduce((widths, row) => {
-      Object.values(row).forEach((val, idx) => {
-        const len = val?.toString().length || 10;
-        widths[idx] = Math.max(widths[idx] || 10, len);
-      });
-      return widths;
-    }, []);
-
-    worksheet['!cols'] = columnWidths.map(w => ({ wch: w + 5 }));
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Advocate Assign Log");
-
-    const today = new Date();
-    const formattedToday = today.toISOString().split('T')[0];
-    const from = fromDate ? formatDate(fromDate) : null;
-    const to = toDate ? formatDate(toDate) : null;
-    const fileName = from && to
-      ? `Advocate_Assign_Log_${from}_to_${to}.xlsx`
-      : `Advocate_Assign_Log_${formattedToday}.xlsx`;
-
-    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([wbout], { type: "application/octet-stream" }), fileName);
-  };
+  
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
@@ -148,8 +109,71 @@ export default function CaseTable() {
     }
   }, [user])
 
+  const groupCasesByCaseNumberAndAssignDate = (cases) => {
+    const grouped = {};
 
-  const filteredData = allCases?.filter((data) => {
+    cases.forEach((item) => {
+      const key = `${item.CaseNumber}_${item.CaseAssignDate}`;
+      if (!grouped[key]) {
+        grouped[key] = { ...item, AdvocateNames: [] };
+      }
+
+      if (item.AdvocateName && !grouped[key].AdvocateNames.includes(item.AdvocateName)) {
+        grouped[key].AdvocateNames.push(item.AdvocateName);
+      }
+    });
+
+    // Convert the object back into an array
+    return Object.values(grouped).map(item => ({
+      ...item,
+      AdvocateName: item.AdvocateNames.join(', ')
+    }));
+  };
+
+  const groupedCases = groupCasesByCaseNumberAndAssignDate(allCases);
+
+  const exportToExcel = () => {
+    const dataForExport = groupedCases.map((item) => {
+      return {
+        "Case Number": item.CaseNumber,
+        "Reference": item.RefferenceName,
+        "District": item.SpName,
+        "Police Station": item.PsName,
+        "Petitioner Name": item.PetitionName,
+        "Advocate Name": item.AdvocateName || 'N/A', // Handle cases where AdvocateName might be null
+        "Assignment Time": formatDateTime(item.CaseAssignDate),
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(dataForExport, { origin: 'A1' });
+
+    // Auto-fit columns (optional)
+    const columnWidths = dataForExport.reduce((widths, row) => {
+      Object.values(row).forEach((val, idx) => {
+        const len = val?.toString().length || 10;
+        widths[idx] = Math.max(widths[idx] || 10, len);
+      });
+      return widths;
+    }, []);
+
+    worksheet['!cols'] = columnWidths.map(w => ({ wch: w + 5 }));
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Advocate Assign Log");
+
+    const today = new Date();
+    const formattedToday = today.toISOString().split('T')[0];
+    const from = fromDate ? formatDate(fromDate) : null;
+    const to = toDate ? formatDate(toDate) : null;
+    const fileName = from && to
+      ? `Advocate_Assign_Log_${from}_to_${to}.xlsx`
+      : `Advocate_Assign_Log_${formattedToday}.xlsx`;
+
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    saveAs(new Blob([wbout], { type: "application/octet-stream" }), fileName);
+  };
+
+  const filteredData = groupedCases?.filter((data) => {
     const lowerSearch = searchTerm.toLowerCase();
 
     // Now directly check relevant fields for the assign log

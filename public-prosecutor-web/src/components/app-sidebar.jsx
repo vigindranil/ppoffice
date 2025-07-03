@@ -298,10 +298,10 @@ const data = {
           title: "All Cases",
           url: "/pp-office-admin-all-cases",
         },
-        // {
-        //   title: "Assigned Advocates",
-        //   url: "/pp-office-admin-adv-assign-details",
-        // },
+        {
+          title: "Advocate Assignment Report",
+          url: "/pp-office-admin-adv-assign-details",
+        },
       ],
     },
     {
