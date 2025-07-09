@@ -130,13 +130,13 @@ class EmailController {
 
             // Destructure common details from the first successful sp_sendEmailv1 call
             const {
-                CaseNumber, IPCSection, BNSSection, CaseDate, HearingDate, SPName, PSName, Petitioner
+                CaseNumber, IPCSection, BNSSection, CaseDate, HearingDate, SPName, PSName, Petitioner, Refference
             } = commonCaseDetailsFromSP;
 
             // console.log(commonCaseDetailsFromSP);
 
             const emailTemplate = new EmailTemplate({
-                crm: BNSSection, // Or Refference if that's the field name
+                crm: Refference, // Or Refference if that's the field name
                 psCaseNo: CaseNumber,
                 dated: CaseDate,
                 ipcSection: IPCSection,
