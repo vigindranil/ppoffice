@@ -1820,7 +1820,8 @@ class CaseController {
 
         } catch (error) { // Catch errors from validation or unhandled SP errors
             console.error(`Unexpected error in ${req.body.CaseId ? 'Update' : 'Create'} Case V3:`, error);
-            return res.status(500).json({ status: 1, message: error.message || "An unexpected error occurred.", ErrorCode: "ERR_UNEXPECTED_V3" });
+            // return res.status(500).json({ status: 1, message: error.message || "An unexpected error occurred.", ErrorCode: "ERR_UNEXPECTED_V3" });
+            return res.status(500).json({ status: 1, message: "Failed to Save due to Poor network connection!", ErrorCode: "ERR_UNEXPECTED_V3" });
         }
     }
 
@@ -2270,6 +2271,78 @@ class CaseController {
             return ResponseHelper.success_reponse(res, "Data found", caseResults);
         } catch (error) {
             console.error("Unexpected error:", error);
+            return ResponseHelper.error(res, "An unexpected error occurred", error);
+        }
+    }
+
+    static async getAssignCaseDetailWithCranByDate(req, res) {
+        try {
+            const { userId, startDate = null, enddate = null } = req.body;
+
+            // Step 1: Fetch initial case data
+            const caseQuery = "CALL sp_getAssignCaseDetailByDate(?, ?, ?)";
+            const caseParams = [userId, startDate, enddate];
+            const [initialCaseResults] = await new Promise((resolve, reject) => {
+                db.query(caseQuery, caseParams, (err, results) => {
+                    if (err) {
+                        console.error("Error executing sp_getAssignCaseDetailByDate:", err);
+                        return reject(err);
+                    }
+                    resolve(results);
+                });
+            });
+
+            if (!initialCaseResults || initialCaseResults.length === 0) {
+                return ResponseHelper.success_reponse(res, "No data found", []);
+            }
+
+            // Step 2: Group cases by CaseId to handle duplicates from the first query
+            const caseMap = new Map();
+            initialCaseResults.forEach(row => {
+                const { AdvocateName, ...caseData } = row;
+                if (caseMap.has(caseData.CaseId)) {
+                    // If the case already exists in our map, just add the new advocate
+                    caseMap.get(caseData.CaseId).Advocates.push(AdvocateName);
+                } else {
+                    // Otherwise, add the new case and start an array for its advocates
+                    caseMap.set(caseData.CaseId, {
+                        ...caseData,
+                        Advocates: [AdvocateName]
+                    });
+                }
+            });
+
+            const uniqueCases = Array.from(caseMap.values());
+
+            // Step 3: Concurrently fetch CRAN details for each unique case
+            const finalResults = await Promise.all(
+                uniqueCases.map(async (caseItem) => {
+                    const cranQuery = "CALL sp_getCranDetailsByCaseID(?, ?, ?)";
+                    // Parameters: CaseId (from case), RefferenceId (as 0), UserId (from request)
+                    const cranParams = [caseItem.CaseId, 0, userId];
+
+                    const [cranResults] = await new Promise((resolve, reject) => {
+                        db.query(cranQuery, cranParams, (err, results) => {
+                            if (err) {
+                                console.error("Error executing sp_getCranDetailsByCaseID:", err);
+                                return reject(err);
+                            }
+                            resolve(results);
+                        });
+                    });
+
+                    // Return the case object with the new 'crandetails' array
+                    return {
+                        ...caseItem,
+                        crandetails: cranResults || []
+                    };
+                })
+            );
+
+            return ResponseHelper.success_reponse(res, "Data found", finalResults);
+
+        } catch (error) {
+            console.error("Unexpected error in getAssignCaseDetailWithCranByDate:", error);
             return ResponseHelper.error(res, "An unexpected error occurred", error);
         }
     }
