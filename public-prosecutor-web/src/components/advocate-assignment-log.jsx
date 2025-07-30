@@ -43,7 +43,7 @@ export default function CaseTable() {
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
 
-  
+
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
@@ -57,6 +57,18 @@ export default function CaseTable() {
     return `${year}-${month}-${day}`;
   };
 
+  const formatRevDate = (dateString) => {
+    if (!dateString) return null;
+
+    const date = new Date(dateString);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${day}-${month}-${year}`;
+  };
+
   const formatDateTime = (dateString) => {
     if (!dateString) return null;
     const date = new Date(dateString);
@@ -66,7 +78,7 @@ export default function CaseTable() {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
   };
 
   const handleConfirm = () => {
@@ -138,14 +150,15 @@ export default function CaseTable() {
       const advocateNames = item.Advocates?.join(', ') || 'N/A';
       const cranDetails = item.crandetails?.map(crn => `${crn.CranNumber} (${crn.CranYear})`).join(', ') || 'N/A';
       const refDetails = item.RefferenceName ? `${item.RefferenceNumber} - ${item.RefferenceName} (${item.RefferenceYear})` : 'N/A';
-      
+
       return {
         "Case Number": item.CaseNumber,
         "Reference": refDetails,
         "District": item.SpName,
+        "PS Case Date": item.CaseDate ? formatRevDate(item.CaseDate) : 'N/A',
         "Police Station": item.PsName,
         "Petitioner Name": item.PetitionName,
-        "Advocate Name": advocateNames,
+        "Advocates": advocateNames,
         "CRANs": cranDetails,
         "Assignment Time": formatDateTime(item.CaseAssignDate),
       };
@@ -157,10 +170,10 @@ export default function CaseTable() {
 
     // Auto-fit columns
     const columnWidths = Object.keys(dataForExport[0] || {}).map(key => ({
-        wch: Math.max(
-            key.length,
-            ...dataForExport.map(row => row[key]?.toString().length || 0)
-        ) + 2
+      wch: Math.max(
+        key.length,
+        ...dataForExport.map(row => row[key]?.toString().length || 0)
+      ) + 2
     }));
     worksheet['!cols'] = columnWidths;
 
@@ -233,7 +246,7 @@ export default function CaseTable() {
                       id="fromDate"
                       name="fromDate"
                       type="date"
-                      value={fromDate ? formatDate(fromDate) : ""}
+                      value={fromDate || ""} // Changed line
                       onChange={(e) => setFromDate(e.target.value)}
                       placeholder="From (Date Range)"
                     />
@@ -248,16 +261,19 @@ export default function CaseTable() {
                       id="toDate"
                       name="toDate"
                       type="date"
-                      value={toDate ? formatDate(toDate) : ""}
+                      value={toDate || ""} // Changed line
                       onChange={(e) => setToDate(e.target.value)}
                       placeholder="To (Date Range)"
                     />
                   </div>
                   <div className="flex items-end">
                     <Button
-                      className="ml-2 bg-blue-400 hover:bg-blue-600"
-                      onClick={() => showallCaseBetweenRange(fromDate, toDate)} // Pass raw date objects/strings to showallCaseBetweenRange
-                    >{loading ? 'Loading...' : 'Generate List'}</Button>
+                      className="ml-2 bg-blue-400 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      onClick={() => showallCaseBetweenRange(fromDate, toDate)}
+                      disabled={!fromDate || !toDate || loading} // Added line
+                    >
+                      {loading ? 'Loading...' : 'Generate List'}
+                    </Button>
                   </div>
                 </div>
                 <div className='w-100 h-[1px] bg-slate-100 my-4'></div>
@@ -285,6 +301,7 @@ export default function CaseTable() {
                       <TableHead className="font-bold">Case Number</TableHead>
                       <TableHead className="font-bold">Reference</TableHead>
                       <TableHead className="font-bold">District</TableHead>
+                      <TableHead className="font-bold">PS Case Date</TableHead>
                       <TableHead className="font-bold">Police Station</TableHead>
                       <TableHead className="font-bold">Petitioner Name</TableHead>
                       <TableHead className="font-bold">Advocates</TableHead>
@@ -298,6 +315,7 @@ export default function CaseTable() {
                         <TableCell>{caseItem.CaseNumber}</TableCell>
                         <TableCell className="max-w-[300px]">{caseItem.RefferenceNumber} - {caseItem.RefferenceName} ({caseItem.RefferenceYear})</TableCell>
                         <TableCell>{caseItem.SpName}</TableCell>
+                        <TableCell>{formatRevDate(caseItem.CaseDate)}</TableCell>
                         <TableCell>{caseItem.PsName}</TableCell>
                         <TableCell>{caseItem.PetitionName}</TableCell>
                         <TableCell className="max-w-[200px]">
