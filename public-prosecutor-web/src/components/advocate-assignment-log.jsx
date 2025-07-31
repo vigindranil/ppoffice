@@ -152,10 +152,10 @@ export default function CaseTable() {
       const refDetails = item.RefferenceName ? `${item.RefferenceNumber} - ${item.RefferenceName} (${item.RefferenceYear})` : 'N/A';
 
       return {
-        "Case Number": item.CaseNumber,
         "Reference": refDetails,
         "District": item.SpName,
         "PS Case Date": item.CaseDate ? formatRevDate(item.CaseDate) : 'N/A',
+        "Case Number": item.CaseNumber,
         "Police Station": item.PsName,
         "Petitioner Name": item.PetitionName,
         "Advocates": advocateNames,
