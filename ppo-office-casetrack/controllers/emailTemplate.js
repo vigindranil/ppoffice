@@ -100,9 +100,49 @@ class EmailTemplate {
             P.S Name : ${this.PSName || 'N/A'}<br>
             U/S IPC : ${this.ipcSection}<br>
             Ref. : ${this.crm}<br>
+            Hearing Date : ${formattedHearingDate}<br>
+            ${this.Petitioner} VS : State</p>
+
+            <p>${this.CaseDescription || 'N/A'}<br>
+            
+            ${advocatesSection}
+
+            <p>[Message ends]</p>
+        </div>
+        `;
+    }
+
+    generateEmailContent_v0() {
+        // For Assigned Advocates list (used in sendEmail)
+        const advocatesSection = this.assignedAdvocatesList
+            ? `<p><strong>List of Assigned Advocates:</strong><br>${this.assignedAdvocatesList}</p>`
+            : '';
+
+        const formattedDated = this.dated
+            ? new Date(this.dated).toDateString()
+            : '';
+
+        const formattedHearingDate = this.hearingDate
+            ? this.hearingDate.split(' ')[0]
+            : '';
+
+        return `
+        <div style="${this.commonStyle}">
+            <p>To: CP/Superintendent of Police<br>
+            The Officer-in-Charge P.S.<br>
+            From: The Public Prosecutor, High Court, Calcutta.</p>
+
+            <p>P.S Case No : ${this.psCaseNo}<br>
+            Dated : ${formattedDated}<br>
+            S.P Name : ${this.SPName || 'N/A'}<br>
+            P.S Name : ${this.PSName || 'N/A'}<br>
+            U/S IPC : ${this.ipcSection}<br>
+            Ref. : ${this.crm}<br>
             ${this.Petitioner} VS : State</p>
 
             <p>Direct Investigating Officer of the above case to contact the Learned Advocate for the State (High Court, Calcutta) on ${formattedHearingDate} with the Photocopy of the case diary with M.O.E.</p>
+
+            <p><strong>Description:</strong> ${this.CaseDescription || 'N/A'}<br>
             
             ${advocatesSection}
 
@@ -254,6 +294,8 @@ class EmailTemplate {
             ${this.Petitioner || 'M/S'} VS: State</p>
 
             <p>You are assigned to the above case. The hearing is scheduled for ${formattedHearingDate}.</p>
+
+            <p>${this.CaseDescription || 'N/A'}<br>
 
             ${departmentsSection}
             ${caseResourcesLinkHTML}

@@ -130,7 +130,7 @@ class EmailController {
 
             // Destructure common details from the first successful sp_sendEmailv1 call
             const {
-                CaseNumber, IPCSection, BNSSection, CaseDate, HearingDate, SPName, PSName, Petitioner, Refference
+                CaseNumber, IPCSection, BNSSection, CaseDate, HearingDate, SPName, PSName, Petitioner, Refference, CaseDescription
             } = commonCaseDetailsFromSP;
 
             // console.log(commonCaseDetailsFromSP);
@@ -144,6 +144,7 @@ class EmailController {
                 SPName: SPName || "N/A", 
                 PSName: PSName || "N/A",   
                 Petitioner: Petitioner || "M/S",   
+                CaseDescription: CaseDescription || "N/A",   
                 assignedAdvocatesList: assignedAdvocatesListHTML // Pass the advocate list
             });
 
