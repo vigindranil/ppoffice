@@ -25,11 +25,12 @@ const sendOtpV1 = async (req, res) => {
     }
 
     const { OTP, ContactNumber } = result;
-    const smsText = `OTP to login in Public Prosecutor Application is ${OTP} DITE GoWB`;
-    const smsCategory = "login message";
-    const tpid = "1307172596406664446";
+    const smsText =`OTP for login in PP-Office Portal is ${OTP}. Do not share with anyone - WBP`
+    // const smsText = `OTP to login in Public Prosecutor Application is ${OTP} DITE GoWB`;
+    // const smsCategory = "login message";
+    // const tpid = "1307172596406664446";
 
-    const sent = await sendSMSInternally(smsText, ContactNumber, smsCategory, tpid);
+    const sent = await sendSMSInternally(smsText, ContactNumber);
 
     if (sent) {
       return res.status(200).json({
